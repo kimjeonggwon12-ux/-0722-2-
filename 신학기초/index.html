@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>신학 교재 종합 암기 마스터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#0ea5e9',
+                        accent: '#f59e0b',
+                        background: '#f8fafc',
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+        
+        body { font-family: 'Pretendard', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; -webkit-tap-highlight-color: transparent; }
+        .font-jua { font-family: 'Jua', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        textarea { transition: all 0.2s; resize: none; }
+        textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+        textarea:disabled { background-color: #f1f5f9; cursor: not-allowed; }
+        .correct { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46;}
+        .incorrect { border-color: #f43f5e !important; background-color: #fff1f2 !important; color: #9f1239;}
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .stamp-container { position: relative; }
+        .indicator-box { position: absolute; top: 12px; left: 12px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; pointer-events: none; z-index: 10; }
+        .indicator-o { color: rgba(239, 68, 68, 0.9); }
+        .indicator-slash { color: rgba(239, 68, 68, 0.9); }
+
+        .grading-stamp { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; pointer-events: none; user-select: none; z-index: 10; display: flex; align-items: center; justify-content: center; font-weight: 900; transform: translate(-50%, -50%) rotate(-15deg) scale(2); opacity: 0; animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes stampIn { 0% { transform: translate(-50%, -50%) rotate(-30deg) scale(2); opacity: 0; } 100% { transform: translate(-50%, -50%) rotate(-10deg) scale(1); opacity: 1; } }
+        .stamp-o { border: 6px solid rgba(239, 68, 68, 0.85); border-radius: 50%; color: rgba(239, 68, 68, 0.85); font-size: 50px; line-height: 1; }
+        .stamp-slash { color: rgba(239, 68, 68, 0.85); font-size: 80px; line-height: 1; }
+
+        .q-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 768px) { .q-grid { grid-template-columns: 1fr 2fr; gap: 16px; } }
+        .quiz-option { transition: all 0.2s; cursor: pointer; }
+        
+        .cloze-input { text-align: center; border-bottom: 2px solid #818cf8; background-color: #eef2ff; color: #3730a3; font-weight: 900; outline: none; transition: all 0.2s; border-radius: 4px 4px 0 0; padding: 0 4px; }
+        .cloze-input:focus { border-color: #4f46e5; background-color: #e0e7ff; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1); }
+
+
+        @media print {
+            body { background: white !important; color: black !important; font-size: 11pt !important; }
+            header, .no-print, button, label:not(.print-keep), .sticky, #finish-btn { display: none !important; }
+            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .print-page-break { page-break-after: auto; }
+            .stamp-container { border: 1px solid #cbd5e1 !important; margin-bottom: 8px !important; padding: 8px !important; page-break-inside: avoid; box-shadow: none !important; }
+            textarea { border: 1px solid #94a3b8 !important; height: auto !important; background: transparent !important; }
+            #print-header-area, #view-results { display: block !important; }
+            #print-title { font-size: 24pt !important; text-align: center !important; margin-bottom: 20px !important; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="fixed top-2 left-2 z-50 flex gap-1.5 no-print">
+        <a href="../index.html#rooms" class="bg-white/90 backdrop-blur border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 rounded-full px-3 py-1.5 shadow-sm text-[11px] font-bold flex items-center gap-1 no-underline" title="방 선택 화면으로">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6"/></svg>
+            방 선택
+        </a>
+        <a href="../도통계시록/index.html" class="bg-white/90 backdrop-blur border border-slate-200 text-slate-500 hover:text-violet-600 hover:border-violet-300 rounded-full px-3 py-1.5 shadow-sm text-[11px] font-bold flex items-center gap-1 no-underline" title="도통 계시록으로 바로가기">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"/></svg>
+            도통 계시록
+        </a>
+    </div>
+
+    <header id="app-header" class="hidden bg-indigo-600 text-white shadow-md sticky top-0 z-20 no-print">
+        <div class="container mx-auto px-3 py-2 max-w-2xl flex items-center justify-between gap-2">
+            <button onclick="app.showHome()" class="p-1.5 text-indigo-100 hover:text-white transition flex items-center bg-indigo-700/50 rounded-lg" title="처음으로 돌아가기">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6" /></svg>
+            </button>
+            <div class="flex-grow text-center font-black flex flex-col justify-center">
+                <span id="header-level-title" class="text-sm truncate px-2">과목명</span>
+            </div>
+            <div class="flex bg-indigo-700 p-1 rounded-xl gap-1" id="header-tabs"></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-3 py-4 flex-grow flex flex-col max-w-2xl" id="main-container">
+
+        <div id="view-home" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in no-print relative">
+            <button onclick="app.logout()" class="absolute top-0 right-2 text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-1 text-xs font-bold bg-slate-100 hover:bg-indigo-50 px-2.5 py-1.5 rounded-lg shadow-sm z-10">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                로그아웃
+            </button>
+            <div class="text-center mb-10 w-full px-2 mt-4">
+                <div class="inline-flex items-center font-jua select-none cursor-default mb-2">
+                    <span class="text-5xl text-indigo-600 drop-shadow-sm mr-2 transform hover:scale-105 transition-transform duration-300">시온</span>
+                    <span class="text-5xl text-indigo-600 drop-shadow-sm transform hover:scale-105 transition-transform duration-300">공부방</span>
+                </div>
+                <div class="flex justify-center text-amber-400 mb-3">
+                    <svg class="w-8 h-8 animate-spin-slow" style="animation-duration: 4s;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                </div>
+                <p class="text-slate-500 text-[13px] font-bold tracking-wider break-keep">시공을 초월하여 언제 어디서나 스마트하게!</p>
+                <div class="h-1 w-12 bg-indigo-500 mx-auto mt-6 rounded-full"></div>
+            </div>
+
+            <div class="w-full space-y-3 px-2 max-w-md">
+                <button onclick="app.selectSubject('parable')" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-rose-100 text-rose-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">비유</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">초등 비유의 의미와 핵심 성구</h3><p class="text-slate-500 text-[11px] mt-0.5">65개 비유 단어의 의미와 성구 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('elem')" class="w-full bg-white hover:bg-emerald-50 border-2 border-slate-100 hover:border-emerald-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">초</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">초등 제목 암기</h3><p class="text-slate-500 text-[11px] mt-0.5">초등 제1과 ~ 제24과 제목 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('elemFinal')" class="w-full bg-white hover:bg-teal-50 border-2 border-slate-100 hover:border-teal-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-teal-100 text-teal-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">종강</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">초등 종강 시험</h3><p class="text-slate-500 text-[11px] mt-0.5">초등 과정 총정리 20문항 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('mid')" class="w-full bg-white hover:bg-sky-50 border-2 border-slate-100 hover:border-sky-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-sky-100 text-sky-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">중</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">중등 제목과 본문 암기</h3><p class="text-slate-500 text-[11px] mt-0.5">중등 제1과 ~ 제25과 제목 및 핵심 성구 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('midFinal')" class="w-full bg-white hover:bg-cyan-50 border-2 border-slate-100 hover:border-cyan-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-cyan-100 text-cyan-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">종강</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">중등 종강 시험</h3><p class="text-slate-500 text-[11px] mt-0.5">중등 과정 총정리 20문항 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('high')" class="w-full bg-white hover:bg-indigo-50 border-2 border-slate-100 hover:border-indigo-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-indigo-100 text-indigo-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">고</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">고등 장별 제목 암기</h3><p class="text-slate-500 text-[11px] mt-0.5">요한계시록 장수와 제목 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('highFinal')" class="w-full bg-white hover:bg-violet-50 border-2 border-slate-100 hover:border-violet-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-violet-100 text-violet-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">종강</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">고등 종강 시험</h3><p class="text-slate-500 text-[11px] mt-0.5">고등 과정 총정리 20문항 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('totalFinal')" class="w-full bg-white hover:bg-amber-50 border-2 border-slate-100 hover:border-amber-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group mt-6">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-amber-100 text-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">수료</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">수료 종합 시험</h3><p class="text-slate-500 text-[11px] mt-0.5">전 과정 수료 종합 시험 40문항</p></div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-mode-select" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in no-print">
+            <div class="text-center mb-8 w-full px-2">
+                <div id="selected-level-badge" class="inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-black mb-3">과목</div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-tight">학습 모드 선택</h2>
+            </div>
+            <div class="w-full space-y-4 px-2 max-w-md" id="mode-buttons-container"></div>
+            <button onclick="app.showHome()" class="mt-8 text-slate-400 hover:text-slate-600 text-sm font-bold underline underline-offset-4">과목 다시 선택하기</button>
+        </div>
+
+        <div id="view-test" class="hidden flex-col flex-grow fade-in pb-16 no-print">
+            <div class="sticky top-[52px] z-10 bg-background/95 backdrop-blur-md pt-2 pb-3 mb-4 flex flex-col gap-1.5 border-b border-slate-200/60">
+                <div class="flex justify-between items-end px-1 text-xs font-extrabold">
+                    <span id="test-mode-badge" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">진행중</span>
+                    <div class="text-slate-500">진행률: <span id="progress-text" class="text-indigo-600 text-sm">0</span> / <span id="total-count">0</span></div>
+                </div>
+                <div class="bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div id="progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="questions-container" class="space-y-4"></div>
+            <div id="quiz-container" class="hidden flex-col items-center flex-grow fade-in space-y-6"></div>
+
+            <div class="mt-8 flex justify-center pt-4 pb-8" id="finish-btn-container">
+                <button id="finish-btn" class="px-6 py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all flex items-center justify-center gap-2 w-full max-w-sm text-base">
+                    최종 제출 및 채점하기
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-results" class="hidden flex-col items-center flex-grow fade-in py-4">
+            <div id="print-header-area" class="hidden border-2 border-slate-800 p-5 rounded-xl mb-6 w-full">
+                <h1 class="text-2xl font-black text-center text-slate-900 mb-4" id="print-title">시험지</h1>
+                <div class="grid grid-cols-3 gap-4 text-sm text-slate-700">
+                    <div><strong>제출자 이름:</strong> ____________________</div>
+                    <div><strong>제출 일자:</strong> ____________________</div>
+                    <div class="text-right"><strong>최종 점수:</strong> <span class="font-bold text-rose-600 text-base" id="print-score-text">0</span></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm p-6 w-full border border-slate-200 print:border-none print:shadow-none print:p-0">
+                <div class="text-center mb-6 no-print">
+                    <div class="mb-3 inline-block bg-indigo-50 p-4 rounded-full text-indigo-600">
+                        <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-800" id="result-title">수고하셨습니다!</h2>
+                    <p class="text-slate-500 mt-1 text-sm" id="result-desc">정확한 암기를 위해 오답을 점검하세요.</p>
+                </div>
+                
+                <div class="bg-indigo-600 p-6 rounded-2xl text-center shadow-md mb-6 text-white print:border print:text-black print:bg-slate-50 print:shadow-none" id="score-card">
+                    <div class="text-sm text-indigo-100 print:text-slate-500 font-bold mb-1" id="score-label">최종 환산 점수</div>
+                    <div class="text-5xl font-black flex items-baseline justify-center gap-1">
+                        <span id="result-score" class="print:text-rose-600">100</span>
+                        <span id="result-score-unit" class="text-2xl font-bold text-indigo-200 print:text-slate-700">점</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6 no-print">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center shadow-sm">
+                        <div class="text-xs text-slate-500 font-bold mb-1" id="result-total-label">총 문항</div>
+                        <div class="text-3xl font-black text-slate-700" id="result-total">0</div>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center shadow-sm">
+                        <div class="text-xs text-emerald-600 font-bold mb-1" id="result-correct-label">정답 문항</div>
+                        <div class="text-3xl font-black text-emerald-600" id="result-correct">0</div>
+                    </div>
+                </div>
+
+                <div id="pdf-download-area" class="bg-sky-50 border border-sky-100 p-5 rounded-2xl mb-6 hidden flex-col gap-3 items-center no-print text-center">
+                    <h4 class="font-extrabold text-sky-800 text-base">📄 실전 제출 및 기록 보관용 PDF 다운로드</h4>
+                    <p class="text-xs text-sky-600 break-keep">PC 또는 스마트폰의 [공유] > [인쇄] 기능을 통해 PDF로 저장하거나 바로 출력할 수 있습니다.</p>
+                    <button onclick="window.print()" class="w-full max-w-sm py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-100 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        PDF 시험지 저장 / 인쇄하기
+                    </button>
+                </div>
+
+                <div class="text-left mt-8">
+                    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-3 mb-4 no-print" id="review-header">
+                        <h3 class="text-base font-black text-slate-800">문항별 상세 피드백 및 채점부</h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="show-only-failed-toggle" class="sr-only peer" onchange="app.toggleResultFilter()">
+                            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500"></div>
+                            <span class="ml-2 text-xs font-bold text-slate-600">오답만 보기</span>
+                        </label>
+                    </div>
+                    <div id="review-list" class="space-y-4"></div>
+                </div>
+                
+                <div class="mt-8 hidden flex-col sm:flex-row flex-wrap gap-3 justify-center no-print" id="result-action-btns">
+                    <!-- Action buttons injected dynamically -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 성구 새김 모달 -->
+    <div id="verse-learning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center opacity-0 transition-opacity duration-200 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="verse-learning-content">
+            <div class="bg-indigo-600 px-4 py-3 flex justify-between items-center text-white">
+                <h3 class="font-black text-base flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    성구 새김 (핵심어 학습)
+                </h3>
+                <button onclick="app.hideVerseLearningModal()" class="text-indigo-200 hover:text-white p-1 rounded-md transition-colors"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            
+            <div class="px-5 py-3 bg-indigo-50 border-b border-indigo-100 flex flex-col gap-2 shadow-inner z-10">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs text-indigo-800 font-bold leading-relaxed break-keep">아래 성구를 읽고, <b class="text-indigo-600">비유 단어</b>와 <b class="text-indigo-600">그 실체(의미)</b>가 들어갈 알맞은 빈칸을 채워보세요.</p>
+                    <button onclick="app.showClozeAnswers()" class="flex-shrink-0 ml-3 text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-1 rounded shadow-sm font-bold hover:bg-indigo-600 hover:text-white transition-colors">정답 보기</button>
+                </div>
+                <div class="flex items-center gap-3 text-[10px] text-indigo-500 font-medium bg-white px-2.5 py-1.5 rounded-md border border-indigo-100 w-fit">
+                    <span class="flex items-center gap-1"><kbd class="bg-slate-100 border border-slate-300 rounded px-1 text-slate-600">Tab</kbd> 다음 칸 이동</span>
+                    <span class="flex items-center gap-1"><kbd class="bg-slate-100 border border-slate-300 rounded px-1 text-slate-600">Enter</kbd> 정답 확인</span>
+                </div>
+            </div>
+
+            <div class="p-5 overflow-y-auto bg-white space-y-6" id="verse-learning-body"></div>
+            
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+                <button onclick="app.resetVerseLearning()" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-sm transition shadow-sm">다시 하기</button>
+                <button onclick="app.checkVerseLearning()" class="flex-grow md:flex-grow-0 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition shadow-md flex justify-center items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    정답 확인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-200 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-200 text-center" id="confirm-modal-content">
+            <div class="w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-lg font-black text-slate-800 mb-2">제출 확인</h3>
+            <p id="confirm-modal-body" class="text-sm text-slate-500 mb-6 break-keep">아직 미완성된 항목이 존재합니다. 채점을 진행할까요?</p>
+            <div class="flex gap-2 justify-center">
+                <button id="confirm-cancel-btn" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition">취소</button>
+                <button id="confirm-ok-btn" class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition shadow-sm">제출하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 쏙쏙 강의 모달 -->
+    <div id="lecture-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center opacity-0 transition-opacity duration-200 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="lecture-modal-content">
+            <div class="bg-amber-500 px-4 py-3 flex justify-between items-center text-white rounded-t-2xl border-b border-amber-600">
+                <h3 class="font-black text-base flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    쏙쏙 강의
+                </h3>
+                <button onclick="app.hideLectureModal()" class="text-amber-100 hover:text-white p-1 rounded-md transition-colors"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-5 overflow-y-auto bg-amber-50/50" id="lecture-modal-body"></div>
+            <div class="p-4 border-t border-slate-100 bg-white flex justify-end gap-2 rounded-b-2xl">
+                <button onclick="app.hideLectureModal()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition shadow-sm">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 제목 미리보기 모달 -->
+    <div id="preview-list-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center opacity-0 transition-opacity duration-200 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="preview-list-modal-content">
+            <div class="bg-slate-800 px-4 py-3 flex justify-between items-center text-white rounded-t-2xl border-b border-slate-900">
+                <h3 class="font-black text-base flex items-center gap-2" id="preview-list-title">전체 제목 미리보기</h3>
+                <button onclick="app.hidePreviewListModal()" class="text-slate-300 hover:text-white p-1 rounded-md transition-colors"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-4 overflow-y-auto bg-slate-50 space-y-3" id="preview-list-body"></div>
+            <div class="p-4 border-t border-slate-200 bg-white flex justify-end rounded-b-2xl">
+                <button onclick="app.hidePreviewListModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-sm transition shadow-sm">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div id="msg-box" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-800/90 backdrop-blur text-white px-5 py-3 rounded-xl shadow-xl z-50 flex items-center transition-all duration-300 opacity-0 translate-y-4 pointer-events-none border border-slate-700">
+        <span id="msg-box-text" class="text-sm font-bold tracking-wide">알림 메시지</span>
+    </div>
+
+    <script>
+        const dataParable = [
+            { id: 1, q: "비유(비사)", a: "실체 출현 전, 이를 감추시기 위해 비슷한 것으로 빗댄 것 (시 78:2)", refs: ["시 78:2"], tutor: "시 78:2에 창세부터 감추인 '옛 비밀'을 '비유'를 베풀어 발표한다고 하셨습니다. 즉, 천국 비밀의 실체가 출현하기 전까지 적의 무리에게 감추기 위해 비슷한 것으로 빗대어 표현한 것입니다." },
+            { id: 2, q: "씨", a: "말씀 (눅 8:11, 벧전 1:23) ※ 사단의 씨: 비진리 (요 8:44, 마 13:25)", refs: ["눅 8:11", "벧전 1:23", "요 8:44", "마 13:25"], tutor: "눅 8:11에 '씨는 하나님의 말씀'이라 하셨고, 벧전 1:23에 '항상 있는 말씀'을 썩지 아니할 씨라고 하셨습니다. 반면 마 13:25의 원수가 뿌린 가라지나 요 8:44의 마귀의 거짓말은 사단의 씨인 비진리가 됩니다." },
+            { id: 3, q: "밭", a: "사람의 마음 (눅 8:15, 고전 3:9), 세상 (마 13:38) [마 13:24의 제밭: 예수교회 세상]", refs: ["눅 8:15", "고전 3:9", "마 13:38", "마 13:24"], tutor: "씨(말씀)가 뿌려지는 사람의 마음이 곧 밭입니다. 눅 8:15의 '좋은 땅(마음)'과 고전 3:9의 '하나님의 밭'이 이를 증명합니다. 마 13:38에서는 넓은 의미로 세상을 뜻하며, 마 13:24의 '제 밭'은 예수님의 말씀이 뿌려진 예수교회 세상을 의미합니다." },
+            { id: 4, q: "나무", a: "말씀의 씨로 거듭난 속사람(목자) (요 15:1)", refs: ["요 15:1"], tutor: "요 15:1에 예수님을 '참 포도나무'라고 하셨습니다. 마음 밭에 말씀의 씨가 심겨 자라나면, 그 생명으로 거듭난 속사람(목자)이 바로 영적인 나무가 됩니다." },
+            { id: 5, q: "가지", a: "제자(요 15:5)", refs: ["요 15:5"], tutor: "요 15:5에 '나는 포도나무요 너희는 가지'라고 하셨습니다. 가지가 나무에 붙어있어야 생명을 얻어 열매를 맺듯, 목자(나무)에게 소속되어 말씀을 공급받는 제자들을 의미합니다." },
+            { id: 6, q: "잎사귀", a: "전도자 (겔 47:12, 계 22:2)", refs: ["겔 47:12", "계 22:2"], tutor: "겔 47:12과 계 22:2를 보면 생명나무의 잎사귀가 '약 재료'가 되어 '만국을 소성(치료)'한다고 하셨습니다. 말씀으로 상처받은 영혼을 치료하고 전도하는 전도자의 역할입니다." },
+            { id: 7, q: "열매", a: "말씀, 말씀으로 맺은 성도 (약 1:18, 계 14:4)", refs: ["약 1:18", "계 14:4"], tutor: "약 1:18에 진리의 말씀으로 낳은 '첫 열매'가 등장하며, 계 14:4에서는 구속받은 십사만 사천을 처음 익은 열매라 하셨습니다. 즉, 말씀의 씨로 맺어진 성도가 참 열매입니다." },
+            { id: 8, q: "새", a: "영(마 3:16, 계 19:17) ※ 사단의 새: 악령 (단 4:21, 계 18:2)", refs: ["마 3:16", "계 19:17", "단 4:21", "계 18:2"], tutor: "마 3:16에 성령이 비둘기(새) 같이 임하였고, 계 19:17에서 천사가 새들을 모읍니다. 반면 단 4:21의 들짐승과 새, 계 18:2 바벨론의 가증한 새는 사단의 악령을 뜻합니다." },
+            { id: 9, q: "양식", a: "말씀 (요 6:27, 사 55:1~2, 암 8:11) ※ 사단의 양식: 비진리 (잠 4:17, 말 1:7, 사 28:7~8)", refs: ["요 6:27", "사 55:1~2", "암 8:11", "잠 4:17", "말 1:7", "사 28:7~8"], tutor: "요 6:27의 영생하는 양식, 사 55:1~2, 암 8:11의 말씀 기갈을 볼 때 영의 양식은 말씀입니다. 반면 잠 4:17 불의의 양식, 말 1:7 더러운 떡, 사 28:7~8 독주와 토한 것은 비진리입니다." },
+            { id: 10, q: "누룩", a: "교훈(마 13:33) ※ 사단의 누룩: 사단의 교훈 (마 16:6~12) [부풀게 된 것: 변화된 믿음]", refs: ["마 13:33", "마 16:6~12"], tutor: "마 13:33에 가루 서말을 부풀게 하는 누룩이 등장합니다. 이는 사람의 마음을 변화시키는 교훈을 뜻하며, 마 16:6~12의 바리새인의 누룩(사단의 교훈/비진리)을 주의해야 합니다." },
+            { id: 11, q: "그릇", a: "사람, 교회(행 9:15, 마 13:47~48)", refs: ["행 9:15", "마 13:47~48"], tutor: "행 9:15에서 바울을 가리켜 택한 그릇(사람)이라 하셨고, 마 13:47~48에서 물고기(사람)를 담는 그릇은 교회를 의미합니다." },
+            { id: 12, q: "저울", a: "말씀 (잠 24:12) ※ 사단의 저울: 사단의 말(비진리) (잠 11:1)", refs: ["잠 24:12", "잠 11:1"], tutor: "잠 24:12에 마음을 감찰하여 행위대로 보응하신다고 하셨듯, 저울은 행위를 달아보는 척도인 말씀입니다. 반면 잠 11:1의 속이는 저울은 사단의 비진리입니다." },
+            { id: 13, q: "지팡이", a: "말씀과 사람 (사 11:4, 시 89:32)", refs: ["사 11:4", "시 89:32"], tutor: "사 11:4의 '입의 막대기'는 심판하는 말씀을, 시 89:32의 채찍과 지팡이로 징책하신다는 것도 말씀으로 심판하시는 것을 뜻합니다." },
+            { id: 14, q: "철장", a: "다스리는 교권(시 2:6~9, 계 2:26~27)", refs: ["시 2:6~9", "계 2:26~27"], tutor: "시 2:6~9과 계 2:26~27을 보면 이기는 자가 철장으로 질그릇을 깨뜨리듯 만국을 다스린다고 합니다. 철장은 단단하여 아무도 꺾을 수 없는 다스리는 교권입니다." },
+            { id: 15, q: "불", a: "말씀 (렘 5:14, 렘 23:29)", refs: ["렘 5:14", "렘 23:29"], tutor: "렘 5:14에 '입에 있는 나의 말로 불이 되게 하고', 렘 23:29에 '내 말이 불 같지 아니하냐'고 하셨습니다. 불은 소멸하고 심판하는 하나님의 말씀입니다." },
+            { id: 16, q: "향로/향/향연", a: "사람 (계 8:3) / 성도의 기도 (계 5:8) / 기도 상달 (계 8:3~4)", refs: ["계 8:3", "계 5:8", "계 8:3~4"], tutor: "계 8:3에서 천사가 향로를 가졌고, 계 5:8에서 향은 성도의 기도라고 하였습니다. 향(기도)을 담는 그릇인 향로는 사람을 뜻하며, 하늘로 올라가는 향연은 기도 상달을 의미합니다." },
+            { id: 17, q: "가마", a: "교회 (슥 14:20~21)", refs: ["슥 14:20~21"], tutor: "슥 14:20~21에 여호와의 전에 있는 모든 솥(가마)에 고기를 삶는다고 하셨습니다. 가마는 성도를 모아 양육하고 심령을 변화시키는 장소, 곧 교회입니다." },
+            { id: 18, q: "빛/어두움", a: "생명의 말씀 (요 1:1~5, 살전 5:1~6) / 말씀이 없는 무지 (요 12:35)", refs: ["요 1:1~5", "살전 5:1~6", "요 12:35"], tutor: "요 1:1~5에 말씀 안에 있는 생명이 사람들의 빛이라 하셨고, 살전 5:1~6에 빛의 아들이 등장합니다. 요 12:35의 어두움은 말씀(빛)이 없는 무지입니다." },
+            { id: 19, q: "등대(촛대)·눈", a: "영과 사명자(계 4:5, 계 5:6)", refs: ["계 4:5", "계 5:6"], tutor: "계 4:5의 일곱 등불과 계 5:6의 일곱 눈은 온 땅에 보내심을 입은 하나님의 일곱 영(영과 사명자)이라고 명확히 풀이되어 있습니다." },
+            { id: 20, q: "소경", a: "말씀을 보아도 깨닫지 못하는 자(계 3:17~18, 사 42:18~20)", refs: ["계 3:17~18", "사 42:18~20"], tutor: "계 3:17~18에서 안약을 사서 눈에 발라 보라 하셨고, 사 42:18~20에서 많은 것을 보아도 유의치 아니하는 자를 영적 소경이라 책망하십니다. 말씀을 깨닫지 못하는 자입니다." },
+            { id: 21, q: "귀머거리", a: "말씀을 들어도 깨닫지 못하는 자(사 42:18~20)", refs: ["사 42:18~20"], tutor: "사 42:18~20에 귀가 밝아도 듣지 아니하는 자를 귀머거리라 하셨습니다. 소경과 마찬가지로 하나님의 말씀을 들어도 유의치 않고 깨닫지 못하는 자입니다." },
+            { id: 22, q: "옷/예복", a: "마음, 행실, 교리 (계 22:14, 계 19:13) / 옳은 행실 (계 19:8) ※ 음녀의 옷: 거짓 교리 (계 17:4)", refs: ["계 22:14", "계 19:13", "계 19:8", "계 17:4"], tutor: "계 19:8에 빛나고 깨끗한 세마포를 '성도들의 옳은 행실'이라고 직접 해석해주셨습니다. 반면 계 17:4의 음녀의 화려한 옷은 가증한 거짓 교리입니다." },
+            { id: 23, q: "보물", a: "말씀 (잠 16:16)", refs: ["잠 16:16"], tutor: "잠 16:16에 지혜를 얻는 것이 금과 은을 얻는 것보다 낫다고 하셨습니다. 우리 영혼에 가장 값진 보물인 생명의 말씀을 금, 은으로 비유하였습니다." },
+            { id: 24, q: "부자", a: "말씀(지식)이 많은 사람 (계 3:17~18)", refs: ["계 3:17~18"], tutor: "계 3:17~18에 라오디게아 교회가 스스로 부자라 했으나 영적으로 가난했습니다. 예언서에서 비유한 부자는 영적 재물 곧 말씀(지식)이 많은 사람을 뜻합니다." },
+            { id: 25, q: "물", a: "말씀 (신 32:2, 요 15:3)", refs: ["신 32:2", "요 15:3"], tutor: "신 32:2에 생명의 말씀(교훈)을 비와 이슬(물)로 빗대었고, 요 15:3에 일러준 말(말씀)로 깨끗해졌다고 하셨습니다. 물은 영혼에 생명을 주고 죄와 더러움을 씻어주는 말씀입니다." },
+            { id: 26, q: "샘", a: "목자와 성전(교회) (슥 13:1, 계 7:17)", refs: ["슥 13:1", "계 7:17"], tutor: "슥 13:1에 더러움을 씻는 샘이 열리고, 계 7:17에 어린 양이 생명수 샘으로 인도하십니다. 비유한 샘은 말씀의 물이 솟아나는 근원지인 목자와 성전(교회)입니다." },
+            { id: 27, q: "강", a: "제자와 전도자의 마음 (요 7:37~38, 계 22:1~2)", refs: ["요 7:37~38", "계 22:1~2"], tutor: "요 7:37~38에 그 배에서 생수의 강이 흘러난다고 하셨습니다. 비유한 강의 의미는, 샘(목자)에서 흘러나온 말씀의 물줄기가 강처럼 흐르는 제자와 전도자의 마음입니다." },
+            { id: 28, q: "바다", a: "세상 (단 7:3, 단 7:17)", refs: ["단 7:3", "단 7:17"], tutor: "단 7:3과 7:17에 바다에서 나온 큰 짐승 넷을 세상에 일어날 네 왕이라 하셨습니다. 영적인 바다는 용과 짐승 같은 거짓 목자들이 다스리는 비진리의 세상을 의미합니다." },
+            { id: 29, q: "어부/그물/고기", a: "목자(전도자) / 말씀 / 사람 (마 13:47-50, 마 4:18~20)", refs: ["마 13:47-50", "마 4:18~20"], tutor: "마 4:18~20에 예수님이 베드로를 사람 낚는 어부로 부르셨고, 마 13:47~50에서 각종 물고기(사람)를 모으는 그물(말씀)을 천국으로 비유하셨습니다." },
+            { id: 30, q: "배", a: "교회와 같은 조직체 (계 8:8~9, 계 18:17-19)", refs: ["계 8:8~9", "계 18:17-19"], tutor: "계 8:8~9에 배들의 삼분의 일이 깨어지고, 계 18:17~19에 바다(세상)에서 배 부리는 선장과 선객들이 치부하였다고 합니다. 비유한 배는 세상을 항해하며 교인을 모아 천국으로 인도하려 하는 교회와 같은 조직체입니다." },
+            { id: 31, q: "짐승", a: "거짓 목자(시 49:20) [예언서의 짐승: 세 종류의 사람 (배도자, 멸망자, 구원자와 소속 사람)]", refs: ["시 49:20"], tutor: "시 49:20에 존귀에 처하나 깨닫지 못하는 사람을 멸망하는 짐승 같다고 하셨습니다. 비유한 짐승은 하나님의 말씀과 진리를 깨닫지 못하는 이성 없는 거짓 목자입니다. 예언서에는 행위에 따라 세 종류의 짐승 곧 사람이 있습니다." },
+            { id: 32, q: "머리", a: "우두머리(목자) (사 29:10, 엡 4:15)", refs: ["사 29:10", "엡 4:15"], tutor: "사 29:10에 '머리를 덮으셨으니 머리는 선견자'라 하였고, 엡 4:15에 몸의 지체를 이끄는 머리가 그리스도라 하셨습니다. 즉, 조직을 이끄는 지도자나 우두머리를 뜻합니다." },
+            { id: 33, q: "뿔", a: "머리에 속해서 싸우는 권세자(장로) (계 5:6, 계 17:12)", refs: ["계 5:6", "계 17:12"], tutor: "계 17:12에 열 뿔은 열 왕(권세)이라고 해석되어 있습니다. 비유한 뿔은 짐승의 머리에 소속되어 임금처럼 권세를 받아 힘을 쓰고 싸우는 장로와 같은 권세자입니다." },
+            { id: 34, q: "꼬리", a: "거짓 선지자 (사 9:15)", refs: ["사 9:15"], tutor: "사 9:15에 '꼬리는 곧 거짓말을 가르치는 선지자라'고 아주 명확하게 그 실체를 해석해주셨습니다." },
+            { id: 35, q: "어린 양", a: "예수님 (요 1:29)", refs: ["요 1:29"], tutor: "요 1:29에 세례 요한이 예수님을 가리켜 '세상 죄를 지고 가는 하나님의 어린 양'이라고 증거하였습니다." },
+            { id: 36, q: "어린 양의 피와 살", a: "예수님의 생명의 말씀 (요 6:51~58)", refs: ["요 6:51~58"], tutor: "요 6:51~58에서 예수님은 자신의 살과 피를 영생하는 양식과 참된 음료라고 하셨습니다. 즉, 비유한 어린양의 피와 살은 예수님의 생명의 말씀입니다." },
+            { id: 37, q: "새 포도주", a: "새 계시 말씀 (사 25:6~8, 눅 5:37~38, 계 6:6) ※ 사단의 포도주: 거짓 교리 (신 32:32~33)", refs: ["사 25:6~8", "눅 5:37~38", "계 6:6", "신 32:32~33"], tutor: "하나님의 새 포도주는 사 25:6~8의 '오래 저장하였던 포도주'처럼 사망을 멸하는 새 시대의 새 계시 말씀입니다. 반면 신 32:32~33의 뱀의 독, 독사의 악독 같은 사단의 포도주는 사단의 거짓 교리입니다." },
+            { id: 38, q: "새 부대", a: "새 목자와 제자들 (눅 5:37~39, 행 9:15)", refs: ["눅 5:37~39", "행 9:15"], tutor: "눅 5:37~39에 새 포도주는 새 부대에 넣어야 한다고 하셨고, 행 9:15에 택한 그릇(부대)이 사람이라 하셨습니다. 즉, 새 부대의 의미는 새 말씀을 담은 새 목자와 제자들입니다." },
+            { id: 39, q: "감람유", a: "증인의 증거의 말씀 (슥 4:11~14, 계 11:3~4)", refs: ["슥 4:11~14", "계 11:3~4"], tutor: "슥 4:11~14과 계 11:3~4에서 주 앞에 모셔 섰는 두 감람나무가 두 증인이라고 말씀하셨습니다. 감람나무에서 나오는 감람유는 증인의 증거 말씀을 의미합니다." },
+            { id: 40, q: "산", a: "교회, 성전 (사 2:2~3, 계 14:1~3) [세 종류: 배도의 산, 멸망의 산, 구원의 산]", refs: ["사 2:2~3", "계 14:1~3"], tutor: "사 2:2~3에 말일에 여호와의 전의 산으로 만방이 모여든다고 하셨고, 계 14:1~3에는 시온산에 십사만 사천이 모여 있습니다. 흙(육체)과 나무(사람)와 돌(사람), 짐승(사람) 등이 많이 모인 비유한 산은 교회, 성전을 의미합니다." },
+            { id: 41, q: "돌", a: "심판의 말씀, 심판권을 받은 목자 (마 21:42~46, 벧전 2:4~8)", refs: ["마 21:42~46", "벧전 2:4~8"], tutor: "벧전 2:4~8에서 예수님을 보배로운 '산 돌'과 '거치는 반석'이라 하셨고, 마 21:42~46에 이 돌 위에 떨어지면 가루가 된다고 하셨습니다. 비유한 돌은 심판의 말씀과 그 권세를 받은 목자입니다." },
+            { id: 42, q: "우상", a: "거짓 스승(목자) (합 2:18)", refs: ["합 2:18"], tutor: "합 2:18에 '부어 만든 우상은 거짓 스승이라'고 명확히 답을 알려주셨습니다. 섬김을 받으나 말 못하는 우상은 스스로 하나님의 목자인 척하는 거짓 스승(목자)를 뜻합니다." },
+            { id: 43, q: "인(표)", a: "하나님의 말씀(요 1:1, 요 3:31~34) ※ 사단의 인(표): 비진리의 말 (딤전 4:1~2)", refs: ["요 1:1", "요 3:31~34", "딤전 4:1~2"], tutor: "요 3:31~34에 하나님의 말씀(하나님의 인)이 참되다 하여 인치신다(말씀을 새김) 하였습니다. 반면 딤전 4:1~2에 양심에 화인(불도장) 맞았다 하는 것은 사단의 인(표) 곧 비진리의 말이 새겨진 것을 의미합니다." },
+            { id: 44, q: "나팔 소리", a: "알리는 말씀 (사 58:1, 사 18:3) [나팔수: 영(계 8:2) / 나팔: 사람 (계 8:2)]", refs: ["사 58:1", "사 18:3", "계 8:2"], tutor: "사 58:1에 '목소리를 나팔 같이 날려 백성에게 허물을 고하라' 하셨고 사 18:3에 나팔을 불면 들으라 하셨습니다. 비유한 나팔 소리는 알리는 말씀을 의미합니다." },
+            { id: 45, q: "노래", a: "설교 말씀 [모세의 노래: 구약 성경의 말씀 / 어린양의 노래: 신약 성경의 말씀 / 새 노래: 계시록이 성취된 실상의 말씀 (계 14:3)]", refs: ["계 14:3"], tutor: "계 14:3에 나오는 '새 노래'는 계시록이 성취된 실상을 알리는 설교 말씀입니다." },
+            { id: 46, q: "네 생물", a: "네 천사장(계 4:6~8)", refs: ["계 4:6~8"], tutor: "계 4:6~8에 보좌 가운데와 보좌 주위에 네 생물이 있는데 앞 뒤에 눈이 가득합니다. 네 생물은 심판과 전쟁의 사명을 맡은 네 천사장을 의미합니다." },
+            { id: 47, q: "바람", a: "천사와 심판 (단 7:2, 히 1:7, 계 6:12~13) [바람이 분다: 천사를 통한 심판 / 바람을 붙잡는다: 천사를 통한 심판 중지]", refs: ["단 7:2", "히 1:7", "계 6:12~13"], tutor: "히 1:7에 천사들을 바람으로 삼으신다 하셨고, 단 7:2과 계 6:12~13을 볼 때 바람이 불어 대풍에 떨어지는 것은 천사를 통한 심판을 뜻합니다. 바람을 붙잡는다는 것은 천사를 통한 심판 중지를 의미합니다." },
+            { id: 48, q: "생기", a: "생명의 말씀 (창 2:7, 요 6:63)", refs: ["창 2:7", "요 6:63"], tutor: "창 2:7에 흙에 생기를 불어넣어 생령이 되게 하셨고, 요 6:63에 '내가 이른 말이 영이요 생명'이라 하셨습니다. 사람의 영을 살리는 생명의 말씀입니다." },
+            { id: 49, q: "죽음", a: "생명의 말씀이 없는 상태 (겔 18:4)", refs: ["겔 18:4"], tutor: "겔 18:4에 '범죄하는 그 영혼이 죽으리라' 하셨습니다. 비유한 죽음이란 육신의 죽음이 아닌 영적 죽음, 곧 생명의 말씀이 없는 상태를 뜻합니다." },
+            { id: 50, q: "무덤", a: "비진리의 조직체 (마 23:27~28)", refs: ["마 23:27~28"], tutor: "마 23:27~28에서 외식하는 서기관들을 겉만 아름답고 속은 썩은 뼈가 가득한 '회칠한 무덤'에 비유하셨습니다. 비유한 무덤은 생명의 말씀이 없는 비진리의 조직체를 의미합니다." },
+            { id: 51, q: "부활", a: "생명의 말씀으로 다시 산 것(요 5:24~29)", refs: ["요 5:24~29"], tutor: "요 5:24~29에 사망에서 생명으로 옮겨지고 생명의 부활로 나온다고 하셨습니다. 영적 무덤(사망)에 있던 자가 생명의 말씀으로 다시 살아나는 것입니다." },
+            { id: 52, q: "신랑", a: "영(호 2:19~20)", refs: ["호 2:19~20"], tutor: "호 2:19~20에 하나님이 '너(육)'에게 '장가들어 영원히 살겠다'고 하셨습니다. 신랑이신 하나님(영)이, 신부된 사람(육)에게 임하는 것이 영적 결혼입니다." },
+            { id: 53, q: "신부", a: "육(호 2:19~20) [예수님의 아내(신부) (계 19:7-9, 계 22:16-17)]", refs: ["호 2:19~20", "계 19:7-9", "계 22:16-17"], tutor: "호 2:19~20에 하나님(신랑 = 영)이 장가드신다 하셨고, 계 19:7~9에 어린 양의 아내(신부 = 육)가 준비되었다고 합니다. 비유한 신부는 신랑(영)을 모실 준비를 갖춘 육(성도)을 뜻합니다." },
+            { id: 54, q: "과부", a: "배도한 목자 (애 5:3)", refs: ["애 5:3"], tutor: "애 5:3에 '우리 어미는 과부 같으니'라며 슬퍼합니다. 비유한 과부는 신랑이신 하나님(영)이 떠나버린 어미, 즉 배도한 목자입니다." },
+            { id: 55, q: "고아", a: "배도한 목자 소속 교인(애 5:3)", refs: ["애 5:3"], tutor: "애 5:3에 '우리는 아비 없는 고아오며'라고 탄식합니다. 신랑(영)이 떠난 과부(목자) 밑에 남아 영적인 아버지가 없는 배도한 목자 아래의 교인들입니다." },
+            { id: 56, q: "예루살렘", a: "선민의 교단 (마 24:1~2, 눅 21:20~21) [(육계) 새 예루살렘 (렘 3:17, 슥 8:3)]", refs: ["마 24:1~2", "눅 21:20~21", "렘 3:17", "슥 8:3"], tutor: "육적 예루살렘은 이스라엘의 중심이었습니다. 영적으로는 마 24장과 눅 21장처럼 멸망받는 선민의 교단을 뜻하거나, 렘 3:17, 슥 8:3처럼 새로 창조되는 선민의 교단을 뜻하기도 합니다." },
+            { id: 57, q: "바벨론", a: "이방 귀신의 교단 (계 17:5, 계 18:2~4)", refs: ["계 17:5", "계 18:2~4"], tutor: "계 17:5에 음녀의 이름이 '큰 바벨론'이라 하였고, 계 18:2~4에 바벨론은 귀신의 처소라 하였습니다. 이스라엘을 포로 삼은 구약 바벨론처럼, 계시록 때의 영적 바벨론은 귀신의 교리로 만국을 포로 삼은 이방 귀신의 교단입니다." },
+            { id: 58, q: "전쟁", a: "교리 싸움 (마 24:7~8, 엡 6:12)", refs: ["마 24:7~8", "엡 6:12"], tutor: "마 24:7~8에 민족과 나라가 대적하고, 엡 6:12에 우리의 씨름은 혈과 육이 아니라 악의 영들과의 싸움이라 하셨습니다. 진리와 비진리가 부딪히는 교리 싸움입니다." },
+            { id: 59, q: "병기(兵器)", a: "증거의 말 (계 12:11, 엡 6:17)", refs: ["계 12:11", "엡 6:17"], tutor: "엡 6:17에 '성령의 검 곧 하나님의 말씀을 가지라' 하셨고, 계 12:11에 어린 양의 피와 증거하는 말로 이겼다고 하셨습니다. 비유한 병기는 마귀의 군사를 이기는 영적 무기 즉 증거의 말입니다." },
+            { id: 60, q: "하늘", a: "선민의 장막 (창 37:9-11, 계 13:6) [새 하늘 (계 15:5, 계 21:1)]", refs: ["창 37:9-11", "계 13:6", "계 15:5", "계 21:1"], tutor: "창 37:9~11에서 해, 달, 별(선민 야곱의 가족)이 있는 곳(장막)이 하늘이듯, 계 13:6에서도 하늘은 장막입니다. 해달별로 비유된 선민이 모인 선민의 장막을 하늘이라 비유하였습니다." },
+            { id: 61, q: "땅", a: "백성(성도) (계 13:3) [사 1:2의 하늘과 땅: 영들과 육체]", refs: ["계 13:3", "사 1:2"], tutor: "하늘이 장막을 뜻한다면, 땅은 하늘의 지시(말씀)를 받는 백성(성도)을 가리킵니다. 사 1:2에서는 '하늘이여 들으라 땅이여 귀를 기울이라'고 하셨습니다. 사 1:2의 하늘과 땅은 영들과 육체를 의미합니다." },
+            { id: 62, q: "해·달·별", a: "목자·전도자·성도 (창 37:9~11, 마 24:29, 계 6:12~13)", refs: ["창 37:9~11", "마 24:29", "계 6:12~13"], tutor: "창 37:9~11 요셉의 꿈에서 해, 달, 별은 부모와 형제들(이스라엘 선민)을 상징했습니다. 비유한 해, 달, 별은 영적 하늘(장막)에서 빛을 발하는 목자, 전도자, 성도를 뜻합니다." },
+            { id: 63, q: "이스라엘", a: "이긴 자, 선민 (창 32:28, 요 16:33, 계 2~3장)", refs: ["창 32:28", "요 16:33", "계 2", "계 3"], tutor: "창 32:28에 야곱이 하나님과 겨루어 이기고 받은 이름이 이스라엘(이겼다는 의미)이었고, 그 이름의 선민을 창설했습니다. 예수님도 요 16:33처럼 세상을 이기시고 영적 이스라엘을 창설하셨습니다. 즉 '이스라엘'은 이긴 자, 선민을 뜻합니다." },
+            { id: 64, q: "천국", a: "① 영계의 천국(계 4:1~8, 계 21:2, 10) ② 먼저 택한 선민의 장막 천국(계 13:6) ③ 재창조된 인 맞은 12지파 (계 7장, 계 14장)", refs: ["계 4:1~8", "계 21:2", "계 13:6", "계 7", "계 14"], tutor: "성경에서 하늘 나라 즉 하나님이 계신 '천국'은 세 가지가 있습니다. 이는, ① 영계의 천국(계 4:1~8, 계 21장), ② 먼저 택한 선민의 장막 천국(계 13:6 배도로 인해 멸망), ③ 재 창조된 인 맞은 12지파(계 7장, 계 14장) 입니다." },
+            { id: 65, q: "열쇠", a: "비밀을 아는 지혜 (눅 11:52, 계 1:18)", refs: ["눅 11:52", "계 1:18"], tutor: "눅 11:52에 예수님께서는 '지식의 열쇠'라 하였고, 계 1:18에는 예수님께서 사망과 음부의 열쇠를 가졌다고 하십니다. 비유한 열쇠란 비밀을 아는 지혜를 의미합니다." }
+        ];
+
+        const extraClozeKeywords = {
+            "시 78:2": ["입", "비밀한", "발표"], "눅 8:11": ["비유", "하나님"], "벧전 1:23": ["거듭난", "썩지", "항상"],
+            "요 8:44": ["아비", "마귀", "욕심", "살인", "진리", "거짓말"], "마 13:25": ["원수", "곡식", "가라지"],
+            "눅 8:15": ["좋은 땅", "착하고", "인내", "결실"], "고전 3:9": ["동역자", "집"],
+            "마 13:38": ["좋은 씨", "천국의 아들들", "가라지", "악한 자의 아들들"], "마 13:24": ["천국", "좋은 씨", "제 밭"],
+            "요 15:1": ["참 포도나무", "농부"], "요 15:5": ["포도나무", "과실", "아무것도"],
+            "겔 47:12": ["실과나무", "실과", "성소", "약 재료"], "계 22:2": ["생명나무", "만국", "소성"],
+            "약 1:18": ["첫 열매", "진리", "낳으셨느니라"], "계 14:4": ["정절", "구속", "처음 익은"],
+            "마 3:16": ["성령", "비둘기"], "계 19:17": ["큰 잔치"], "단 4:21": ["식물", "들짐승", "깃들이고"],
+            "계 18:2": ["바벨론", "귀신", "더러운 영", "가증한 새"], "요 6:27": ["영생", "양식", "인자", "인치신"],
+            "사 55:1~2": ["돈 없이", "값 없이", "청종하라"], "암 8:11": ["기근", "주림", "기갈"],
+            "잠 4:17": ["불의", "강포"], "말 1:7": ["더러운 떡", "경멸"], "사 28:7~8": ["독주", "토한 것", "더러운 것"],
+            "마 13:33": ["여자", "가루 서말", "전부"], "마 16:6~12": ["바리새인", "사두개인", "주의", "교훈"],
+            "행 9:15": ["이방인", "임금", "택한"], "마 13:47~48": ["각종 물고기", "좋은 것", "못된 것"],
+            "잠 24:12": ["마음", "행위대로", "보응"], "잠 11:1": ["속이는", "공평한", "기뻐"],
+            "사 11:4": ["공의", "정직", "입의 막대기", "입술의 기운"], "시 89:32": ["범과", "채찍", "죄악", "징책"],
+            "시 2:6~9": ["거룩한 산", "시온", "질그릇", "부수리라"], "계 2:26~27": ["이기는 자", "만국", "질그릇"],
+            "렘 5:14": ["입에 있는", "나무", "사르리라"], "렘 23:29": ["반석", "방망이"],
+            "계 8:3": ["제단", "금단"], "계 5:8": ["거문고", "금 대접", "기도들"], "계 8:3~4": ["천사의 손", "하나님 앞"],
+            "슥 14:20~21": ["말 방울", "여호와께 성결", "제단", "주발"], "요 1:1~5": ["태초", "생명"],
+            "살전 5:1~6": ["빛의 아들", "낮의 아들", "깨어 근신"], "요 12:35": ["붙잡히지", "알지 못하느니라"],
+            "계 4:5": ["일곱 등불", "일곱 영"], "계 5:6": ["일찍 죽임", "일곱 뿔", "일곱 영"],
+            "계 3:17~18": ["가련한", "벌거벗은", "안약"], "사 42:18~20": ["유의치", "듣지 아니하는도다"],
+            "계 22:14": ["두루마기", "권세"], "계 19:13": ["피 뿌린"], "계 19:8": ["깨끗한 세마포", "성도들"],
+            "계 17:4": ["가증한", "음행의"], "잠 16:16": ["지혜", "명철"],
+            "신 32:2": ["비", "이슬", "단 비"], "요 15:3": ["일러준", "깨끗"],
+            "슥 13:1": ["죄", "더러움", "씻는"], "계 7:17": ["생명수", "눈물"],
+            "요 7:37~38": ["명절", "생수", "배"], "계 22:1~2": ["생명나무", "열두 가지 실과"],
+            "단 7:3": ["큰 짐승 넷"], "단 7:17": ["큰 짐승", "네 왕"], "마 13:47-50": ["악인", "풀무 불"],
+            "마 4:18~20": ["낚는 어부", "버려 두고"], "계 8:8~9": ["큰 산", "피", "깨어지더라"],
+            "계 18:17-19": ["선장", "상품", "일시간에 망하였도다"], "시 49:20": ["존귀", "멸망"],
+            "사 29:10": ["깊이 잠들게", "선견자"], "엡 4:15": ["사랑 안에서", "참된", "그리스도"],
+            "계 17:12": ["열 왕", "일시 동안"], "사 9:15": ["장로", "거짓말"], "요 1:29": ["세상 죄"],
+            "요 6:51~58": ["산 떡", "피", "참된 양식"], "사 25:6~8": ["기름진", "연회", "사망", "영원히 멸하실"],
+            "눅 5:37~38": ["낡은 가죽 부대", "터뜨려"], "계 6:6": ["한 데나리온", "해치 말라"],
+            "신 32:32~33": ["소돔", "고모라", "독"], "눅 5:37~39": ["묵은 것", "새 것"],
+            "슥 4:11~14": ["기름 발리운 자 둘"], "계 11:3~4": ["두 증인", "굵은 베옷"],
+            "사 2:2~3": ["모든 산", "야겁", "전"], "계 14:1~3": ["이마", "아버지의 이름"],
+            "마 21:42~46": ["건축자", "모퉁이", "가루"], "벧전 2:4~8": ["보배로운 산 돌", "거치는 반석"],
+            "합 2:18": ["부어 만든", "거짓 스승"], "요 1:1": ["태초"], "요 3:31~34": ["위로부터", "땅", "성령", "한량 없이"],
+            "딤전 4:1~2": ["미혹케", "양심", "화인"], "사 58:1": ["네 목소리", "허물", "야곱 집"],
+            "사 18:3": ["기호", "너희는 보고"], "계 8:2": ["일곱 천사", "일곱 나팔"],
+            "계 14:3": ["구속함", "십 사만 사천인"], "계 4:6~8": ["유리 바다", "거룩하다"], "단 7:2": ["네 바람"],
+            "히 1:7": ["천사들", "사역자", "불꽃"], "계 6:12~13": ["여섯째 인", "지진", "대풍", "떨어지며"],
+            "창 2:7": ["흙", "생령"], "요 6:63": ["영", "무익"], "겔 18:4": ["아비", "아들", "범죄"],
+            "마 23:27~28": ["서기관들", "바리새인", "회칠한", "뼈"], "요 5:24~29": ["영생", "선한 일", "심판의 부활"],
+            "호 2:19~20": ["장가들어", "의", "진실함"], "계 19:7-9": ["즐거워", "혼인 기약"],
+            "계 22:16-17": ["사자", "듣는 자", "값 없이"], "애 5:3": ["어미"], "마 24:1~2": ["돌 하나", "무너뜨리우리라"],
+            "눅 21:20~21": ["군대들", "에워싸이는", "멸망", "도망할찌며"], "렘 3:17": ["여호와의 보좌", "열방"],
+            "슥 8:3": ["진리의 성읍", "성산"], "계 17:5": ["이마", "비밀", "어미"],
+            "계 18:2~4": ["무너졌도다", "재앙들"], "마 24:7~8": ["재난의 시작"],
+            "엡 6:12": ["정사", "권세", "세상 주관자들", "악의 영들"], "계 12:11": ["생명", "아끼지"],
+            "엡 6:17": ["구원의 투구", "성령의 검"], "창 37:9-11": ["꿈", "별", "절하더이다"], "계 13:6": ["훼방"],
+            "계 15:5": ["증거 장막", "열리며"], "계 21:1": ["처음 하늘", "처음 땅"], "계 13:3": ["죽게 되었던 상처"],
+            "사 1:2": ["자식", "거역"], "마 24:29": ["환난", "권능들"], "창 32:28": ["야곱", "하나님", "사람", "겨루어 이기었음"],
+            "요 16:33": ["평안", "담대하라"], "계 2": ["에베소", "서머나", "버가모", "두아디라"],
+            "계 3": ["사데", "빌라델비아", "라오디게아"], "계 4:1~8": ["열린 문", "수정", "눈"],
+            "계 21:2": ["새 예루살렘", "남편", "단장"], "계 21:10": ["크고 높은", "거룩한 성"],
+            "계 7": ["인 맞은 자", "흰 옷"], "계 14": ["시온 산", "기별", "추수"],
+            "눅 11:52": ["율법사여", "지식", "막았느니라"], "계 1:18": ["산 자라", "음부"]
+        };
+        
+        const bibleDB = {
+            "시 78:2": "내가 입을 열고 비유를 베풀어서 옛 비밀한 말을 발표하리니",
+            "눅 8:11": "이 비유는 이러하니라 씨는 하나님의 말씀이요",
+            "벧전 1:23": "너희가 거듭난 것이 썩어질 씨로 된 것이 아니요 썩지 아니할 씨로 된 것이니 하나님의 살아 있고 항상 있는 말씀으로 되었느니라",
+            "요 8:44": "너희는 너희 아비 마귀에게서 났으니 너희 아비의 욕심을 너희도 행하고자 하느니라 저는 처음부터 살인한 자요 진리가 그 속에 없으므로 진리에 서지 못하고 거짓을 말할 때마다 제 것으로 말하나니 이는 저가 거짓말장이요 거짓의 아비가 되었음이니라",
+            "마 13:25": "사람들이 잘 때에 그 원수가 와서 곡식 가운데 가라지를 덧뿌리고 갔더니",
+            "눅 8:15": "좋은 땅에 있다는 것은 착하고 좋은 마음으로 말씀을 듣고 지키어 인내로 결실하는 자니라",
+            "고전 3:9": "우리는 하나님의 동역자들이요 너희는 하나님의 밭이요 하나님의 집이니라",
+            "마 13:38": "밭은 세상이요 좋은 씨는 천국의 아들들이요 가라지는 악한 자의 아들들이요",
+            "마 13:24": "예수께서 그들 앞에 또 비유를 베풀어 가라사대 천국은 좋은 씨를 제 밭에 뿌린 사람과 같으니",
+            "요 15:1": "내가 참 포도나무요 내 아버지는 그 농부라",
+            "요 15:5": "나는 포도나무요 너희는 가지니 저가 내 안에, 내가 저 안에 있으면 이 사람은 과실을 많이 맺나니 나를 떠나서는 너희가 아무것도 할 수 없음이라",
+            "겔 47:12": "강 좌우 가에는 각종 먹을 실과나무가 자라서 그 잎이 시들지 아니하며 실과가 끊치지 아니하고 달마다 새 실과를 맺으리니 그 물이 성소로 말미암아 나옴이라 그 실과는 먹을 만하고 그 잎사귀는 약 재료가 되리라",
+            "계 22:2": "길 가운데로 흐르더라 강 좌우에 생명나무가 있어 열두 가지 실과를 맺히되 달마다 그 실과를 맺히고 그 나무 잎사귀들은 만국을 소성하기 위하여 있더라",
+            "약 1:18": "그가 그 조물 중에 우리로 한 첫 열매가 되게 하시려고 자기의 뜻을 좇아 진리의 말씀으로 우리를 낳으셨느니라",
+            "계 14:4": "이 사람들은 여자로 더불어 더럽히지 아니하고 정절이 있는 자라 어린 양이 어디로 인도하든지 따라가는 자며 사람 가운데서 구속을 받아 처음 익은 열매로 하나님과 어린 양에게 속한 자들이니",
+            "마 3:16": "예수께서 세례를 받으시고 곧 물에서 올라오실쌔 하늘이 열리고 하나님의 성령이 비둘기 같이 내려 자기 위에 임하심을 보시더니",
+            "계 19:17": "또 내가 보니 한 천사가 해에 서서 공중에 나는 모든 새를 향하여 큰 음성으로 외쳐 가로되 와서 하나님의 큰 잔치에 모여",
+            "단 4:21": "그 잎사귀는 아름답고 그 열매는 많아서 만민의 식물이 될만하고 들짐승은 그 아래 거하며 공중에 나는 새는 그 가지에 깃들이고",
+            "계 18:2": "힘센 음성으로 외쳐 가로되 무너졌도다 무너졌도다 큰 성 바벨론이여 귀신의 처소와 각종 더러운 영의 모이는 곳과 각종 더럽고 가증한 새의 모이는 곳이 되었도다",
+            "요 6:27": "썩는 양식을 위하여 일하지 말고 영생하도록 있는 양식을 위하여 하라 이 양식은 인자가 너희에게 주리니 인자는 아버지 하나님의 인치신 자니라",
+            "사 55:1~2": "너희 목마른 자들아 물로 나아오라 돈 없는 자도 오라 너희는 와서 사 먹되 돈 없이, 값 없이 와서 포도주와 젖을 사라 / 너희가 어찌하여 양식 아닌 것을 위하여 은을 달아 주며 배부르게 못할 것을 위하여 수고하느냐 나를 청종하라 그리하면 너희가 좋은 것을 먹을 것이며 너희 마음이 기름진 것으로 즐거움을 얻으리라",
+            "암 8:11": "주 여호와께서 가라사대 보라 날이 이를찌라 내가 기근을 땅에 보내리니 양식이 없어 주림이 아니며 물이 없어 갈함이 아니요 여호와의 말씀을 듣지 못한 기갈이라",
+            "잠 4:17": "불의의 양식을 먹으며 강포의 술을 마심이니라",
+            "말 1:7": "너희가 더러운 떡을 나의 단에 드리고도 말하기를 우리가 어떻게 주를 더럽게 하였나이까 하는도다 이는 너희가 여호와의 상은 경멸히 여길 것이라 말함을 인함이니라",
+            "사 28:7~8": "이 유다 사람들도 포도주로 인하여 옆걸음 치며 독주로 인하여 비틀거리며 제사장과 선지자도 독주로 인하여 옆걸음 치며 포도주에 빠지며 독주로 인하여 비틀거리며 이상을 그릇 풀며 재판할 때에 실수하나니 / 모든 상에는 토한 것, 더러운 것이 가득하고 깨끗한 곳이 없도다",
+            "마 13:33": "또 비유로 말씀하시되 천국은 마치 여자가 가루 서말 속에 갖다 넣어 전부 부풀게 한 누룩과 같으니라",
+            "마 16:6~12": "예수께서 이르시되 삼가 바리새인과 사두개인들의 누룩을 주의하라 하신대... 그제서야 제자들이 떡의 누룩이 아니요 바리새인과 사두개인들의 교훈을 삼가라고 말씀하신 줄을 깨달으니라",
+            "행 9:15": "주께서 가라사대 가라 이 사람은 내 이름을 이방인과 임금들과 이스라엘 자손들에게 전하기 위하여 택한 나의 그릇이라",
+            "마 13:47~48": "또 천국은 마치 바다에 치고 각종 물고기를 모는 그물과 같으니 / 그물에 가득하매 물 가로 끌어 내고 앉아서 좋은 것은 그릇에 담고 못된 것은 내어 버리느니라",
+            "잠 24:12": "네가 말하기를 나는 그것을 알지 못하였노라 할찌라도 마음을 감찰하시는 이가 어찌 통찰하지 못하시겠으며 네 영혼을 보존하시는 이가 어찌 알지 못하시겠느냐 그가 각 사람의 행위대로 보응하시리라",
+            "잠 11:1": "속이는 저울은 여호와께서 미워하셔도 공평한 추는 그가 기뻐하시느니라",
+            "사 11:4": "공의로 빈핍한 자를 심판하며 정직으로 세상의 겸손한 자를 판단할 것이며 그 입의 막대기로 세상을 치며 입술의 기운으로 악인을 죽일 것이며",
+            "시 89:32": "내가 지팡이로 저희 범과를 다스리며 채찍으로 저희 죄악을 징책하리로다",
+            "시 2:6~9": "내가 나의 왕을 내 거룩한 산 시온에 세웠다 하시리로다... 네가 철장으로 저희를 깨뜨림이여 질그릇 같이 부수리라 하시도다",
+            "계 2:26~27": "이기는 자와 끝까지 내 일을 지키는 그에게 만국을 다스리는 권세를 주리니 / 그가 철장을 가지고 저희를 다스려 질그릇 깨뜨리는 것과 같이 하리라",
+            "렘 5:14": "그러므로 만군의 하나님 여호와가 이같이 말하노라 그들이 이 말을 하였은즉 볼찌어다 내가 네 입에 있는 나의 말로 불이 되게 하고 이 백성으로 나무가 되게 하리니 그 불이 그들을 사르리라",
+            "렘 23:29": "나 여호와가 말하노라 내 말이 불 같지 아니하냐 반석을 쳐서 부스러뜨리는 방망이 같지 아니하냐",
+            "계 8:3": "또 다른 천사가 와서 제단 곁에 서서 금 향로를 가지고 많은 향을 받았으니 이는 모든 성도의 기도들과 합하여 보좌 앞 금단에 드리고자 함이라",
+            "계 5:8": "책을 취하시매 네 생물과 이십 사 장로들이 어린 양 앞에 엎드려 각각 거문고와 향이 가득한 금 대접을 가졌으니 이 향은 성도의 기도들이라",
+            "계 8:3~4": "또 다른 천사가 와서 제단 곁에 서서 금 향로를 가지고 많은 향을 받았으니 이는 모든 성도의 기도들과 합하여 보좌 앞 금단에 드리고자 함이라 / 향연이 성도의 기도와 함께 천사의 손으로부터 하나님 앞으로 올라가는지라",
+            "슥 14:20~21": "그 날에는 말 방울에까지 여호와께 성결이라 기록될 것이라 여호와의 전에 있는 모든 솥(가마)이 제단 앞 주발과 다름이 없을 것이니 / 예루살렘과 유다의 모든 솥이 만군의 여호와의 성물이 될 것인즉 제사 드리는 자가 와서 이 솥을 취하여 그 가운데 고기를 삶으리라",
+            "요 1:1~5": "태초에 말씀이 계시니라 이 말씀이 하나님과 함께 계셨으니 이 말씀은 곧 하나님이시니라... 그 안에 생명이 있었으니 이 생명은 사람들의 빛이라 빛이 어두움에 비취되 어두움이 깨닫지 못하더라",
+            "살전 5:1~6": "형제들아 때와 시기에 관하여는 너희에게 쓸 것이 없음은... 너희는 다 빛의 아들이요 낮의 아들이라 우리가 밤이나 어두움에 속하지 아니하나니 그러므로 우리는 다른 이들과 같이 자지 말고 오직 깨어 근신할찌라",
+            "요 12:35": "예수께서 가라사대 아직 잠시 동안 빛이 너희 중에 있으니 빛이 있을 동안에 다녀 어두움에 붙잡히지 않게 하라 어두움에 다니는 자는 그 가는 바를 알지 못하느니라",
+            "계 4:5": "보좌로부터 번개와 음성과 뇌성이 나고 보좌 앞에 일곱 등불 켠 것이 있으니 이는 하나님의 일곱 영이라",
+            "계 5:6": "내가 또 보니 보좌와 네 생물과 장로들 사이에 어린 양이 섰는데 일찍 죽임을 당한것 같더라 일곱 뿔과 일곱 눈이 있으니 이 눈은 온 땅에 보내심을 입은 하나님의 일곱 영이더라",
+            "계 3:17~18": "네가 말하기를 나는 부자라 부요하여 부족한 것이 없다 하나 네 곤고한 것과 가련한 것과 가난한 것과 눈 먼 것과 벌거벗은 것을 알지 못하도다... 안약을 사서 눈에 발라 보게 하라",
+            "사 42:18~20": "너희 귀머거리들아 들으라 너희 소경들아 밝히 보라... 네가 많은 것을 볼찌라도 유의치 아니하며 귀는 밝을찌라도 듣지 아니하는도다",
+            "계 22:14": "그 두루마기를 빠는 자들은 복이 있으니 이는 저희가 생명나무에 나아가며 문들을 통하여 성에 들어갈 권세를 얻으려 함이로다",
+            "계 19:13": "또 그가 피 뿌린 옷을 입었는데 그 이름은 하나님의 말씀이라 칭하더라",
+            "계 19:8": "그에게 허락하사 빛나고 깨끗한 세마포를 입게 하셨은즉 이 세마포는 성도들의 옳은 행실이로다 하더라",
+            "계 17:4": "그 여자는 자주 빛과 붉은 빛 옷을 입고 금과 보석과 진주로 꾸미고 손에 금잔을 가졌는데 가증한 물건과 그의 음행의 더러운 것들이 가득하더라",
+            "잠 16:16": "지혜를 얻는 것이 금을 얻는 것보다 얼마나 나은고 명철을 얻는 것이 은을 얻는 것보다 더욱 나으니라",
+            "신 32:2": "나의 교훈은 내리는 비요 나의 말은 맺히는 이슬이요 연한 풀 위의 가는 비요 채소 위의 단 비로다",
+            "요 15:3": "너희는 내가 일러준 말로 이미 깨끗하였으니",
+            "슥 13:1": "그 날에 죄와 더러움을 씻는 샘이 다윗의 족속과 예루살렘 거민을 위하여 열리리라",
+            "계 7:17": "이는 보좌 가운데 계신 어린 양이 저희의 목자가 되사 생명수 샘으로 인도하시고 하나님께서 저희 눈에서 모든 눈물을 씻어 주실 것임이러라",
+            "요 7:37~38": "명절 끝날 곧 큰 날에 예수께서 서서 외쳐 가라사대 누구든지 목마르거든 내게로 와서 마시라 / 나를 믿는 자는 성경에 이름과 같이 그 배에서 생수의 강이 흘러나리라 하시니",
+            "계 22:1~2": "또 저가 수정 같이 맑은 생명수의 강을 내게 보이니 하나님과 및 어린 양의 보좌로부터 나서 / 길 가운데로 흐르더라 강 좌우에 생명나무가 있어 열두 가지 실과를 맺히되...",
+            "단 7:3": "큰 짐승 넷이 바다에서 나왔는데 그 모양이 각각 다르니",
+            "단 7:17": "그 네 큰 짐승은 네 왕이라 세상에 일어날 것이로되",
+            "마 13:47-50": "또 천국은 마치 바다에 치고 각종 물고기를 모는 그물과 같으니... 세상 끝에도 이러하리라 천사들이 와서 의인 중에서 악인을 갈라 내어 풀무 불에 던져 넣으리니...",
+            "마 4:18~20": "갈릴리 해변에 다니시다가 두 형제... 바다에 그물 던지는 것을 보시니 저희는 어부라 / 말씀하시되 나를 따라 오너라 내가 너희로 사람을 낚는 어부가 되게 하리라 하시니 / 저희가 곧 그물을 버려 두고 예수를 좇으니라",
+            "계 8:8~9": "둘째 천사가 나팔을 부니 불 붙는 큰 산과 같은 것이 바다에 던지우매 바다의 삼분의 일이 피가 되고 / 바다 가운데 생명 가진 피조물들의 삼분의 일이 죽고 배들의 삼분의 일이 깨어지더라",
+            "계 18:17-19": "...각 선장과 각처를 다니는 선객들과 선인들과 바다에서 일하는 자들이 멀리 서서... 이 큰 성이여 바다에서 배 부리는 모든 자들이 너의 보배로운 상품을 인하여 치부하였더니 일시간에 망하였도다 하더라",
+            "시 49:20": "존귀에 처하나 깨닫지 못하는 사람은 멸망하는 짐승 같도다",
+            "사 29:10": "대저 여호와께서 깊이 잠들게 하는 신을 너희에게 부어주사 너희의 눈을 감기셨음이니 눈은 선지자요 너희 머리를 덮으셨음이니 머리는 선견자라",
+            "엡 4:15": "오직 사랑 안에서 참된 것을 하여 범사에 그에게까지 자랄찌라 그는 머리니 곧 그리스도라",
+            "계 17:12": "네가 보던 열 뿔은 열 왕이니 아직 나라를 얻지 못하였으나 다만 짐승으로 더불어 임금처럼 권세를 일시 동안 받으리라",
+            "사 9:15": "머리는 곧 장로와 존귀한 자요 꼬리는 곧 거짓말을 가르치는 선지자라",
+            "요 1:29": "이튿날 요한이 예수께서 자기에게 나아오심을 보고 가로되 보라 세상 죄를 지고 가는 하나님의 어린 양이로다",
+            "요 6:51~58": "나는 하늘로서 내려온 산 떡이니 사람이 이 떡을 먹으면 영생하리라... 내 살을 먹고 내 피를 마시는 자는 영생을 가졌고 마지막 날에 내가 그를 다시 살리리니 내 살은 참된 양식이요 내 피는 참된 음료로다",
+            "사 25:6~8": "만군의 여호와께서 이 산에서 만민을 위하여 기름진 것과 오래 저장하였던 포도주로 연회를 베푸시리니... 사망을 영원히 멸하실 것이라",
+            "눅 5:37~38": "새 포도주를 낡은 가죽 부대에 넣는 자가 없나니 만일 그렇게 하면 새 포도주가 부대를 터뜨려 포도주가 쏟아지고 부대도 버리게 되리라 / 새 포도주는 새 부대에 넣어야 할 것이니라",
+            "계 6:6": "내가 네 생물 사이로서 나는듯한 음성을 들으니 가로되 한 데나리온에 밀 한 되요 한 데나리온에 보리 석 되로다 또 감람유와 포도주는 해치 말라 하더라",
+            "신 32:32~33": "그들의 포도나무는 소돔의 포도나무 소생이요 고모라의 밭의 소산이라... 그들의 포도주는 뱀의 독이요 독사의 악독이라",
+            "눅 5:37~39": "새 포도주를 낡은 가죽 부대에 넣는 자가 없나니... 새 포도주는 새 부대에 넣어야 할 것이니라 / 묵은 포도주를 마시고 새 것을 원하는 자가 없나니 이는 묵은 것이 좋다 함이니라",
+            "슥 4:11~14": "내가 그에게 물어 가로되 등대 좌우의 두 감람나무는 무슨 뜻이니이까 하고... 가로되 이는 기름 발리운 자 둘이니 온 세상의 주 앞에 모셔 섰는 자니라",
+            "계 11:3~4": "내가 나의 두 증인에게 권세를 주리니 저희가 굵은 베옷을 입고 일천 이백 육십 일을 예언하리라 / 이는 이 땅의 주 앞에 섰는 두 감람나무와 두 촛대니",
+            "사 2:2~3": "말일에 여호와의 전의 산이 모든 산 꼭대기에 굳게 설 것이요 모든 작은 산 위에 뛰어나리니 만방이 그리로 모여들 것이라 / 많은 백성이 가며 이르기를 오라 우리가 여호와의 산에 오르며 야겁의 하나님의 전에 이르자...",
+            "계 14:1~3": "또 내가 보니 보라 어린 양이 시온산에 섰고 그와 함께 십 사만 사천이 섰는데 그 이마에 어린 양의 이름과 그 아버지의 이름을 쓴 것이 있도다... 저희가 보좌와 네 생물과 장로들 앞에서 새 노래를 부르니...",
+            "마 21:42~46": "예수께서 가라사대 너희가 성경에 건축자들이 버린 돌이 모퉁이의 머릿돌이 되었나니... 이 돌 위에 떨어지는 자는 깨어지겠고 이 돌이 사람 위에 떨어지면 저를 가루로 만들어 흩으리라 하시니",
+            "벧전 2:4~8": "사람에게는 버린 바가 되었으나 하나님께는 택하심을 입은 보배로운 산 돌이신 예수에게 나아와... 또한 부딪히는 돌과 거치는 반석이 되었다 하니라 저희가 말씀을 순종치 아니하므로 넘어지나니이는 저희를 이렇게 정하신 것이라",
+            "합 2:18": "새긴 우상은 그 새겨 만든 자에게 무엇이 유익하겠느냐 부어 만든 우상은 거짓 스승이라 만든 자가 이 말하지 못하는 우상을 의지하니 무엇이 유익하겠느냐",
+            "요 1:1": "태초에 말씀이 계시니라 이 말씀이 하나님과 함께 계셨으니 이 말씀은 곧 하나님이시니라",
+            "요 3:31~34": "위로부터 오시는 이는 만물 위에 계시고 땅에서 난 이는 땅에 속하여... 하나님의 보내신 이는 하나님의 말씀을 하나니 이는 하나님이 성령을 한량 없이 주심이니라",
+            "딤전 4:1~2": "그러나 성령이 밝히 말씀하시기를 후일에 어떤 사람들이 믿음에서 떠나 미혹케 하는 영과 귀신의 가르침을 좇으리라 하셨으니 / 자기 양심이 화인 맞아서 외식함으로 거짓말하는 자들이라",
+            "사 58:1": "크게 외치라 아끼지 말라 네 목소리를 나팔 같이 날려 내 백성에게 그 허물을, 야곱 집에 그 죄를 고하라",
+            "사 18:3": "세상의 모든 거민, 지상에 거하는 너희여 산들 위에 기호를 세우거든 너희는 보고 나팔을 불거든 너희는 들을찌니라",
+            "계 8:2": "내가 보매 하나님 앞에 시위한 일곱 천사가 있어 일곱 나팔을 받았더라",
+            "계 14:3": "저희가 보좌와 네 생물과 장로들 앞에서 새 노래를 부르니 땅에서 구속함을 얻은 십 사만 사천인 밖에는 능히 이 노래를 배울 자가 없더라",
+            "계 4:6~8": "보좌 앞에 수정과 같은 유리 바다가 있고 보좌 가운데와 보좌 주위에 네 생물이 있는데 앞 뒤에 눈이 가득하더라... 그들이 밤낮 쉬지 않고 이르기를 거룩하다 거룩하다 거룩하다 주 하나님 곧 전능하신 이여 전에도 계셨고 이제도 계시고 장차 오실 자라 하고",
+            "단 7:2": "다니엘이 진술하여 가로되 내가 밤에 이상을 보았는데 하늘의 네 바람이 큰 바다로 몰려 불더니",
+            "히 1:7": "또 천사들에 관하여는 그는 그의 천사들을 바람으로, 그의 사역자들을 불꽃으로 삼으시느니라 하셨으되",
+            "계 6:12~13": "내가 보니 여섯째 인을 떼실 때에 큰 지진이 나며 해가 총담 같이 검어지고 온 달이 피 같이 되며 / 하늘의 별들이 무화과나무가 대풍에 흔들려 선 과실이 떨어지는것 같이 땅에 떨어지며",
+            "창 2:7": "여호와 하나님이 흙으로 사람을 지으시고 생기를 그 코에 불어 넣으시니 사람이 생령이 된지라",
+            "요 6:63": "살리는 것은 영이니 육은 무익하니라 내가 너희에게 이른 말이 영이요 생명이라",
+            "겔 18:4": "모든 영혼이 다 내게 속한지라 아비의 영혼이 내게 속함 같이 아들의 영혼도 내게 속하였나니 범죄하는 그 영혼이 죽으리라",
+            "마 23:27~28": "화 있을찐저 외식하는 서기관들과 바리새인들이여 회칠한 무덤 같으니 겉으로는 아름답게 보이나 그 안에는 죽은 사람의 뼈와 모든 더러운 것이 가득하도다 / 이와 같이 너희도 겉으로는 사람에게 옳게 보이되 안으로는 외식과 불법이 가득하도다",
+            "요 5:24~29": "내가 진실로 진실로 너희에게 이르노니 내 말을 듣고 또 나 보내신 이를 믿는 자는 영생을 얻었고... 선한 일을 행한 자는 생명의 부활로, 악한 일을 행한 자는 심판의 부활로 나오리라",
+            "호 2:19~20": "내가 네게 장가들어 영원히 살되 의와 공변됨과 은총과 긍휼히 여김으로 네게 장가들며 / 진실함으로 네게 장가들리니 네가 여호와를 알리라",
+            "계 19:7-9": "우리가 즐거워하고 크게 기뻐하여 그에게 영광을 돌리세 어린 양의 혼인 기약이 이르렀고 그 아내가 예비하였으니 / 그에게 허락하사 빛나고 깨끗한 세마포를 입게 하셨은즉... 천사가 내게 말하기를 기록하라 어린 양의 혼인 잔치에 청함을 입은 자들이 복이 있도다 하고...",
+            "계 22:16-17": "나 예수는 교회들을 위하여 내 사자를 보내어 이것들을 너희에게 증거하게 하였노라... 성령과 신부가 말씀하시기를 오라 하시는도다 듣는 자도 오라 할 것이요 목마른 자도 올 것이요 또 원하는 자는 값 없이 생명수를 받으라 하시더라",
+            "애 5:3": "우리는 아비 없는 고아오며 우리 어미는 과부 같으니",
+            "마 24:1~2": "예수께서 성전에서 나와서 가실 때에 제자들이 성전 건물들을 가리켜 보이려고 나아오니 / 대답하여 가라사대 너희가 이 모든 것을 보지 못하느냐 내가 진실로 너희에게 이르노니 돌 하나도 돌 위에 남지 않고 다 무너뜨리우리라",
+            "눅 21:20~21": "너희가 예루살렘이 군대들에게 에워싸이는 것을 보거든 그 멸망이 가까운 줄을 알라 / 그 때에 유대에 있는 자들은 산으로 도망할찌며 성내에 있는 자들은 나갈찌며 촌에 있는 자들은 그리로 들어가지 말찌어다",
+            "렘 3:17": "그 때에 예루살렘이 여호와의 보좌라 일컬음이 되며 열방이 그리로 모이리니 곧 여호와의 이름으로 인하여 예루살렘에 모이고 다시는 그들의 악한 마음의 강퍅한대로 행치 아니할 것이며",
+            "슥 8:3": "나 여호와가 말하노라 내가 시온에 돌아왔은즉 예루살렘 가운데 거하리니 예루살렘은 진리의 성읍이라 일컬으겠고 만군의 여호와의 산은 성산이라 일컬으게 되리라",
+            "계 17:5": "그 이마에 이름이 기록되었으니 비밀이라, 큰 바벨론이라, 땅의 음녀들과 가증한 것들의 어미라 하였더라",
+            "계 18:2~4": "힘센 음성으로 외쳐 가로되 무너졌도다 무너졌도다 큰 성 바벨론이여 귀신의 처소와 각종 더러운 영의 모이는 곳과 각종 더럽고 가증한 새의 모이는 곳이 되었도다... 또 내가 들으니 하늘로서 다른 음성이 나서 가로되 내 백성아, 거기서 나와 그의 죄에 참예하지 말고 그의 받을 재앙들을 받지 말라",
+            "마 24:7~8": "민족이 민족을, 나라가 나라를 대적하여 일어나겠고 처처에 기근과 지진이 있으리니 / 이 모든 것이 재난의 시작이니라",
+            "엡 6:12": "우리의 씨름은 혈과 육에 대한 것이 아니요 정사와 권세와 이 어두움의 세상 주관자들과 하늘에 있는 악의 영들에게 대함이라",
+            "계 12:11": "또 여러 형제가 어린 양의 피와 자기의 증거하는 말을 인하여 저를 이기었으니 그들은 죽기까지 자기 생명을 아끼지 아니하였도다",
+            "엡 6:17": "구원의 투구와 성령의 검 곧 하나님의 말씀을 가지라",
+            "창 37:9-11": "요셉이 다시 꿈을 꾸고 그 형들에게 고하여 가로되 내가 또 꿈을 꾼즉 해와 달과 열 한 별이 내게 절하더이다 하니라... 그 형들은 시기하되 그 아비는 그 말을 마음에 두었더라",
+            "계 13:6": "짐승이 입을 벌려 하나님을 향하여 훼방하되 그의 이름과 그의 장막 곧 하늘에 거하는 자들을 훼방하더라",
+            "계 15:5": "또 이 일 후에 내가 보니 하늘에 증거 장막의 성전이 열리며",
+            "계 21:1": "또 내가 새 하늘과 새 땅을 보니 처음 하늘과 처음 땅이 없어졌고 바다도 다시 있지 않더라",
+            "계 13:3": "그의 머리 하나가 상하여 죽게 된 것 같더니 그 죽게 되었던 상처가 나으매 온 땅이 이상히 여겨 짐승을 따르고",
+            "사 1:2": "하늘이여 들으라 땅이여 귀를 기울이라 여호와께서 말씀하시기를 내가 자식을 양육하였거늘 그들이 나를 거역하였도다",
+            "마 24:29": "그 날 환난 후에 즉시 해가 어두워지며 달이 빛을 내지 아니하며 별들이 하늘에서 떨어지며 하늘의 권능들이 흔들리리라",
+            "창 32:28": "그 사람이 가로되 네 이름을 다시는 야곱이라 부를 것이 아니요 이스라엘이라 부를 것이니 이는 네가 하나님과 사람으로 더불어 겨루어 이기었음이니라",
+            "요 16:33": "이것을 너희에게 이름은 너희로 내 안에서 평안을 누리게 하려함이라 세상에서는 너희가 환난을 당하나 담대하라 내가 세상을 이기었노라 하시니라",
+            "계 2": "[요한계시록 2장] 에베소, 서머나, 버가모, 두아디라 교회에 보내는 말씀",
+            "계 3": "[요한계시록 3장] 사데, 빌라델비아, 라오디게아 교회에 보내는 말씀",
+            "계 4:1~8": "이 일 후에 내가 보니 하늘에 열린 문이 있는데... 보좌 앞에 수정과 같은 유리 바다가 있고 보좌 가운데와 보좌 주위에 네 생물이 있는데 앞 뒤에 눈이 가득하더라...",
+            "계 21:2": "또 내가 보매 거룩한 성 새 예루살렘이 하나님께로부터 하늘에서 내려오니 그 예비한 것이 신부가 남편을 위하여 단장한 것 같더라",
+            "계 21:10": "성령으로 나를 데리고 크고 높은 산으로 올라가 하나님께로부터 하늘에서 내려오는 거룩한 성 예루살렘을 보이니",
+            "계 7": "[요한계시록 7장] 인 맞은 자 십사만 사천과 흰 옷 입은 큰 무리",
+            "계 14": "[요한계시록 14장] 시온 산의 십사만 사천과 천사들의 기별, 땅의 추수",
+            "눅 11:52": "화 있을찐저 너희 율법사여 너희가 지식의 열쇠를 가져가고 너희도 들어가지 않고 또 들어가고자 하는 자도 막았느니라 하시니라",
+            "계 1:18": "곧 산 자라 내가 전에 죽었었노라 볼찌어다 이제 세세토록 살아 있어 사망과 음부의 열쇠를 가졌노니"
+        };
+
+        const getVerseText = (ref) => {
+            const normalizedRef = ref.replace('-', '~');
+            const altRef = ref.replace('~', '-');
+            return bibleDB[ref] || bibleDB[normalizedRef] || bibleDB[altRef] || "해당 성구의 개역한글판 텍스트가 현재 내장 데이터베이스에 없습니다. 성경책을 직접 참고해 주시기 바랍니다.";
+        };
+
+        const dataElem = [
+            { q: "제1과", a: "두 가지 신(하나님과 사단)" }, { q: "제2과", a: "성경 상식" }, { q: "제3과", a: "천국 비밀 비유" }, { q: "제4과", a: "비유한 씨⋅밭⋅나무⋅새" }, { q: "제5과", a: "비유한 양식과 누룩" }, { q: "제6과", a: "비유한 그릇⋅저울⋅지팡이" }, { q: "제7과", a: "비유한 불⋅향로⋅가마" }, { q: "제8과", a: "비유한 빛⋅등대와 소경⋅귀머거리, 예복" }, { q: "제9과", a: "비유한 보물⋅부자" }, { q: "제10과", a: "비유한 물⋅샘⋅강" }, { q: "제11과", a: "비유한 바다⋅어부⋅그물⋅고기⋅배" }, { q: "제12과", a: "비유한 짐승과 머리⋅뿔⋅꼬리" }, { q: "제13과", a: "비유한 어린 양의 피와 살" }, { q: "제14과", a: "비유한 새 포도주와 새 부대와 감람유" }, { q: "제15과", a: "비유한 산⋅돌⋅우상" }, { q: "제16과", a: "비유한 인(표)⋅나팔⋅노래" }, { q: "제17과", a: "비유한 생물과 바람" }, { q: "제18과", a: "비유한 죽음과 부활" }, { q: "제19과", a: "비유한 신랑⋅신부⋅과부⋅고아" }, { q: "제20과", a: "비유한 예루살렘과 바벨론과의 전쟁" }, { q: "제21과", a: "비유한 하늘⋅땅, 해⋅달⋅별" }, { q: "제22과", a: "세 가지 이스라엘" }, { q: "제23과", a: "세 가지의 천국과 비유한 열쇠" }, { q: "제24과", a: "거듭나는 성장 과정과 인내의 믿음" }
+        ];
+        
+        const dataElemFinal = [
+            { q: "1. ①하나님과 ②마귀는 각각 어떤 존재인지 쓰시오.", a: "① 스스로 계신 분 즉 자존자\n② 창조받은 피조자, 범죄한 천사" },
+            { q: "2. 성경은 ①누가 누구에게, ②왜 준 것인지 쓰시오.", a: "① 하나님이 죄인들에게\n② 생명이신 하나님과 사망자 마귀를 알리기 위함" },
+            { q: "3. 성경은 ①어떤 책인가? 또한 ② 구약과 신약은 누가 지켜야 할 약속인지 각각 증거 성구와 함께 쓰시오.", a: "① 하나님과 택한 선민과의 언약서\n② 육적 이스라엘, 출 19:5~6\n③ 계시록 성취 때 사람들, 눅 22:14~20, 계 22:18~19" },
+            { q: "4. 성경의 저자는 ①누구이며, 기록자는 ②몇 명, 누구인가? 하나님이 성경을 주신 ③목적과 ④구약과 ⑤신약은 각각 몇 권, 몇장, 몇 절인지 쓰시오.", a: "① 하나님\n② 약 35~40명, 선지자와 제자들\n③ 믿는 자에게 천국과 영생을 주시기 위함\n④ 구약: 39권, 929장, 23,144절\n⑤ 신약: 27권, 260장, 7,957절" },
+            { q: "5. 성경의 내용을 네 가지로 분류하면 ① 무엇인가? 또한 예언이 성취되는 노정 순리는 ②무엇인지 ③증거 성구 1개와 함께 쓰시오.", a: "① 역사, 교훈, 예언, 성취(실상)\n② 배도·멸망·구원\n③ 살후 2:1~3" },
+            { q: "6. 하나님이 아브라함에게 하신 약속 중 '아브라함의 자손이 이방에서 나온다'는 것(창 15:13~14)은 ①언제 이루셨고, 하나님이 구약 선지자들에게 하신 약속은 ②언제 이루셨으며, 예수님 초림 때의 약속은 ③언제 다 이루시는지 각각 증거 성구 1개와 함께 쓰시오.", a: "① 모세 때, 출 12장\n② 예수님 초림 때, 요 19:30\n③ 재림 때, 계 21:6" },
+            { q: "7. 예언 성취 때 참 믿음은 ①무엇인지 ②증거 성구 1개와 함께 쓰시오.", a: "① 예언대로 이룬 실상을 믿는 믿음\n② 요 14:29" },
+            { q: "8. 신·구약의 전쟁은 ①누구와 누구의 싸움이었는가? 또한 하나님과 사단이 전쟁을 하게 된 이유는 각각 ②무엇인가?", a: "① 하나님 소속의 영·육과 사단 소속의 영·육\n② 하나님: 만물을 되찾으시기 위함\n사단: 지구촌을 빼앗기지 않기 위함" },
+            { q: "9. 성경 역사의 흐름을 7개 시대로 구분하여 순서대로 쓰시오.", a: "① 창세 시대\n② 출애굽 율법 시대\n③ 사사시대\n④ 왕권 시대\n⑤ 선지 시대\n⑥ 하늘 복음 시대\n⑦ 재창조 계시 시대" },
+            { q: "10. 예수님이 초림 때 천국 비밀을 비유로 말씀하신 두 가지 이유는 ①무엇인가? 또한 비유를 깨닫지 못한 자의 결과는 ②무엇이며, 비유의 참뜻은 ③언제 밝히 알게 되는지 각각 성구 1개와 함께 쓰시오.", a: "① 구약 선지자로 하신 말씀을 이루기 위함, 대적에게 감추기 위함\n② 죄사함 받지 못하여 구원받지 못함, 막 4:10~12\n③ 비유의 실체가 출현하였을 때, 요 16:25" },
+            { q: "11. 비유한 단어의 참뜻을 쓰시오.\n① 씨 ② 밭 ③ 나무 ④ 새 ⑤ 가지 ⑥ 잎사귀 ⑦ 열매 ⑧ 마 24장, 때를 따라 양식을 나눠 준다는 것", a: "① 씨: 말씀\n② 밭: 사람의 마음, 세상\n③ 나무: 말씀의 씨로 거듭난 속사람(목자)\n④ 새: 영\n⑤ 가지: 제자\n⑥ 잎사귀: 전도자\n⑦ 열매: 말씀, 말씀으로 맺은 성도\n⑧ 마 24장, 때를 따라 양식을 나눠 준다는 것: 예언대로 이룬 실상을 증거하는 것" },
+            { q: "12. 비유한 단어의 참뜻을 쓰시오.\n① 그릇 ② 저울 ③ 지팡이 ④ 철장 ⑤ 불 ⑥ 향로, 향 ⑦ 향연 ⑧ 가마", a: "① 그릇: 사람, 교회\n② 저울: 말씀\n③ 지팡이: 말씀과 사람\n④ 철장: 다스리는 교권\n⑤ 불: 말씀\n⑥ 향로, 향: 사람, 성도의 기도\n⑦ 향연: 기도 상달\n⑧ 가마: 교회" },
+            { q: "13. 비유한 단어의 참뜻을 쓰시오.\n① 빛/어두움 ② 등대(촛대)·눈 ③ 소경·귀머거리 ④ 옷/예복 ⑤ 보물 ⑥ 부자", a: "① 빛 / 어두움: 생명의 말씀 / 말씀이 없는 무지\n② 등대(촛대)·눈: 영과 사명자\n③ 소경·귀머거리: 말씀을 보아도 들어도 깨닫지 못하는 자\n④ 옷/예복: 마음, 행실, 교리 / 옳은 행실\n⑤ 보물: 말씀\n⑥ 부자: 말씀(지식)이 많은 사람" },
+            { q: "14. 비유한 단어의 참뜻을 쓰시오.\n① 물 ② 샘 ③ 강 ④ 바다 ⑤ 어부 ⑥ 그물 ⑦ 고기(물고기) ⑧ 배", a: "① 물: 말씀\n② 샘: 목자와 성전(교회)\n③ 강: 제자와 전도자의 마음\n④ 바다: 세상\n⑤ 어부: 목자(전도자)\n⑥ 그물: 말씀\n⑦ 고기(물고기): 사람\n⑧ 배: 교회와 같은 조직체" },
+            { q: "15. 비유한 단어의 참뜻을 쓰시오.\n① 짐승 ② 머리 ③ 뿔 ④ 꼬리 ⑤ 어린 양의 피와 살", a: "① 짐승: 거짓 목자\n② 머리: 우두머리(목자)\n③ 뿔: 머리에 속해서 싸우는 권세자(장로)\n④ 꼬리: 거짓 선지자\n⑤ 어린 양의 피와 살: 예수님의 생명의 말씀" },
+            { q: "16. 비유한 단어의 참뜻을 쓰시오.\n① 새 포도주 ② 새부대 ③ 감람유", a: "① 새 포도주: 새 계시 말씀\n② 새 부대: 새 목자와 제자들\n③ 감람유: 증인의 증거의 말씀" },
+            { q: "17. 비유한 단어의 참뜻을 쓰시오.\n① 산 ② 돌 ③ 우상 ④ 인(印) ⑤ 나팔 소리 ⑥ 노래 ⑦ 모세의 노래 ⑧ 어린양의 노래 ⑨ 새 노래", a: "① 산: 교회, 성전\n② 돌: 심판의 말씀, 심판권을 받은 목자\n③ 우상: 거짓 스승(목자)\n④ 인(印): 하나님의 말씀\n⑤ 나팔 소리: 알리는 말씀\n⑥ 노래: 설교 말씀\n⑦ 모세의 노래: 구약 성경의 말씀\n⑧ 어린양의 노래: 신약 성경의 말씀\n⑨ 새 노래: 계시록이 성취된 실상의 말씀" },
+            { q: "18. 비유한 단어의 참뜻을 쓰시오.\n① 네 생물 ② 바람 ③ 생기 ④ 죽음 ⑤ 무덤 ⑥ 부활 ⑦ 신랑/신부 ⑧ 과부 ⑨ 고아", a: "① 네 생물: 네 천사장\n② 바람: 천사와 심판\n③ 생기: 생명의 말씀\n④ 죽음: 생명의 말씀이 없는 상태\n⑤ 무덤: 비진리의 조직체\n⑥ 부활: 생명의 말씀으로 다시 산 것\n⑦ 신랑/신부: 영/육\n⑧ 과부: 배도한 목자\n⑨ 고아: 배도한 목자 소속 교인" },
+            { q: "19. 비유한 단어의 참뜻을 쓰시오.\n① 예루살렘 ② 바벨론 ③ 전쟁 ④ 하늘, 땅 ⑤ 해·달·별 ⑥ 처음 하늘 처음 땅 ⑦ 새 하늘 새 땅 ⑧ 천국 열쇠 ⑨ 지옥 열쇠", a: "① 예루살렘: 선민의 교단\n② 바벨론: 이방 귀신의 교단\n③ 전쟁: 교리 싸움\n④ 하늘, 땅: 선민의 장막, 백성(성도)\n⑤ 해·달·별: 목자·전도자·성도\n⑥ 처음 하늘 처음 땅: 처음 장막과 처음 성도\n⑦ 새 하늘 새 땅: 새 장막과 새 성도\n⑧ 천국 열쇠: 천국의 비밀을 아는 지혜\n⑨ 지옥 열쇠: 사단의 비밀을 아는 지혜" },
+            { q: "20. 각 단어가 무엇을 가리키는지 쓰시오.\n① 이스라엘 ② 세 가지 이스라엘 ③ 세 가지 천국", a: "① 이스라엘: 이긴 자, 선민\n② 세 가지 이스라엘: 육적 이스라엘, 영적 이스라엘, 영적 새 이스라엘\n③ 세 가지 천국: 영계의 천국, 먼저 택한 선민의 장막, 재창조된 인 맞은 12지파" }
+        ];
+
+        const dataMid = [
+            { q: "제1과", a: "하나님의 언약, 아브라함과 계시록 창 15장(출 12장), 요 19:30, 계 21:6", tutor: "창 15장에서 아브라함과 맺은 언약이 출애굽 때 성취된 것처럼, 예수님이 십자가에서 흘리신 피로 세운 새 언약(요 19:30)은 계시록(계 21:6)에서 다 이루어짐을 증거합니다." }, 
+            { q: "제2과", a: "하늘 영계대로 창조된 육계의 천국 출 25장, 마 6:10, 계 4장, 계 21장", tutor: "모세가 하늘의 것을 보고 장막을 지었듯(출 25장), 예수님도 하늘에서 이룬 것 같이 땅에서 이루시며(마 6:10), 계시록 때 영계 보좌(계 4장)가 이 땅에 임하여 육계의 천국(계 21장)이 창조됨을 증거합니다." }, 
+            { q: "제3과", a: "선민의 배도, 멸망, 구원의 순리 사 1:1~2:4, 살후 2장", tutor: "사 1장에서 선민 이스라엘의 배도와 멸망 후 구원의 산 역사가 나오듯, 살후 2장에서도 주 강림 전에 배도와 멸망의 일이 먼저 있어야 구원의 역사가 있음을 증거합니다." }, 
+            { q: "제4과", a: "구약과 신약의 봉한 책과 계시 사 29장, 겔 3장, 계 5장, 계 10장", tutor: "구약 때 묵시의 책(사 29장)이 열려 에스겔에게 전해졌듯(겔 3장), 신약에서도 하나님의 봉해진 책(계 5장)이 예수님을 통해 열린 후 약속의 목자에게 전달되는(계 10장) 계시 전달 과정을 증거합니다." }, 
+            { q: "제5과", a: "언약을 지킨 자와 지키지 않은 자의 결과 신 28장(렘 31장, 히 8장, 계 7장)", tutor: "구약 신 28장에서 언약을 지킨 자와 어긴 자의 결과가 달랐듯, 새 언약(렘 31장, 히 8장)인 계시록을 마음에 새기고 지킨 자들(계 7장의 12지파)이 영원한 구원의 복을 받게 됨을 증거합니다." }, 
+            { q: "제6과", a: "구약과 신약의 약속의 목자 마 1장, 계 1:1~3, 계 2~3장, 계 10장, 계 22:16", tutor: "구약의 약속한 목자가 예수님(마 1장)으로 오셨듯, 신약의 약속한 목자는 예수님의 대언의 사자(계 22:16)로서 계시록의 사건을 보고 듣고(계 2~3장) 열린 책을 받아(계 10장) 증거하는 자임을 증거합니다." }, 
+            { q: "제7과", a: "주기도문의 참뜻 마 6장, 요 8장", tutor: "마 6장의 주기도문에서 구하는 '일용할 양식'은 육적 양식이 아니라, 오늘날 먹어야할 때를 따른 양식입니다. 요 8장을 본바 예수님께서 진리를 전하실 때 핍박이 있었듯 오늘날에도 사단의 씨로 난 자들에 의한 핍박이 있음을 증거합니다." }, 
+            { q: "제8과", a: "나라의 본 자손과 천국에 앉은 자 마 8:11~12(눅 13:28~30), 계 6~7장", tutor: "처음 하늘 처음 땅의 본 자손들은 배도하여 쫓겨나고(마 8:11~12, 계 6장), 동서로부터 추수되어 온 자들이 천국에 앉게 된다는(계 7장) 약속과 성취 과정을 통해 주 재림 때 천국 백성이 있게 되는 순리를 증거합니다." }, 
+            { q: "제9과", a: "천국 비밀 두 가지 씨와 추수 마 13장(계 14장)", tutor: "마 13장에서 예수님이 좋은 씨를 뿌리신 예수교회 세상에 가라지가 덧뿌려져 함께 자라다가, 추수 때 좋은 씨로 난 자들만 시온산(계 14장)으로 추수되어 처음 익은 열매가 됨을 증거합니다." }, 
+            { q: "제10과", a: "주 재림과 말세의 징조 마 24장, 요 8장", tutor: "마 24장에서 세상 끝의 징조로 해달별이 어두워지고 떨어지는 영적 멸망의 역사를 말씀하셨으며, 요 8장의 육적 유대인들처럼 오늘날 선민이라 자부하는 영적 이스라엘의 부패와 종말이 있음을 증거합니다." }, 
+            { q: "제11과", a: "어린양의 혼인 잔치와 등과 기름 마 25장(마 22장, 눅 14장, 계 19장)", tutor: "마 25장 및 마 22장, 눅 14장의 비유는 모두 장래에 있을 영육 어린양의 혼인 잔치(계 19장)를 빙자한 것이며, 등과 기름(신약 계시록의 예언과 실상을 깨달음)을 예비하고 예복을 갖춰야 참예할 수 있음을 증거합니다." }, 
+            { q: "제12과", a: "피로 세운 예수님의 새 언약 눅 22장(계 5장, 계 7장)", tutor: "눅 22장에서 예수님이 피로 세우신 새 언약은, 아버지의 나라가 임할 때(계시록 성취 때 효력이 나타나) 그 피로 사서 나라와 제사장을 삼으시고(계 5장) 죄 씻음 받은 흰 무리를 창조하시는(계 7장) 약속임을 증거합니다." }, 
+            { q: "제13과", a: "태초의 말씀과 거듭남 요 1장, 요 3장", tutor: "요 1장의 태초의 말씀 안에 생명이 있었으니, 요 3장에서 물과 성령으로 거듭난다는 것은 하나님의 씨인 생명의 말씀으로 우리의 속사람이 완전히 다시 태어나는 과정임을 증거합니다." }, 
+            { q: "제14과", a: "하나님의 목적 렘 31장, 마 13장, 눅 22장, 계 7장, 계 19장, 계 21장", tutor: "렘 31장의 약속이 마 13장과 눅 22장에서 씨 뿌림과 새 언약으로 성취되고, 계시록 때 추수하고 인쳐서(계 7장, 계 19장) 마침내 새 하늘 새 땅(계 21장)을 완성하시는 것이 하나님의 창조 목적임을 증거합니다." }, 
+            { q: "제15과", a: "하나님의 양식과 사단의 양식 요 6장(계 2장, 계 17~18장)", tutor: "요 6장에서 예수님의 살과 피를 먹는 자가 영생한다고 하신 약속에 따라 계시록 성취 때 감추었던 만나를 먹게 되며, 주 재림 때 만국을 무너뜨린 사단의 양식인 음행의 포도주(계 17~18장)를 분별해야 함을 증거합니다." }, 
+            { q: "제16과", a: "예수님이 예비하신 처소와 진리의 성령 보혜사 요 14장, 요 16장", tutor: "요 14장, 16장에서 예수님이 승천하시며 처소를 예비하면 다시 오시겠다 하셨고, 대언의 영인 진리의 성령 보혜사를 보내어 예수님의 것을 가지고 장래 일(계시록)을 알려주심을 증거합니다." }, 
+            { q: "제17과", a: "생명나무와 선악나무의 실체 요 15장(창 2~3장, 단 4장, 계 22장)", tutor: "요 15장의 예수님이 생명나무의 실체이듯, 창 2~3장에서 사망을 준 선악나무의 실체도 단 4장의 바벨론 왕처럼 오늘날 사단의 목자(음녀와 일곱 머리와 열 뿔 가진 짐승)로 나타남을 증거합니다." }, 
+            { q: "제18과", a: "죄 사함을 이루는 예수님의 피의 효력 히 10장", tutor: "히 10장에서 구약의 짐승의 피로는 죄를 온전히 없앨 수 없어 해마다 제사를 드렸으나, 단번에 드리신 예수님의 십자가 피의 효력으로 계시록 성취 때 우리가 온전한 죄 사함과 구원을 받게 됨을 증거합니다." }, 
+            { q: "제19과", a: "마지막 일곱째 나팔 소리 고전 15:51~54(계 10:7, 계 11:15)", tutor: "고전 15장에서 마지막 나팔 소리에 홀연히 변화하여 영생을 얻는 비밀은, 곧 계 10:7과 계 11:15의 일곱째 천사가 부는 마지막 나팔 소리인 계시록 성취의 증거 말씀으로 이루어짐을 증거합니다." }, 
+            { q: "제20과", a: "하나님의 유업을 받는 아들 갈 4:1~7, 계 21:7", tutor: "갈 4장에서 종이 아닌 아들이어야 유업을 이을 수 있다 하신 것처럼, 계 21:7에서 사단과 싸워 이긴 자가 하나님의 아들이 되어 새 하늘 새 땅의 모든 것을 유업으로 받게 됨을 증거합니다." }, 
+            { q: "제21과", a: "핍박과 승리의 나라 신천지 요 8장 (마 10장, 마 25장, 요 16장, 계 7장, 계 14장, 계 21장 )", tutor: "선지 사도들이 핍박을 받았듯(마 10장 등) 오늘날도 진리를 전할 때 핍박이 있으나, 이를 이겨낸 자들만이 계 7장과 14장의 십사만 사천이 되고, 승리의 나라 신천지(계 21장)를 완성할 수 있음 증거합니다." }, 
+            { q: "제22과", a: "지켜야 할 새 언약의 법 히 8장", tutor: "히 8장에서 첫 언약에 흠이 있어 새 언약을 세우시며 이를 생각과 마음에 기록하라 하셨으니, 오늘날 우리는 계시록의 예언과 성취된 실상 말씀을 마음에 새겨 지켜야만 참된 새 언약의 백성이 됨을 증거합니다." }, 
+            { q: "제23과", a: "도의 초보와 완전한 곳 히 5:12~14, 히 6:1~8", tutor: "히 5~6장에서 초보적인 신앙에 머물지 말고 단단한 식물을 먹으며 완전한 데로 나아가라 하셨듯, 요한계시록의 예언과 성취된 실상을 깨달아 완전한 도(곳)에 이르러야 함을 증거합니다." }, 
+            { q: "제24과", a: "하나님의 목적 천지 재창조 마 6:10, 창 1:1~2:3, 계 21:1~7", tutor: "마 6:10의 뜻이 하늘에서 이룬 것 같이 땅에서도 이루어진다고 약속하신 것처럼, 창 1~2장의 하나님의 목적 영적 천지 재창조 역사가 결국 계 21장에서 처음 하늘 처음 땅이 없어지고 새 하늘 새 땅이 창조됨으로 완성됨을 증거합니다." }, 
+            { q: "제25과", a: "신천지예수교 증거장막성전 렘 31장, 마 13장, 눅 22장, 계 7장, 계 15:5, 계 21:1", tutor: "렘 31장, 마 13장, 눅 22장의 약속이 계시록 때 추수와 인침(계 7장)으로 성취되어 마침내 만국이 와서 경배할 신천지 예수교 증거장막성전이 이 땅에 완성됨을 증거합니다(계 15:5, 계 21:1)." }
+        ];
+
+        const dataMidFinal = [
+            { q: "1. 하나님이 출애굽한 육적 이스라엘 백성들과 언약하신 것 두 가지는 ①무엇인지 ②관련 성구 2개와 함께 쓰시오.", a: "① 언약을 지키면 제사장 나라와 거룩한 백성 삼아주실 것, 하나님 외에 다른 신을 섬기지 말 것\n② 출 19:5~6, 출 20:3" },
+            { q: "2. 하나님께서 영계대로 육계를 창조하시는 목적은 무엇인가?", a: "사람과 지구촌을 회복하시고 하나님의 통치 세계를 이루시기 위함" },
+            { q: "3. 하나님께서는 시대마다 한 목자를 택하시고, 하늘의 것을 보여 주시며 이 땅에 그대로 이루게 하셨다. ①모세 때와 ②초림 때와 ③재림 때 하늘의 것을 보고 이 땅 가운데 이루시는 한 목자를 각각 성구와 함께 쓰시오.", a: "① 모세 때: 모세, 출 25:8~9\n② 초림 때: 예수님, 요 5:19\n③ 재림 때: 새요한, 계 4장, 21장" },
+            { q: "4. 사 1:1~2:4의 핵심 내용을 순서대로 빈칸에 쓰시오.\n(①)에 대한 이상 - 양육한 (②) - 이방에 의한 (③) - 만방이 몰려오는 (④) - (⑤) 완성", a: "① 유다와 예루살렘\n② 선민 배도\n③ 선민 멸망\n④ 하나님의 산\n⑤ 추수와 평화 세계" },
+            { q: "5. 계시가 중요한 ①이유를 ②증거 성구 2개와 함께 쓰시오.", a: "① 참 하나님을 앎으로 영생을 얻기 때문\n② 마 11:27, 요 17:3" },
+            { q: "6. 계시록에서 하늘 장막 선민이 용의 무리에게 패한 ①이유와 그 결과는 ②무엇인지 쓰시오. 또한 계시록의 12지파는 ③어떤 자들로 창조한 것이며, 이들이 받게 되는 복은 ④무엇인지 쓰시오.", a: "① 아담같이 언약을 어기고 배도했기 때문\n② 일곱 길로 도망\n③ 새 언약을 지킨 자들\n④ 죄 사함, 천국, 영생" },
+            { q: "7. ①구약의 약속의 목자는 누구이며, 무엇을 증거하였는가? 또한 ②신약의 약속의 목자는 누구이며, 무엇을 증거하였는가?", a: "① 예수님, 구약의 예언과 그 이룬 실상\n② 이긴자 새요한, 신약 계시록의 예언과 그 이룬 실상" },
+            { q: "8. 주 재림 때 임해 오는 하나님의 영계의 나라는 ①무엇이며, ②누구에게 임해 오는지 증거 성구와 함께 쓰시오.", a: "① 거룩한 성 새 예루살렘\n② 신약의 약속의 목자 이긴자, 계 3:12\n양 같은 신앙인, 마 25:34\n새 하늘 새 땅 사람들(신천지 12지파 성도), 계 21:1~4" },
+            { q: "9. 하나님은 예레미야를 통해 새일 창조하실 것을 예언하셨다. 그렇다면 새일 창조의 완성은 ① 언제, ②무엇으로 성취되는지 ③성경 장 1개와 함께 쓰시오.", a: "① 계시록 성취 때\n② 신천지 12지파 창조\n③ 계 21장" },
+            { q: "10. 마 24장의 도망가야 할 주 재림 때 구원의 처소는 ①어디이며, 이곳에는 ②누가 있는지 쓰시오.", a: "① 하나님의 보좌가 임한 시온산\n② 하나님과 보좌, 예수님, 하나님의 가족들" },
+            { q: "11. 주 재림 때 어린양의 천국 혼인 잔치는 ①무슨 일 후, ②어디에서 있는지 쓰고, 혼인 잔치 집의 증표는 ③무엇인지 쓰시오.", a: "① 계 18장 바벨론 심판 후\n② 신천지예수교 증거장막성전\n③ 하나님의 소(배도자)와 살진 짐승(멸망자)" },
+            { q: "12. 하나님의 목적은 무엇인가?", a: "① 새 나라 새 민족 12지파 창조\n② 용을 잡아 가둠\n③ 영육 결혼과 하나님의 통치" },
+            { q: "13. 보혜사(保惠師)의 뜻은 ① 무엇이며, 주 재림 때 예수님의 약속대로 오신 보혜사의 영이 함께하는 대언자는 ②누구인가?", a: "① 은혜로 보호하는 스승(대언자)\n② 이긴자 새요한" },
+            { q: "14. ①초림 때와 ②재림 때, 이 땅의 생명나무의 실체를 각각 쓰시오.", a: "① 초림 때: 예수님, 12제자\n② 재림 때: 이긴자 새요한, 신천지 12지파" },
+            { q: "15. 예수님의 피의 효력은 ①언제, ②누구에게 나타나는지 그 실체를 ③증거 성구와 함께 쓰시오.", a: "① 계시록 성취 때\n② 신천지 12지파 144,000과 흰 무리\n③ 계 1:5~6, 계 5:9~10, 계 7:14" },
+            { q: "16. 마지막 일곱째 나팔 소리로 인해 이루어지는 것은 ①무엇이며, 일곱째 나팔은 ②무슨 일 후 불리는가?", a: "① 하나님의 승리와 부활과 영생\n② 배도와 멸망의 일 후" },
+            { q: "17. 재림 때 전통 교회가 신천지에 핍박을 퍼부었으나 신천지는 이겼다. 이긴 증거는 무엇인가?", a: "예수님과 천사들이 함께 추수하심으로 달마다 열두 가지 열매 맺어 급성장함" },
+            { q: "18. 계시록이 성취되는 주 재림 때의 ①'도의 초보'와 ②'완전한 도'는 무엇인지 쓰시오.", a: "① 아담 때부터 계시록 성취 이전까지의 모든 말씀\n② 계시록의 예언을 이룬 실상" },
+            { q: "19. 창 1장의 '천지 재창조'는 ①언제, ②누가 출현하여, ③무엇을 창조함으로 완전히 완성되는가?", a: "① 계시록 성취 때\n② 신약의 약속의 목자(이긴자 새요한)\n③ 새 하늘 새 땅" },
+            { q: "20. '신천지예수교 증거장막성전' 교명의 의미를 기록하시오.\n① 신천지\n② 예수교\n③ 증거장막성전", a: "① 신천지: 새 하늘 새 땅 곧 새장막 새성도\n② 예수교: 예수님께서 교회의 주인이심\n③ 증거장막성전: 계시록의 실상을 보고 듣고 증거하는 장막" }
+        ];
+
+        const dataHigh = [
+            { q: "개요", a: "요한계시록의 개요" }, { q: "제1-1과", a: "계 1:1~8 계시록 전장의 요약과 결론" }, { q: "제1-2과", a: "계 1:9~20 계시록 사건의 시작과 일곱 별과 일곱 금 촛대의 비밀" }, { q: "제2과", a: "계 2장 일곱 교회 사자에게 보낸 편지" }, { q: "제3과", a: "계 3장 일곱 교회 사자에게 보낸 편지" }, { q: "제4과", a: "계 4장 영계 하나님의 보좌와 계열" }, { q: "제5과", a: "계 5장 일곱 인으로 봉한 책" }, { q: "제6과", a: "계 6장 배도한 선천 해⋅달⋅별에 대한 심판" }, { q: "제7과", a: "계 7장 새 창조 된 영적 새 이스라엘 열두 지파" }, { q: "제8과", a: "계 8장 마지막 인과 일곱 나팔" }, { q: "제9과", a: "계 9장 무저갱의 황충과 범죄한 천사" }, { q: "제10과", a: "계 10장 하늘에서 온 계시 책과 약속의 목자" }, { q: "제11과", a: "계 11장 두 증인과 일곱째 나팔" }, { q: "제12과", a: "계 12장 용과 하나님과의 전쟁" }, { q: "제13과", a: "계 13장 짐승에게 표 받고 배도한 선민" }, { q: "제14과", a: "계 14장 처음 익은 열매 시온산 십사만 사천" }, { q: "제15과", a: "계 15장 만국이 와서 경배할 증거장막 성전" }, { q: "제16과", a: "계 16장 진노의 일곱 대접" }, { q: "제17과", a: "계 17장 마귀의 양식 음행의 포도주" }, { q: "제18과", a: "계 18장 만국을 무너뜨린 사단과의 결혼" }, { q: "제19과", a: "계 19장 영육 어린양의 혼인 잔치" }, { q: "제20과", a: "계 20장 순교의 영과 산 자의 첫째 부활" }, { q: "제21과", a: "계 21장 약속한 새 하늘 새 땅 신천지" }, { q: "제22과", a: "계 22장 생명나무가 있는 거룩한 성" }
+        ];
+
+        const dataHighFinal = [
+            { q: "1. 하나님이 주시는 두 가지의 계시는 ① 무엇이고, 그중 계시록 성취 때 하나님의 종들이 받아야 할 계시는 ②무엇이며, 이 계시가 ③전달되는 과정을 쓰시오.", a: "① 예언적 환상 계시, 실상 계시\n② 실상 계시\n③ 하나님 예수님 천사 새요한→ 종들" },
+            { q: "2. 계 1:3에 ①'읽는 자'와 ② 듣는 자들'과 ③'지키는 자들'은 누구인지 각각 계시록의 해당 장(성구)과 함께 쓰시오.", a: "① 열린 책을 받아먹은 새요한, 계 10장\n② 새요한에게 배우는 백성, 나라, 방언, 임금, 계 10:11\n③ 새요한을 포함한 12지파 144,000과 흰 무리, 계 7장" },
+            { q: "3. 계 2~3장에 보낸 편지 내용은 ①몇 가지 무엇이며, 계 2~3장의 출현 인물 ②세 존재를 순차적으로 쓰고, 그들이 각자 ③한 일을 쓰시오.", a: "① 세 가지: 본 것, 이제 있는 일, 장차 될 일\n② 일곱 사자, 니골라당, 요한\n③ 일곱 사자: 길 예비 등불 역사\n니골라당: 우상의 제물과 교훈, 행음\n요한: 회개할 것과 약속의 말씀 편지" },
+            { q: "4. 계시록의 3가지 비밀은 무엇인지 성구와 함께 기록하시오.\n①\n②\n③", a: "① 일곱 별과 일곱 금 촛대의 비밀, 계 1:20\n② 음녀 바벨론과 일곱 머리와 열 뿔 가진 짐승의 비밀, 계 17:5~7\n③ 마지막 일곱째 나팔의 비밀, 계 10:7" },
+            { q: "5. 계 4:8에서 하나님의 보좌가 장차 이 땅에 임해 오신다고 했다. 하나님의 보좌는 계시록 ①몇 장의 어디에 오시며, 그곳의 실체는 ②어디인가?", a: "① 계 14장의 12지파 인 맞은 144,000이 있는 시온산\n② 신천지예수교 증거장막성전" },
+            { q: "6. 계 5장에서 하나님의 오른손에 있는 '일곱 인으로 봉한 책'은 요한계시록이다. 그동안 봉한 책의 내용을 천상천하 아무도 몰랐던 이유는 ①무엇이고, 봉한 책의 내용은 ②무엇인가?", a: "① 실상이 나타나지 않았기 때문\n② 이루어야 할 하나님의 비밀" },
+            { q: "7. 계 7장의 인 맞은 자들은 ①무슨 일 후 ②어디서 어떻게 온 자들이며, 이들의 실체는 ③누구인가?", a: "① 계 6장의 배도한 선천해달별에 대한 심판 후\n② 추수 밭에서 추수되어\n③ 신천지 12지파 144,000" },
+            { q: "8. 계 8장에서 나팔 소리가 나는 이유는 ①무엇인가? 또한 계 8~9장에서 죽임을 당한 자들은 ②누구이며, 1~6번째 나팔 소리와 일곱 번째 나팔 소리는 ③무엇이 다른가?", a: "① 인을 다 뗌으로 책이 열려 읽으므로\n② 계 6장에서 쫓겨난 자들\n③ 1~6번째 나팔: 배도자들의 죽음\n일곱 번째 나팔: 구원의 나팔" },
+            { q: "9. 초림 때 '구약이 성취된 계시'는 ①누가 받아먹고 어디에 증거했는지 증거 성구와 함께 쓰고, 재림 때 '신약이 성취된 계시'는 ②누가 받아먹고 어디에 증거하는지 증거 성구와 함께 쓰시오.", a: "① 예수님, 패역한 이스라엘, 겔 3장, 마 15:24\n② 새요한, 죄 가운데 있는 교회들, 계 10장, 계 22:8, 16" },
+            { q: "10. '일곱째 나팔이 불릴 때 있는 일'은 ①무엇인지 쓰고, '마지막 나팔의 비밀'은 ②무엇인지 관련 성구 2개와 함께 쓰시오.", a: "① 세상 나라가 하나님의 나라가 됨\n② 부활과 영생 곧 새 피조물로 변화, 계 10:7, 고전 15:51~54" },
+            { q: "11. 계 12:9~11에 아이와 그 형제들이 용의 무리와 싸워 이긴 무기인 ①'어린양의 피'와 ②'증거하는 말'은 무엇이며, 하나님의 나라와 구원은 ③무슨 일 후 있게 되는가? 또한 계 2~3장의 약속은 ④몇 장에서 이루어졌는가?", a: "① 예수님의 생명의 말씀\n② 계시록 성취 실상 증거의 말씀\n③ 용의 무리와 싸워 이긴 후\n④ 계 12장" },
+            { q: "12. 계 13장의 사건의 현장인 '하늘'은 ①어디이며, 계 13장의 '일곱 머리와 열뿔'은 계시록 ②몇 장의 누구인가?", a: "① 계 2~3장과 동일한 장막성전\n② 계 17장의 바벨론 일곱 목자와 열 명의 권세자" },
+            { q: "13. 계 14:3의 '새 노래'는 ①무엇이며, 온 세상에서 ②누구만이 부르며, 새 노래를 배운 곳의 실상은 ③어디인가?", a: "① 계시록이 성취된 실상의 말씀\n② 12지파 인 맞은 144,000\n③ 보좌 앞 시온기독교선교센터" },
+            { q: "14. 계 15:5의 '증거장막 성전'에서는 ①누가, 무엇을 증거하며, 이들만이 증거할 수 있는 이유 2가지는 ②무엇인가?", a: "① 이긴 자들, 계시록 전장의 실체\n② 사건의 현장에서 실체들을 보았고, 멸망자와 싸워 이겼기 때문" },
+            { q: "15. 계시록의 '재앙'은 ① 몇 가지이며 무엇인지 순서대로 쓰고, '계 6장'과 '계 16장'의 심판의 ②대상은 어떻게 다른지 쓰시오.", a: "① 세 가지, 일곱 인, 일곱 나팔, 일곱 대접\n② 계 6장: 배도자들\n계 16장: 배도자들과 멸망자들" },
+            { q: "16. '음행의 포도주'는 ①무엇이며, 계 18장에 본바 무너진 만국과 음행의 포도주를 먹은 자들은 ②누구와 결혼했으며, 결혼하는 신랑과 신부는 ③누구인가?", a: "① 거짓 교리(선악과)\n② 용의 신 사단\n③ 사단과 그 소속 교인들" },
+            { q: "17. 하나님께서 아직 바벨론을 심판하지 않으시는 이유는 ①무엇인지 관련 성구 1개와 함께 쓰고, 이 심판은 ②누가, 무엇으로 하는 심판인지 쓰시오.", a: "① 하나님의 백성이 다 나오지 않았기 때문, 계 18:4\n② 하나님, 불" },
+            { q: "18. 계 19장은 ①어떤 일 후 있게 되며, 계 19장에서 이루어지는 일 2가지는 ②무엇인가?", a: "① 계 18장의 바벨론 심판 후\n② 영육 결혼, 하나님이 오사 통치하심" },
+            { q: "19. 계 20장, 용이 잡힌 후 보좌들 위에 앉아 심판하는 권세자들은 ①누구이며, 그리스도로 더불어 왕 노릇 하는 첫째 부활에 참예할 자는 ②누구이며, 천년 후 심판받는 자들은 ③어떤 자들인가?", a: "① 예수님의 영육 12제자들\n② 순교의 영들, 짐승의 표를 받지 아니하고 하나님의 인 맞은 살아남은 자들\n③ 곡과 마곡, 육이 죽은 영들" },
+            { q: "20. 주 재림 때 계시록이 가장 중요한 이유와 증거 성구를 쓰시오.", a: "가감하면 천국에 못 가기 때문, 계 22:18~19" }
+        ];
+
+        const dataTotalFinal = [
+            { q: "1. 나는 성경이 말씀한 누구인지, 관련 성경 장과 함께 쓰시오.", a: "나는 계시록 성취 때 하나님의 씨로 나서 추수되고 인 맞아 계 7장의 12지파에 소속된 계 14장의 첫 열매의 실체이다." },
+            { q: "2. 내가 참으로 이 성경대로 창조되었다는 증거는 무엇인가?", a: "추수되고 인 맞아 계 7장의 12지파에 소속된 것" },
+            { q: "3. 성경에는 생명나무와 선악을 알게 하는 나무가 있다. 오늘날 ① 생명나무 과실과 ②선악나무 과실은 무엇인지 각각 쓰시오.", a: "① 계시록의 실상의 말씀\n② 거짓 목자의 거짓 교리(주석)" },
+            { q: "4. 하나님이 주시는 두 가지의 계시는 ①무엇이고, 그중 계시록 성취 때 하나님의 종들이 받아야 할 계시는 ②무엇이며, 이 계시가 ③전달되는 과정을 쓰시오.", a: "① 예언적 환상 계시, 실상 계시\n② 실상 계시\n③ 하나님 예수님 천사 새요한→ 종들" },
+            { q: "5. 계 1:3에 ①'읽는 자'와 ②'듣는 자들'과 ③'지키는 자들'은 누구인지 각각 계시록의 해당 장(성구)과 함께 쓰시오.", a: "① 열린 책을 받아먹은 새요한, 계 10장\n② 새요한에게 배우는 백성, 나라, 방언, 임금, 계 10:11\n③ 새요한을 포함한 12지파 144,000과 흰 무리, 계 7장" },
+            { q: "6. 계시록 성취는 ①누구의 출현으로 시작되는지 관련 성구와 함께 쓰고, 계시록이 성취되기 시작한 이 일은 ②언제, ③어디에서 실상으로 이루어졌는지 쓰시오.", a: "① 재림 예수님, 계 1, 2, 3장\n② 1966년\n③ 과천 소재 청계산 하(下) 장막성전" },
+            { q: "7. 계 2~3장에 보낸 편지 내용은 ①몇 가지 무엇이며, 계 2~3장의 출현 인물 ②세 존재를 순차적으로 쓰고, 그들이 각자 ③한 일을 쓰시오.", a: "① 세 가지: 본 것. 이제 있는 일, 장차 될 일\n② 일곱 사자, 니골라당, 요한\n③ 일곱 사자: 길 예비 등불 역사\n니골라당: 우상의 제물과 교훈, 행음\n요한: 회개할 것과 약속의 말씀 편지" },
+            { q: "8. 계시록의 3가지 비밀은 무엇인지 성구와 함께 기록하시오.\n①\n②\n③", a: "① 일곱 별과 일곱 금 촛대의 비밀. 계 1:20\n② 음녀 바벨론과 일곱 머리와 열 뿔 가진 짐승의 비밀, 계 17:5~7\n③ 마지막 일곱째 나팔의 비밀, 계 10:7" },
+            { q: "9. 이기는 자에게 주겠다고 계 2~3장에 약속한 ①복을 쓰고, 이것 외에 이기는 자가 받는 ②또 1가지 복을 증거 성구와 함께 쓰시오.", a: "① 생명나무 과실, 생명의 면류관, 둘째 사망의 해를 면함. 감추었던 만나, 흰 돌, 철장, 새벽별, 흰옷 입음, 생명책 녹명, 하나님 성전의 기둥, 하나님과 거룩한 성 새 예루살렘의 이름과 예수님의 새 이름 기록, 예수님의 보좌에 앉게 해 줌\n② 유업을 받는 아들이 됨. 계 21:7" },
+            { q: "10. '하나님의 이름과 거룩한 성 새 예루살렘의 이름과 예수님의 새 이름을 이기는 자 위에 기록해 주겠다'는 것의 의미는 ①무엇이며, 예수님이 계 2~3장에 약속하신 복은 ②누가 받게 되는가?", a: "① 하나님과 천국과 예수님이 이긴자에게 오심\n② 사단 니골라당과 싸워 이기는 자" },
+            { q: "11. 계 4:8에서 하나님의 보좌가 장차 이 땅에 임해 오신다고 했다. 하나님의 보좌는 계시록 ①몇 장의 어디에 오시며, 그곳의 실체는 ②어디인가?", a: "① 계 14장의 12지파 인 맞은 144,000이 있는 시온산\n② 신천지예수교 증거장막성전" },
+            { q: "12. 계 5장에서 하나님의 오른손에 있는 '일곱 인으로 봉한 책'은 요한계시록이다. 그동안 봉한 책의 내용을 천상천하 아무도 몰랐던 이유는 ①무엇이고, 봉한 책의 내용은 ②무엇인가?", a: "① 실상이 나타나지 않았기 때문\n② 이루어야 할 하나님의 비밀" },
+            { q: "13. 눅 22:14~20에 새 언약으로 약속하신 '예수님의 피와 살'은 ①언제, ②어디에서, ③누가 먹게 되는지 증거 성구 3개와 함께 쓰시오.", a: "① 계시록 성취 때\n② 하나님의 나라 계 7장의 신천지 12지파\n③ 144,000과 흰 무리, 계 1:5~6. 계 5:9~10. 계 7:9~14" },
+            { q: "14. 계 6장은 ①누가, 누구를 들어, ②누구를 심판한 것이며, 계 6장에서 쫓겨난 자들은 ③몇 장, 몇 장에서 죽임을 당하는가?", a: "① 예수님. 네 생물\n② 배도한 선민(일곱 사자와 장막 성도들)\n③ 계 8장. 계 9장" },
+            { q: "15. 마 8장의 바깥 어두운 데로 쫓겨나는 ① '나라의 본 자손들'과 ②'동서로부터 와서 천국에 앉는 자들'은 누구인지 각각 관련 성경 장과 함께 쓰시오.", a: "① 부패한 전통 교회(영적 이스라엘). 계 6장(계 13장)\n② 추수되어 인 맞은 신천지 12지파(영적 새 이스라엘), 계 7장(계 14장)" },
+            { q: "16. 계 7장의 인 맞은 자들은 ①무슨 일 후, ②어디서 어떻게 온 자들이며, 이들의 실체는 ③누구인가?", a: "① 계 6장의 배도한 선천해달별에 대한 심판 후\n② 추수 밭에서 추수되어\n③ 신천지 12지파 144,000" },
+            { q: "17. 계 8장에서 나팔 소리가 나는 이유는 ①무엇인가? 또한 계 8~9장에서 죽임을 당한 자들은 ②누구이며, 1~6번째 나팔 소리와 일곱 번째 나팔 소리는 ③무엇이 다른가?", a: "① 인을 다 뗌으로 책이 열려 읽으므로\n② 계 6장에서 쫓겨난 자들\n③ 1~6번째 나팔: 배도자들의 죽음\n일곱 번째 나팔: 구원의 나팔" },
+            { q: "18. 계시록에서 이방 짐승(멸망자)이 선민 장막을 심판하는 성경 장 3개는 ①무엇이며, 일곱 천사가 받은 일곱 나팔의 실체는 ②무엇인지 성경 장과 함께 쓰시오.", a: "① 계 8장, 계 9장, 계 13장\n② 심판 때 믿음의 씨로 빼낸 성도들, 계 6장" },
+            { q: "19. 계 9장과 계 19장의 '탄 자와 말'은 각각 ① 어느 소속의 어떤 존재이며, 계 9장에서 출현한 말의 ②'머리'와 ③'꼬리', 그 말 입에서 나오는 ④'불, 연기, 유황'은 무엇인가?", a: "① 계 9장: 마귀 소속 영·육\n계 19장: 하나님 소속 영·육\n② 용의 일곱 목자\n③ 거짓 선지자\n④ 거짓 교리와 교법" },
+            { q: "20. 계 9:15을 본바, 여섯째 나팔의 재앙에서 범죄한 네 천사에게 '죽임을 당하는 사람'은 ①누구이며, 죽임을 당하는 '그 연(年), 월, 일, 시'의 실상은 ②언제. 어떤 사건인가?", a: "① 배도한 장막성전 사람들\n② 1981년 9월 20일 14시, 목사 임직식" },
+            { q: "21. 계 10장에서 요한이 '열린 책을 받아먹었다'는 것은 무슨 뜻인가?", a: "계시록의 참뜻과 실상을 완전히 깨달아 통달하고 마음에 인 맞아 있는 것" },
+            { q: "22. 초림 때 '구약이 성취된 계시'는 ①누가 받아먹고 어디에 증거했는지 증거 성구와 함께 쓰고, 재림 때 '신약이 성취된 계시'는 ②누가 받아먹고 어디에 증거하는지 증거 성구와 함께 쓰시오. 또한 계 1:2에 본바, 지시받은 한 사람이 하나님의 말씀을 전했다고 했는데, 그가 전한 이 말씀은 계시록 ③몇 장에서 받은 말씀인지 쓰시오.", a: "① 예수님, 패역한 이스라엘, 겔 3장, 마 15:24\n② 새요한, 죄 가운데 있는 교회들, 계 10장, 계 22:8, 16\n③ 계 10장" },
+            { q: "23. 일곱째 나팔의 실체는 ①누구이며, 일곱째 나팔 소리는 ②무엇인가? 또한 신·구약 성경에 '일곱째 나팔'이 나오는 성구 4개는 ③무엇인가?", a: "① 약속의 목자 새요한\n② 새요한의 계시 증거\n③ 수 6:15~16. 고전 15:51~54. 계 10:7, 계 11:15" },
+            { q: "24. '일곱째 나팔이 불릴 때 있는 일'은 ①무엇인지 쓰고, '마지막 나팔의 비밀'은 ②무엇인지 관련 성구 2개와 함께 쓰시오.", a: "① 세상 나라가 하나님의 나라가 됨\n② 부활과 영생 곧 새 피조물로 변화, 계 10:7. 고전 15:51~54" },
+            { q: "25. 계 12:9~11에 아이와 그 형제들이 용의 무리와 싸워 이긴 무기인 ①'어린양의 피'와 ②'증거하는 말'은 무엇이며, 하나님의 나라와 구원은 ③무슨 일 후 있게 되는가? 또한 계 2~3장의 약속은 ④몇 장에서 이루어졌는가?", a: "① 예수님의 생명의 말씀\n② 계시록 성취 실상 증거의 말씀\n③ 용의 무리와 싸워 이긴 후\n④ 계 12장" },
+            { q: "26. 계 13장의 사건의 현장인 '하늘'은 ①어디이며, 계 13장의 '일곱 머리와 열뿔'은 계시록 ②몇 장의 누구인가?", a: "① 계 2~3장과 동일한 장막성전\n② 계 17장의 바벨론 일곱 목자와 열 명의 권세자" },
+            { q: "27. 계 14:3의 '새 노래'는 ①무엇이며, 온 세상에서 ②누구만이 부르며, 새 노래를 배운 곳의 실상은 ③어디인가?", a: "① 계시록이 성취된 실상의 말씀\n② 12지파 인 맞은 144,000\n③ 보좌 앞 시온기독교선교센터" },
+            { q: "28. 마 13장을 본바, '하나님의 씨로 난 자'와 '마귀의 씨로 난 자'는 ①무엇으로 알 수 있는가? 또한 각각의 실체와 결과는 ②무엇인가?", a: "① 추수된 자와 추수되지 못한 자\n② 하나님 씨로 난 자: 추수되고 인 맞아 12지파에 등록된 자, 천국과 영생\n마귀 씨로 난자: 추수되지도 인 맞지도 못하여 12지파에 등록되지 못한 자. 지옥과 영벌" },
+            { q: "29. 계 15:2의 '이기고 벗어난 자들'은 ①누구인지 관련 성경 장과 함께 쓰고, 이긴 무기는 ②무엇인지 증거 성구 1개와 함께 쓰시오.", a: "① 용의 무리와 싸워 이긴 자들, 계 12장\n② 어린양의 피와 증거하는 말, 계 12:11" },
+            { q: "30. 계 15:5의 '증거장막 성전'에서는 ①누가, ②무엇을 증거하며, 이들만이 증거 할 수 있는 이유 2가지는 ③무엇인가?", a: "① 이긴 자들\n② 계시록 전장의 실체\n③ 사건의 현장에서 실체들을 보았고, 멸망자와 싸워 이겼기 때문" },
+            { q: "31. 계시록의 '재앙'은 ①몇 가지이며 무엇인지 순서대로 쓰고, '계 6장'과 '계 16장'의 심판의 ②대상은 어떻게 다른지 쓰시오.", a: "① 세가지, 일곱 인, 일곱 나팔. 일곱 대접\n② 계 6장: 배도자들\n계 16장: 배도자들과 멸망자들" },
+            { q: "32. 계 16장의 일곱 금 대접은 계시록의 어디서 나타난 존재인지 ①2개의 장을 쓰고, 대접에서 쏟아지는 것은 ②무엇이며, 대접이 쏟아지는 곳은 ③몇 장의 어디인지 쓰시오.", a: "① 계 12장, 계 15장\n② 하나님의 진노\n③ 계 13장 장막과 계 18장 바벨론" },
+            { q: "33. 계시록에서 ① 예수님이 택한 목자가 주는 양식과 ②마귀가 택한 목자가 주는 양식은 무엇인지 각각 관련 성구와 함께 쓰시오.", a: "① 계 2:17 감추었던 만나, 계 10장 계시 말씀, 계 22장 생명나무 과실\n② 계 17:2, 계 18:3 음행의 포도주" },
+            { q: "34. '음행의 포도주'는 ①무엇이며, 계 18장에 본바 무너진 만국과 음행의 포도주를 먹은 자들은 ②누구와 결혼했으며, 결혼하는 신랑과 신부는 ③누구인가?", a: "① 거짓 교리(선악과)\n② 용의 신 사단\n③ 사단과 그 소속 교인들" },
+            { q: "35. 하나님께서 아직 바벨론을 심판하지 않으시는 이유는 ①무엇인지 관련 성구 1개와 함께 쓰고, 이 심판은 ②누가, ③무엇으로 하는 심판인지 쓰시오.", a: "① 계 18:4, 하나님의 백성이 다 나오지 않았기 때문\n② 하나님\n③ 불" },
+            { q: "36. 계 19장은 ① 어떤 일 후 있게 되며, 계 19장에서 이루어지는 일 2가지는 ②무엇인가?", a: "① 계 18장의 바벨론 심판 후\n② 영육 결혼, 하나님이 오사 통치하심" },
+            { q: "37. 계 20장, 용이 잡힌 후 보좌들 위에 앉아 심판하는 권세자들은 ①누구이며, 그리스도로 더불어 왕 노릇 하는 첫째 부활에 참예할 자는 ②누구이며, 천년 후 심판받는 자들은 ③어떤 자들인가?", a: "① 예수님의 영육 12제자들\n② 순교의 영들과 짐승의 표를 받지 아니하고 하나님의 인 맞은 살아남은 자들\n③ 곡과 마곡, 육이 죽은 영들" },
+            { q: "38. '계시록 성취 시작'은 ① 몇 장의 무슨 일이며, '계시록의 완성'은 ②몇 장의 무슨 일인가?", a: "① 계 1, 2 3장, 재림 예수님 출현\n② 계 21장의 하나님과 천국이 신천지에 임함" },
+            { q: "39. 성경 66권 중 가장 중대한 예언은 ①무엇이며, 그중에서도 ②몇 장의 내용이 가장 중대하고, 그 이유는 ③무엇인가?", a: "① 요한계시록\n② 계 21장\n③ 하나님의 목적인 새 하늘 새 땅 창조에 대한 약속이기 때문" },
+            { q: "40. 주 재림 때 계시록이 가장 중요한 ①이유와 증거 성구를 쓰고, '최고의 진리'는 ②무엇이며, ③어디에 있는지 쓰시오.", a: "① 가감하면 천국에 못 가기 때문, 계 22:18~19\n② 계 1장부터 계 22장까지\n③ 진리의 성읍 신천지" }
+        ];
+
+        const els = {
+            header: document.getElementById('app-header'),
+            headerTabs: document.getElementById('header-tabs'),
+            headerTitle: document.getElementById('header-level-title'),
+            views: {
+                home: document.getElementById('view-home'),
+                modeSelect: document.getElementById('view-mode-select'),
+                test: document.getElementById('view-test'),
+                results: document.getElementById('view-results')
+            },
+            levelBadge: document.getElementById('selected-level-badge'),
+            modeBtnsContainer: document.getElementById('mode-buttons-container'),
+            progressBar: document.getElementById('progress-bar'),
+            progressText: document.getElementById('progress-text'),
+            totalCount: document.getElementById('total-count'),
+            testModeBadge: document.getElementById('test-mode-badge'),
+            questionsContainer: document.getElementById('questions-container'),
+            quizContainer: document.getElementById('quiz-container'),
+            finishBtnContainer: document.getElementById('finish-btn-container'),
+            finishBtn: document.getElementById('finish-btn'),
+            msgBox: document.getElementById('msg-box'),
+            msgBoxText: document.getElementById('msg-box-text'),
+            printHeaderTitle: document.getElementById('print-title'),
+            printScoreText: document.getElementById('print-score-text'),
+            scoreLabel: document.getElementById('score-label'),
+            resultTitle: document.getElementById('result-title'),
+            resultDesc: document.getElementById('result-desc'),
+            scoreCard: document.getElementById('score-card'),
+            resultScore: document.getElementById('result-score'),
+            resultScoreUnit: document.getElementById('result-score-unit'),
+            resultTotal: document.getElementById('result-total'),
+            resultCorrect: document.getElementById('result-correct'),
+            pdfDownloadArea: document.getElementById('pdf-download-area'),
+            reviewHeader: document.getElementById('review-header'),
+            reviewList: document.getElementById('review-list'),
+            showOnlyFailedToggle: document.getElementById('show-only-failed-toggle'),
+            resultActionBtns: document.getElementById('result-action-btns'),
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmModalBody: document.getElementById('confirm-modal-body'),
+            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            confirmOkBtn: document.getElementById('confirm-ok-btn'),
+            verseLearningModal: document.getElementById('verse-learning-modal'),
+            verseLearningContent: document.getElementById('verse-learning-content'),
+            verseLearningBody: document.getElementById('verse-learning-body'),
+            previewListModal: document.getElementById('preview-list-modal'),
+            previewListContent: document.getElementById('preview-list-modal-content'),
+            previewListBody: document.getElementById('preview-list-body'),
+            previewListTitle: document.getElementById('preview-list-title'),
+        };
+
+        const appState = {
+            currentSubject: null, 
+            currentMode: null, 
+            questions: [], 
+            results: [],
+            currentQuizIndex: 0,
+            quizQuestions: [],
+            quizSelectedRefs: [], 
+            currentLearningIndex: null,
+        };
+
+        const app = {
+            init() {
+                window.app = this;
+                this.bindEvents();
+                if (localStorage.getItem('sion_auth') === '1') {
+                    this.showHome();
+                } else {
+                    window.location.href = '../index.html';
+                }
+            },
+            logout() {
+                localStorage.removeItem('sion_auth');
+                window.location.href = '../index.html';
+            },
+            bindEvents() {
+                els.finishBtn.addEventListener('click', () => this.handleFinishRequest());
+
+                els.questionsContainer.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        const target = e.target;
+                        if (target && target.tagName.toLowerCase() === 'textarea') {
+                            e.preventDefault();
+                            const idx = parseInt(target.dataset.index);
+                            const subIdx = target.dataset.subindex;
+                            const lineIdx = target.dataset.lineindex;
+                            
+                            if (appState.currentMode === 'exam') {
+                                if (subIdx !== undefined && lineIdx !== undefined) {
+                                    const nextLineInput = document.getElementById(`input-${idx}-${subIdx}-${parseInt(lineIdx) + 1}`);
+                                    if (nextLineInput) {
+                                        nextLineInput.focus();
+                                    } else {
+                                        const nextSubInput = document.getElementById(`input-${idx}-${parseInt(subIdx) + 1}-0`);
+                                        if (nextSubInput) {
+                                            nextSubInput.focus();
+                                        } else {
+                                            const nextInput = document.getElementById(`input-${idx + 1}-0-0`) || document.getElementById(`input-${idx + 1}-0`) || document.getElementById(`input-${idx + 1}`);
+                                            if (nextInput) {
+                                                nextInput.focus();
+                                                nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            } else if (idx === appState.questions.length - 1) {
+                                                this.handleFinishRequest();
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    const nextInput = document.getElementById(`input-${idx + 1}-0-0`) || document.getElementById(`input-${idx + 1}-0`) || document.getElementById(`input-${idx + 1}`);
+                                    if (nextInput) {
+                                        nextInput.focus();
+                                        nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    } else if (idx === appState.questions.length - 1) {
+                                        this.handleFinishRequest();
+                                    }
+                                }
+                            } else if (appState.currentMode === 'practice') {
+                                if (subIdx !== undefined && lineIdx !== undefined) {
+                                    const nextLineInput = document.getElementById(`input-${idx}-${subIdx}-${parseInt(lineIdx) + 1}`);
+                                    if (nextLineInput) {
+                                        nextLineInput.focus();
+                                    } else {
+                                        const nextSubInput = document.getElementById(`input-${idx}-${parseInt(subIdx) + 1}-0`);
+                                        if (nextSubInput) {
+                                            nextSubInput.focus();
+                                        } else {
+                                            this.checkAnswer(idx);
+                                        }
+                                    }
+                                } else {
+                                    this.checkAnswer(idx);
+                                }
+                            }
+                        }
+                    }
+                });
+
+                els.verseLearningBody.addEventListener('keydown', (e) => {
+                    if(e.key === 'Enter' && e.target.classList.contains('cloze-input')) {
+                        e.preventDefault();
+                        this.checkVerseLearning();
+                    }
+                });
+            },
+            parseSubQuestions(answerText) {
+                if (!answerText) return [];
+                const parts = answerText.split(/\n(?=[①-⑩])/);
+                if (parts.length > 1) return parts.map(p => p.trim());
+                return [answerText.trim()];
+            },
+            showView(viewName) {
+                Object.keys(els.views).forEach(v => { els.views[v].classList.add('hidden'); els.views[v].classList.remove('flex'); });
+                els.views[viewName].classList.remove('hidden'); els.views[viewName].classList.add('flex');
+                if (viewName === 'home' || viewName === 'modeSelect') els.header.classList.add('hidden');
+                else els.header.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            },
+            showHome() {
+                appState.currentSubject = null; appState.currentMode = null;
+                this.showView('home');
+            },
+
+            selectSubject(subject) {
+                appState.currentSubject = subject;
+                let title = '', color = '';
+                switch(subject) {
+                    case 'parable': title = '초등 비유의 의미와 핵심 성구'; color = 'text-rose-700 bg-rose-100'; break;
+                    case 'elem': title = '초등 제목 암기'; color = 'text-emerald-700 bg-emerald-100'; break;
+                    case 'elemFinal': title = '초등 종강 시험'; color = 'text-teal-700 bg-teal-100'; break;
+                    case 'mid': title = '중등 제목과 본문 암기'; color = 'text-sky-700 bg-sky-100'; break;
+                    case 'midFinal': title = '중등 종강 시험'; color = 'text-cyan-700 bg-cyan-100'; break;
+                    case 'high': title = '고등 장별 제목 암기'; color = 'text-indigo-700 bg-indigo-100'; break;
+                    case 'highFinal': title = '고등 종강 시험'; color = 'text-violet-700 bg-violet-100'; break;
+                    case 'totalFinal': title = '수료 종합 시험'; color = 'text-amber-700 bg-amber-100'; break;
+                }
+                els.levelBadge.textContent = title;
+                els.levelBadge.className = `inline-block px-3 py-1 rounded-full text-xs font-black mb-3 ${color}`;
+                els.headerTitle.textContent = title;
+                els.printHeaderTitle.textContent = title + " 시험지";
+                this.renderModeButtons(subject);
+                this.showView('modeSelect');
+            },
+            renderModeButtons(subject) {
+                let html = '';
+                if (subject === 'parable') {
+                    html += `
+                    <button onclick="app.startTest('quiz')" class="w-full bg-white hover:bg-emerald-50 border-2 border-emerald-100 hover:border-emerald-500 transition-all rounded-2xl p-6 text-left shadow-sm flex-col gap-3 group relative overflow-hidden flex">
+                        <div class="absolute -right-4 -top-4 text-emerald-50 opacity-50 group-hover:scale-110 transition-transform"><svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+                        <div class="relative z-10 flex items-center gap-3"><div class="bg-emerald-600 text-white p-2 rounded-lg"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div><h3 class="font-extrabold text-slate-800 text-xl">객관식 퀴즈 풀기</h3></div>
+                        <p class="relative z-10 text-slate-500 text-sm font-medium">1번부터 순서대로 비유의 의미와 관련 성구를 객관식으로 맞혀보세요.<br><b class="text-emerald-500">초등 비유 과목 전용</b> 스페셜 모드입니다.</p>
+                    </button>`;
+                }
+                html += `
+                <button onclick="app.startTest('practice')" class="w-full bg-white hover:bg-indigo-50 border-2 border-indigo-100 hover:border-indigo-500 transition-all rounded-2xl p-6 text-left shadow-sm flex flex-col gap-3 group relative overflow-hidden mt-4">
+                    <div class="absolute -right-4 -top-4 text-indigo-50 opacity-50 group-hover:scale-110 transition-transform"><svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+                    <div class="relative z-10 flex items-center gap-3"><div class="bg-indigo-600 text-white p-2 rounded-lg"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></div><h3 class="font-extrabold text-slate-800 text-xl">문항별 암기 연습</h3></div>
+                    <p class="relative z-10 text-slate-500 text-sm font-medium">한 문제씩 직접 정답을 입력하여 피드백을 받습니다.<br><b class="text-indigo-500">정답 미리보기</b> 및 ${subject === 'parable' ? '<b class="text-indigo-500">성구 새김(핵심어)</b>' : ''} 학습을 지원합니다.</p>
+                </button>
+                <button onclick="app.startTest('exam')" class="w-full bg-slate-800 hover:bg-slate-900 border-2 border-slate-700 hover:border-slate-900 transition-all rounded-2xl p-6 text-left shadow-lg flex flex-col gap-3 group relative overflow-hidden text-white mt-4">
+                    <div class="absolute -right-4 -top-4 text-slate-700 opacity-50 group-hover:scale-110 transition-transform"><svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                    <div class="relative z-10 flex items-center gap-3"><div class="bg-white text-slate-900 p-2 rounded-lg"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2"></path></svg></div><h3 class="font-extrabold text-white text-xl">실전 시험지 모드</h3></div>
+                    <p class="relative z-10 text-slate-300 text-sm font-medium">전체 문항을 한 번에 작성한 후 일괄 채점합니다.<br>완료 후 <b class="text-sky-300">시험지 PDF 출력 및 저장</b>이 가능합니다.</p>
+                </button>`;
+                
+                if (subject !== 'parable') {
+                    html += `
+                    <button onclick="app.showPreviewListModal('${subject}')" class="mt-6 w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                        전체 문항 한눈에 보기
+                    </button>
+                    `;
+                }
+
+                els.modeBtnsContainer.innerHTML = html;
+            },
+
+            showPreviewListModal(subject) {
+                let data = []; let titleStr = "";
+                if(subject === 'elem') { data = dataElem; titleStr = "초등 제목 전체 보기"; }
+                else if(subject === 'elemFinal') { data = dataElemFinal; titleStr = "초등 종강 시험 전체 보기"; }
+                else if(subject === 'mid') { data = dataMid; titleStr = "중등 제목/본문 전체 보기"; }
+                else if(subject === 'midFinal') { data = dataMidFinal; titleStr = "중등 종강 시험 전체 보기"; }
+                else if(subject === 'high') { data = dataHigh; titleStr = "고등 장별 제목 전체 보기"; }
+                else if(subject === 'highFinal') { data = dataHighFinal; titleStr = "고등 종강 시험 전체 보기"; }
+                else if(subject === 'totalFinal') { data = dataTotalFinal; titleStr = "수료 종합 시험 전체 보기"; }
+                
+                els.previewListTitle.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> ${titleStr}`;
+                
+                let html = '';
+                const isLongText = (subject === 'elemFinal' || subject === 'midFinal' || subject === 'highFinal' || subject === 'totalFinal');
+                data.forEach((item, idx) => {
+                    const questionText = isLongText ? item.q.replace(/^\d+\.\s*/, '') : item.q;
+                    const titleSize = isLongText ? "text-sm" : "text-base";
+                    html += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-1.5">
+                        <div class="flex items-start gap-2">
+                            <span class="bg-slate-200 text-slate-700 w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-xs font-black mt-0.5">${idx+1}</span>
+                            <div class="font-extrabold text-slate-800 ${titleSize} break-keep whitespace-pre-wrap">${questionText}</div>
+                        </div>
+                        <div class="ml-8 text-sm text-indigo-700 font-bold bg-indigo-50/50 p-3 rounded-lg border border-indigo-100 break-keep leading-relaxed whitespace-pre-wrap">${item.a}</div>
+                    </div>
+                    `;
+                });
+                els.previewListBody.innerHTML = html;
+                
+                els.previewListModal.classList.remove('hidden'); void els.previewListModal.offsetWidth;
+                els.previewListModal.classList.remove('opacity-0');
+                els.previewListContent.classList.remove('scale-95'); els.previewListContent.classList.add('scale-100');
+            },
+            hidePreviewListModal() {
+                els.previewListModal.classList.add('opacity-0');
+                els.previewListContent.classList.remove('scale-100'); els.previewListContent.classList.add('scale-95');
+                setTimeout(() => els.previewListModal.classList.add('hidden'), 200);
+            },
+            
+            startTest(mode) {
+                appState.currentMode = mode;
+                if (appState.currentSubject === 'parable') appState.questions = [...dataParable];
+                else if (appState.currentSubject === 'elem') appState.questions = [...dataElem];
+                else if (appState.currentSubject === 'elemFinal') appState.questions = [...dataElemFinal];
+                else if (appState.currentSubject === 'mid') appState.questions = [...dataMid];
+                else if (appState.currentSubject === 'midFinal') appState.questions = [...dataMidFinal];
+                else if (appState.currentSubject === 'high') appState.questions = [...dataHigh];
+                else if (appState.currentSubject === 'highFinal') appState.questions = [...dataHighFinal];
+                else if (appState.currentSubject === 'totalFinal') appState.questions = [...dataTotalFinal];
+                
+                if(mode === 'quiz') this.initQuizMode();
+                else this.restartCurrentMode();
+            },
+            switchMode(mode) {
+                if (appState.currentMode === mode) return;
+                let hasProgress = false;
+                if(appState.currentMode === 'quiz') hasProgress = appState.currentQuizIndex > 0;
+                else appState.questions.forEach((_, idx) => {
+                    const input = document.getElementById(`input-${idx}`);
+                    if ((input && input.value.trim() !== '') || appState.results[idx]) hasProgress = true;
+                });
+
+                if (hasProgress) this.showConfirm("모드를 변경하면 작성 중인 내역이 초기화됩니다. 변경하시겠습니까?", () => this.startTest(mode));
+                else this.startTest(mode);
+            },
+            updateTabsUI() {
+                let tabsHtml = '';
+                const actCls = "w-16 text-center py-1.5 rounded-lg text-[11px] font-black shadow-sm transition-all";
+                const inactCls = "w-16 text-center py-1.5 rounded-lg text-[11px] font-black text-indigo-100 hover:text-white hover:bg-indigo-600 transition-all";
+                
+                if(appState.currentSubject === 'parable') {
+                    const quizAct = appState.currentMode === 'quiz' ? `bg-emerald-500 text-white ${actCls}` : inactCls;
+                    tabsHtml += `<button onclick="app.switchMode('quiz')" class="${quizAct}">퀴즈</button>`;
+                }
+                
+                const pracAct = appState.currentMode === 'practice' ? `bg-white text-indigo-700 ${actCls}` : inactCls;
+                const examAct = appState.currentMode === 'exam' ? `bg-white text-indigo-700 ${actCls}` : inactCls;
+                
+                tabsHtml += `<button onclick="app.switchMode('practice')" class="${pracAct}">연습</button><button onclick="app.switchMode('exam')" class="${examAct}">시험</button>`;
+                els.headerTabs.innerHTML = tabsHtml;
+            },
+            restartCurrentMode() {
+                appState.results = new Array(appState.questions.length).fill(null);
+                els.totalCount.textContent = appState.questions.length;
+                els.quizContainer.classList.add('hidden'); els.quizContainer.classList.remove('flex');
+                els.questionsContainer.classList.remove('hidden'); els.finishBtnContainer.classList.remove('hidden');
+                
+                if(appState.currentMode === 'practice') {
+                    els.testModeBadge.textContent = '문항별 암기 연습'; els.testModeBadge.className = 'text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md';
+                } else {
+                    els.testModeBadge.textContent = '시험지 모드'; els.testModeBadge.className = 'text-sky-600 bg-sky-100 px-2 py-0.5 rounded-md';
+                }
+                
+                this.updateTabsUI();
+                this.renderQuestions();
+                if (appState.currentMode === 'exam') {
+                    appState.questions.forEach((_, idx) => {
+                        const inputs = document.querySelectorAll(`textarea[data-index="${idx}"]`);
+                        inputs.forEach(el => el.addEventListener('input', () => this.updateProgress()));
+                    });
+                }
+                this.updateProgress();
+                this.showView('test');
+            },
+
+            initQuizMode() {
+                appState.currentMode = 'quiz'; appState.currentQuizIndex = 0; appState.results = []; appState.quizQuestions = [...dataParable];
+                els.totalCount.textContent = appState.quizQuestions.length;
+                els.testModeBadge.textContent = '객관식 퀴즈 (순차 출제)'; els.testModeBadge.className = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
+                els.questionsContainer.classList.add('hidden'); els.finishBtnContainer.classList.add('hidden');
+                els.quizContainer.classList.remove('hidden'); els.quizContainer.classList.add('flex');
+                
+                this.updateTabsUI();
+                this.renderQuizQuestion();
+                this.updateProgress();
+                this.showView('test');
+            },
+            getRandomElements(arr, n, excludeId) {
+                const filtered = arr.filter(item => item.id !== excludeId);
+                const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, n);
+            },
+            renderQuizQuestion() {
+                if(appState.currentQuizIndex >= appState.quizQuestions.length) { this.showQuizResults(); return; }
+                const currentQ = appState.quizQuestions[appState.currentQuizIndex];
+                
+                const meaningOptions = [{ text: currentQ.a, isCorrect: true }];
+                const wrongMeanings = this.getRandomElements(dataParable, 3, currentQ.id);
+                wrongMeanings.forEach(wm => meaningOptions.push({ text: wm.a, isCorrect: false }));
+                meaningOptions.sort(() => Math.random() - 0.5); 
+
+                let refOptions = [];
+                const correctRefs = currentQ.refs || [];
+                correctRefs.forEach(ref => refOptions.push({ ref: ref, text: getVerseText(ref), isCorrect: true }));
+
+                const neededWrongRefs = Math.max(0, 4 - correctRefs.length);
+                let availableWrongRefs = [];
+                dataParable.forEach(p => { if(p.id !== currentQ.id && p.refs) availableWrongRefs.push(...p.refs); });
+                availableWrongRefs = [...new Set(availableWrongRefs)].filter(ref => !correctRefs.includes(ref));
+                
+                const wrongRefSelection = availableWrongRefs.sort(() => Math.random() - 0.5).slice(0, neededWrongRefs);
+                wrongRefSelection.forEach(ref => refOptions.push({ ref: ref, text: getVerseText(ref), isCorrect: false }));
+                refOptions.sort(() => Math.random() - 0.5);
+                
+                appState.quizSelectedRefs = [];
+
+                let html = `
+                    <div class="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col fade-in">
+                        <div class="bg-emerald-50 p-6 border-b border-emerald-100 flex flex-col items-center justify-center text-center relative">
+                            <span class="absolute top-4 left-4 bg-emerald-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-sm">${appState.currentQuizIndex + 1}</span>
+                            <div class="text-emerald-600 font-bold text-sm mb-2">다음 비유 단어의 의미와 성구를 찾으세요</div>
+                            <h2 class="text-3xl font-black text-slate-800">${currentQ.q}</h2>
+                        </div>
+                        <div class="p-5 space-y-6">
+                            <div>
+                                <h3 class="font-extrabold text-slate-700 mb-3 flex items-center gap-2"><span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs">Q1</span> 단어의 정확한 의미는?</h3>
+                                <div class="grid grid-cols-1 gap-2" id="quiz-meaning-options">
+                                    ${meaningOptions.map((opt, i) => `
+                                        <button onclick="app.selectQuizMeaning(${i})" id="q-m-opt-${i}" class="quiz-option w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-emerald-300 hover:bg-emerald-50 bg-white text-sm font-medium text-slate-700 leading-relaxed break-keep flex gap-3 items-center">
+                                            <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center" id="q-m-check-${i}"></div>
+                                            <span>${opt.text}</span>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="${correctRefs.length === 0 ? 'hidden' : ''}">
+                                <h3 class="font-extrabold text-slate-700 mb-1 flex items-center gap-2"><span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-xs">Q2</span> 관련 핵심 성구를 <span class="text-rose-500 underline decoration-wavy">모두</span> 고르세요</h3>
+                                <p class="text-xs text-slate-400 mb-3 font-bold ml-9">(정답이 여러 개일 수 있습니다)</p>
+                                <div class="grid grid-cols-1 gap-2" id="quiz-ref-options">
+                                    ${refOptions.map((opt, i) => `
+                                        <div onclick="app.toggleQuizRef(${i})" id="q-r-opt-${i}" class="quiz-option w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-sky-300 hover:bg-sky-50 bg-white text-sm flex flex-col gap-2 transition-colors cursor-pointer">
+                                            <div class="flex justify-between items-center w-full">
+                                                <div class="flex gap-3 items-center">
+                                                    <div class="w-5 h-5 rounded flex-shrink-0 border-2 border-slate-300 flex items-center justify-center transition-colors" id="q-r-check-${i}">
+                                                        <svg class="w-3 h-3 text-white hidden" id="q-r-icon-${i}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                                    </div>
+                                                    <div class="font-black text-slate-800">${opt.ref}</div>
+                                                </div>
+                                                <button type="button" onclick="app.toggleQuizVerseText(${i}, event)" class="text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded font-bold transition flex items-center gap-1 z-10 relative">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> 성구 보기
+                                                </button>
+                                            </div>
+                                            <div id="q-r-text-${i}" class="hidden mt-1 pt-2 border-t border-slate-100 text-xs text-slate-600 leading-relaxed break-keep">${opt.text}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div id="quiz-feedback" class="hidden p-5 bg-slate-50 border-t border-slate-200 flex-col gap-3 fade-in">
+                            <div class="flex items-center gap-2 mb-2" id="quiz-result-title"></div>
+                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm">
+                                <div class="text-[11px] text-indigo-500 font-bold mb-1">모범 정답 (의미)</div><div class="text-slate-800 font-bold break-keep whitespace-pre-wrap">${currentQ.a}</div>
+                            </div>
+                            ${correctRefs.length > 0 ? `
+                            <div class="bg-white p-3 rounded-lg border border-slate-200 text-sm">
+                                <div class="text-[11px] text-indigo-500 font-bold mb-1">모범 정답 (성구)</div><div class="font-bold text-slate-800 mb-1">${correctRefs.join(', ')}</div>
+                                <div class="text-xs text-slate-600 break-keep">${correctRefs.map(r => getVerseText(r)).join('<br><br>')}</div>
+                            </div>` : ''}
+                            <button onclick="app.nextQuizQuestion()" class="mt-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition flex justify-center items-center gap-2">다음 문제로 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg></button>
+                        </div>
+                        <div class="p-5 border-t border-slate-100 bg-white" id="quiz-submit-area">
+                            <button onclick="app.submitQuizQuestion()" class="w-full py-3.5 bg-slate-800 text-white font-bold rounded-xl shadow-md hover:bg-slate-900 transition flex items-center justify-center gap-2">정답 확인</button>
+                        </div>
+                    </div>`;
+                els.quizContainer.innerHTML = html;
+                appState.currentQuizOptions = { meaning: meaningOptions, refs: refOptions, hasRefs: correctRefs.length > 0 };
+            },
+            selectQuizMeaning(index) {
+                const options = appState.currentQuizOptions.meaning;
+                options.forEach((_, i) => {
+                    const btn = document.getElementById(`q-m-opt-${i}`); const chk = document.getElementById(`q-m-check-${i}`);
+                    if(i === index) {
+                        btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800'); btn.classList.remove('bg-white', 'border-slate-100', 'text-slate-700');
+                        chk.classList.add('bg-emerald-500', 'border-emerald-500'); chk.innerHTML = `<div class="w-2.5 h-2.5 bg-white rounded-full"></div>`;
+                        appState.quizSelectedMeaning = index;
+                    } else {
+                        btn.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-800'); btn.classList.add('bg-white', 'border-slate-100', 'text-slate-700');
+                        chk.classList.remove('bg-emerald-500', 'border-emerald-500'); chk.innerHTML = '';
+                    }
+                });
+            },
+            toggleQuizRef(index) {
+                const btn = document.getElementById(`q-r-opt-${index}`); const chk = document.getElementById(`q-r-check-${index}`); const icon = document.getElementById(`q-r-icon-${index}`);
+                const pos = appState.quizSelectedRefs.indexOf(index);
+                if(pos > -1) {
+                    appState.quizSelectedRefs.splice(pos, 1);
+                    btn.classList.remove('bg-sky-50', 'border-sky-500'); btn.classList.add('bg-white', 'border-slate-100');
+                    chk.classList.remove('bg-sky-500', 'border-sky-500'); chk.classList.add('border-slate-300'); icon.classList.add('hidden');
+                } else {
+                    appState.quizSelectedRefs.push(index);
+                    btn.classList.add('bg-sky-50', 'border-sky-500'); btn.classList.remove('bg-white', 'border-slate-100');
+                    chk.classList.add('bg-sky-500', 'border-sky-500'); chk.classList.remove('border-slate-300'); icon.classList.remove('hidden');
+                }
+            },
+            toggleQuizVerseText(index, event) {
+                event.stopPropagation();
+                const el = document.getElementById(`q-r-text-${index}`);
+                if(el) { el.classList.contains('hidden') ? (el.classList.remove('hidden'), el.classList.add('fade-in')) : (el.classList.add('hidden'), el.classList.remove('fade-in')); }
+            },
+            submitQuizQuestion() {
+                if(appState.quizSelectedMeaning === undefined) { this.showMessage("단어의 의미를 선택해주세요."); return; }
+                const options = appState.currentQuizOptions;
+                const isMeaningCorrect = options.meaning[appState.quizSelectedMeaning].isCorrect;
+                
+                let isRefsCorrect = true;
+                if(options.hasRefs) {
+                    const correctRefIndexes = options.refs.map((r, i) => r.isCorrect ? i : -1).filter(i => i !== -1);
+                    if(appState.quizSelectedRefs.length === 0) { this.showMessage("관련 성구를 하나 이상 선택해주세요."); return; }
+                    if(appState.quizSelectedRefs.length !== correctRefIndexes.length) {
+                        isRefsCorrect = false;
+                    } else {
+                        const sortedSelected = [...appState.quizSelectedRefs].sort(); const sortedCorrect = [...correctRefIndexes].sort();
+                        for(let i=0; i<sortedSelected.length; i++) { if(sortedSelected[i] !== sortedCorrect[i]) { isRefsCorrect = false; break; } }
+                    }
+                }
+
+                const isTotalCorrect = isMeaningCorrect && isRefsCorrect;
+                const currentQ = appState.quizQuestions[appState.currentQuizIndex];
+                appState.results.push({ q: currentQ.q, status: isTotalCorrect ? 'correct' : 'incorrect', isMeaningCorrect, isRefsCorrect });
+
+                const allBtns = document.querySelectorAll('#quiz-container .quiz-option');
+                allBtns.forEach(b => {
+                    b.onclick = null; b.classList.remove('hover:border-emerald-300', 'hover:bg-emerald-50', 'hover:border-sky-300', 'hover:bg-sky-50', 'cursor-pointer');
+                    b.classList.add('cursor-default', 'opacity-60');
+                });
+                
+                options.meaning.forEach((opt, i) => { if(opt.isCorrect) document.getElementById(`q-m-opt-${i}`).classList.add('border-emerald-500', 'bg-emerald-50', 'opacity-100'); });
+                if(options.hasRefs) { options.refs.forEach((opt, i) => { if(opt.isCorrect) document.getElementById(`q-r-opt-${i}`).classList.add('border-sky-500', 'bg-sky-50', 'opacity-100'); }); }
+
+                document.getElementById('quiz-submit-area').classList.add('hidden');
+                const feedbackEl = document.getElementById('quiz-feedback'); const titleEl = document.getElementById('quiz-result-title');
+                
+                if(isTotalCorrect) {
+                    titleEl.innerHTML = `<svg class="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> <span class="text-lg font-black text-emerald-600">완벽 정답!</span>`;
+                } else {
+                    let failReason = [];
+                    if(!isMeaningCorrect) failReason.push("의미 오답"); if(options.hasRefs && !isRefsCorrect) failReason.push("성구 선택 오류");
+                    titleEl.innerHTML = `<svg class="w-6 h-6 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg> <span class="text-lg font-black text-rose-600">오답 (${failReason.join(', ')})</span>`;
+                }
+                feedbackEl.classList.remove('hidden'); feedbackEl.classList.add('flex'); appState.quizSelectedMeaning = undefined;
+            },
+            nextQuizQuestion() { appState.currentQuizIndex++; this.renderQuizQuestion(); this.updateProgress(); window.scrollTo(0, 0); },
+            showQuizResults() {
+                els.progressBar.style.width = '100%';
+                let correctCount = 0; appState.results.forEach(r => { if (r && r.status === 'correct') correctCount++; });
+                const total = appState.quizQuestions.length; const pctScore = Math.round((correctCount / total) * 100);
+                
+                els.pdfDownloadArea.classList.add('hidden'); els.pdfDownloadArea.classList.remove('flex');
+                els.reviewHeader.classList.add('hidden'); els.reviewList.classList.add('hidden');
+                els.resultTitle.textContent = "퀴즈 완료!"; els.resultDesc.textContent = "모든 객관식 퀴즈를 풀었습니다.";
+                els.scoreLabel.textContent = "퀴즈 정답률"; els.resultScore.textContent = pctScore; els.resultScoreUnit.textContent = "%";
+                els.resultTotal.textContent = total; els.resultCorrect.textContent = correctCount;
+                
+                els.resultActionBtns.innerHTML = `
+                    <button onclick="app.startTest('quiz')" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow hover:bg-indigo-700 transition">다시 퀴즈 풀기</button>
+                    <button onclick="app.showHome()" class="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl shadow hover:bg-slate-200 transition">과목 선택으로</button>
+                `;
+                els.resultActionBtns.classList.remove('hidden'); els.resultActionBtns.classList.add('flex');
+
+                this.showView('results'); window.scrollTo(0, 0);
+            },
+
+            normalizeString(str) { return str ? str.replace(/[^가-힣0-9]/g, '') : ''; },
+            strictCompare(userText, correctText) { return this.normalizeString(userText) === this.normalizeString(correctText); },
+            diffChars(user, correct) {
+                const u = this.normalizeString(user); const c = this.normalizeString(correct);
+                const dp = Array(u.length + 1).fill(null).map(() => Array(c.length + 1).fill(0));
+                for(let i = 1; i <= u.length; i++) {
+                    for(let j = 1; j <= c.length; j++) {
+                        if(u[i-1] === c[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+                        else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+                    }
+                }
+                let i = u.length, j = c.length; const diff = [];
+                while(i > 0 || j > 0) {
+                    if(i > 0 && j > 0 && u[i-1] === c[j-1]) { diff.unshift({ type: 'match', text: c[j-1] }); i--; j--; }
+                    else if(j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) { diff.unshift({ type: 'missing', text: c[j-1] }); j--; }
+                    else { diff.unshift({ type: 'excess', text: u[i-1] }); i--; }
+                }
+                const grouped = []; let current = null;
+                for (const item of diff) {
+                    if (!current || current.type !== item.type) { if (current) grouped.push(current); current = { ...item }; }
+                    else { current.text += item.text; }
+                }
+                if (current) grouped.push(current);
+                return grouped;
+            },
+            generateDiffHtml(diff) {
+                return diff.map(item => {
+                    if (item.type === 'match') return `<span class="text-indigo-700">${item.text}</span>`;
+                    if (item.type === 'missing') return `<span class="text-amber-500 bg-amber-50 border-b-2 border-dashed border-amber-400 font-black px-0.5" title="누락됨">${item.text}</span>`;
+                    return `<span class="text-rose-500 bg-rose-50 line-through px-0.5" title="오타/추가됨">${item.text}</span>`;
+                }).join('');
+            },
+            getPlaceholder() {
+                if (appState.currentSubject === 'parable') return "의미와 핵심 성구를 작성하세요.\n작성 후 엔터(Enter)";
+                if (appState.currentSubject === 'elem') return "과에 맞는 제목을 작성하세요.\n작성 후 엔터(Enter)";
+                if (appState.currentSubject === 'elemFinal' || appState.currentSubject === 'midFinal' || appState.currentSubject === 'highFinal' || appState.currentSubject === 'totalFinal') return "각 항목의 답안을 작성하세요.\n작성 후 엔터(Enter)";
+                if (appState.currentSubject === 'mid') return "제목과 핵심 성구를 이어서 작성하세요.\n작성 후 엔터(Enter)";
+                if (appState.currentSubject === 'high') return "계시록 장수와 제목을 작성하세요.\n작성 후 엔터(Enter)";
+                return "입력하세요...";
+            },
+            togglePreview(index) {
+                const previewBox = document.getElementById(`preview-box-${index}`);
+                if (previewBox) {
+                    if (previewBox.classList.contains('hidden')) { previewBox.classList.remove('hidden'); previewBox.classList.add('fade-in'); }
+                    else { previewBox.classList.add('hidden'); previewBox.classList.remove('fade-in'); }
+                }
+            },
+
+            getKeywordsForCloze(qItem) {
+                let kw = [];
+                let qStr = qItem.q;
+                if(qStr) { qStr.replace(/\(.*?\)/g, ' ').split(/[\s/·,]+/).forEach(w => { if(w.trim()) kw.push(w.trim()); }); }
+                let aStr = qItem.a;
+                if(aStr) {
+                    let cleanA = aStr.split('(')[0].split('※')[0].split('[')[0].trim();
+                    cleanA.split(/[\s,]+/).forEach(w => { if(w.trim().length > 1) kw.push(w.trim()); });
+                }
+                if(qItem.refs) {
+                    qItem.refs.forEach(ref => { 
+                        const normalizedRef = ref.replace('-', '~');
+                        const altRef = ref.replace('~', '-');
+                        if(extraClozeKeywords[ref]) kw.push(...extraClozeKeywords[ref]); 
+                        else if(extraClozeKeywords[normalizedRef]) kw.push(...extraClozeKeywords[normalizedRef]);
+                        else if(extraClozeKeywords[altRef]) kw.push(...extraClozeKeywords[altRef]);
+                    });
+                }
+                return [...new Set(kw)].sort((a,b) => b.length - a.length);
+            },
+            generateClozeHtml(verseText, qItem) {
+                let text = verseText;
+                let keywords = this.getKeywordsForCloze(qItem);
+                keywords.forEach(kw => {
+                    let parts = text.split(/(<input.*?>)/);
+                    for(let i=0; i<parts.length; i++) {
+                        if(!parts[i].startsWith('<input')) {
+                            let safeKw = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            let regex = new RegExp(safeKw, 'g');
+                            parts[i] = parts[i].replace(regex, (match) => {
+                                let wRem = Math.max(match.length * 1.2 + 0.8, 3);
+                                return `<input type="text" data-ans="${match}" style="width: ${wRem}rem;" class="cloze-input" autocomplete="off">`;
+                            });
+                        }
+                    }
+                    text = parts.join('');
+                });
+                return text;
+            },
+            showVerseLearningModal(index) {
+                appState.currentLearningIndex = index;
+                const q = appState.questions[index];
+                if(!q || !q.refs || q.refs.length === 0) return;
+
+                let html = '';
+                q.refs.forEach(ref => {
+                    const originalText = getVerseText(ref);
+                    const clozeText = this.generateClozeHtml(originalText, q);
+                    html += `
+                        <div class="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm relative">
+                            <span class="absolute -top-3 left-4 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-black shadow-sm">${ref}</span>
+                            <p class="text-slate-800 text-[15px] leading-8 font-medium mt-2 break-keep cloze-container">${clozeText}</p>
+                        </div>`;
+                });
+
+                els.verseLearningBody.innerHTML = html;
+                els.verseLearningModal.classList.remove('hidden'); void els.verseLearningModal.offsetWidth;
+                els.verseLearningModal.classList.remove('opacity-0'); els.verseLearningContent.classList.remove('scale-95'); els.verseLearningContent.classList.add('scale-100');
+            },
+            hideVerseLearningModal() {
+                els.verseLearningModal.classList.add('opacity-0'); els.verseLearningContent.classList.remove('scale-100'); els.verseLearningContent.classList.add('scale-95');
+                setTimeout(() => els.verseLearningModal.classList.add('hidden'), 200);
+            },
+            checkVerseLearning() {
+                const inputs = els.verseLearningBody.querySelectorAll('.cloze-input');
+                let allCorrect = true; let hasEmpty = false;
+
+                inputs.forEach(input => {
+                    const ans = input.dataset.ans; const val = input.value.trim();
+                    if (val === '') { allCorrect = false; hasEmpty = true; input.style.borderColor = '#f43f5e'; input.style.backgroundColor = '#fff1f2'; }
+                    else if (this.strictCompare(val, ans)) { input.style.borderColor = '#10b981'; input.style.backgroundColor = '#f0fdf4'; input.style.color = '#047857'; }
+                    else { allCorrect = false; input.style.borderColor = '#f43f5e'; input.style.backgroundColor = '#fff1f2'; input.style.color = '#be123c'; }
+                });
+
+                if (inputs.length > 0) {
+                    if (allCorrect) this.showMessage("모든 핵심어를 정확히 맞혔습니다! 🎉");
+                    else if (hasEmpty) this.showMessage("빈칸을 모두 채워주세요.");
+                    else this.showMessage("틀린 부분이 있습니다. 다시 확인해보세요.");
+                }
+            },
+            resetVerseLearning() {
+                const inputs = els.verseLearningBody.querySelectorAll('.cloze-input');
+                inputs.forEach(input => { input.value = ''; input.style.borderColor = ''; input.style.backgroundColor = ''; input.style.color = ''; });
+                if(inputs.length > 0) inputs[0].focus();
+            },
+            showClozeAnswers() {
+                const inputs = els.verseLearningBody.querySelectorAll('.cloze-input');
+                inputs.forEach(input => { input.value = input.dataset.ans; input.style.borderColor = '#818cf8'; input.style.backgroundColor = '#eef2ff'; input.style.color = '#3730a3'; });
+            },
+
+            showLectureModal(index) {
+                const q = appState.questions[index];
+                if(!q || !q.tutor) return;
+                
+                const bodyEl = document.getElementById('lecture-modal-body');
+                bodyEl.innerHTML = `
+                    <div class="mb-4 text-center">
+                        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-black">${index + 1}번 항목</span>
+                        <h4 class="font-black text-xl text-slate-800 mt-2">${q.q}</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+                        <p class="text-[14px] text-slate-700 leading-relaxed font-medium break-keep whitespace-pre-wrap">${q.tutor}</p>
+                    </div>
+                `;
+                
+                const modal = document.getElementById('lecture-modal');
+                const content = document.getElementById('lecture-modal-content');
+                modal.classList.remove('hidden'); void modal.offsetWidth;
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95'); content.classList.add('scale-100');
+            },
+            hideLectureModal() {
+                const modal = document.getElementById('lecture-modal');
+                const content = document.getElementById('lecture-modal-content');
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100'); content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            },
+
+            renderQuestions() {
+                let html = '';
+                const placeholder = this.getPlaceholder();
+                const isParable = appState.currentSubject === 'parable';
+                
+                if (appState.currentMode === 'practice') {
+                    const isLongText = (appState.currentSubject === 'elemFinal' || appState.currentSubject === 'midFinal' || appState.currentSubject === 'highFinal' || appState.currentSubject === 'totalFinal');
+                    appState.questions.forEach((q, idx) => {
+                        const hasVerses = isParable && q.refs && q.refs.length > 0;
+                        const questionText = isLongText ? q.q.replace(/^\d+\.\s*/, '') : q.q;
+                        const alignClass = isLongText ? "items-start text-left" : "items-center text-center";
+                        const titleSize = isLongText ? "text-sm md:text-base pl-7" : "text-xl md:text-2xl";
+                        
+                        let inputAreaHtml = '';
+                        if (isLongText) {
+                            const subAnswers = this.parseSubQuestions(q.a);
+                            if (subAnswers.length > 1) {
+                                inputAreaHtml = `<div class="flex flex-col gap-2.5 mt-2 h-full">`;
+                                subAnswers.forEach((subA, subIdx) => {
+                                    let match = subA.match(/^([①-⑩])/);
+                                    let badge = match ? match[1] : `Q${subIdx+1}`;
+                                    let content = match ? subA.substring(1).trim() : subA;
+                                    
+                                    let lines = content.split('\n');
+                                    
+                                    inputAreaHtml += `
+                                        <div class="flex gap-2 items-start relative">
+                                            <span class="mt-2.5 text-indigo-500 font-black text-sm w-5 flex-shrink-0 text-center">${badge}</span>
+                                            <div class="relative w-full flex flex-col gap-2">
+                                    `;
+                                    
+                                    lines.forEach((line, lineIdx) => {
+                                        let prefix = "";
+                                        let colonMatch = line.match(/^(.*?):\s+(.*)$/);
+                                        if (colonMatch) prefix = colonMatch[1];
+
+                                        inputAreaHtml += `
+                                            <div class="relative w-full flex items-stretch">
+                                                ${prefix ? `<div class="bg-indigo-50/50 border border-slate-300 border-r-0 rounded-l-xl px-3 py-2 flex items-center justify-center text-[12px] font-bold text-indigo-800 break-keep min-w-[60px] max-w-[120px] md:max-w-[160px] text-center print:bg-slate-100 print:border-slate-400 print:text-slate-800">${prefix}</div>` : ''}
+                                                <textarea id="input-${idx}-${subIdx}-${lineIdx}" data-index="${idx}" data-subindex="${subIdx}" data-lineindex="${lineIdx}" class="w-full min-h-[48px] p-2 border border-slate-300 ${prefix ? 'rounded-r-xl' : 'rounded-xl'} text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none print:border-slate-400" placeholder="${prefix ? '답안 입력' : '소문항 정답 입력'} (완료 후 Enter)"></textarea>
+                                                <div id="sub-stamp-box-${idx}-${subIdx}-${lineIdx}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div>
+                                            </div>
+                                        `;
+                                    });
+                                    inputAreaHtml += `
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                inputAreaHtml += `</div>`;
+                            } else {
+                                inputAreaHtml = `<div class="relative w-full h-full"><textarea id="input-${idx}" data-index="${idx}" class="w-full h-full min-h-[160px] md:min-h-[240px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
+                            }
+                        } else {
+                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" class="w-full h-full min-h-[160px] md:min-h-[240px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea>`;
+                        }
+
+                        html += `
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col p-4 transition-colors relative stamp-container" id="card-${idx}">
+                            <div id="stamp-box-${idx}"></div>
+                            <div class="q-grid">
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center ${alignClass} relative">
+                                    <span class="absolute top-4 left-4 bg-indigo-100 text-indigo-700 w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shadow-sm">${idx + 1}</span>
+                                    <h3 class="${titleSize} font-black text-slate-800 break-keep whitespace-pre-wrap leading-relaxed w-full">${questionText}</h3>
+                                    ${(hasVerses || q.tutor) ? `
+                                    <div class="mt-4 flex flex-col gap-2 w-full max-w-[150px]">
+                                        ${hasVerses ? `
+                                        <button onclick="app.showVerseLearningModal(${idx})" class="w-full justify-center text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 shadow-sm hover:shadow-md">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                            성구 새김 학습
+                                        </button>` : ''}
+                                        ${q.tutor ? `
+                                        <button onclick="app.showLectureModal(${idx})" class="w-full justify-center text-[11px] bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 shadow-sm hover:shadow-md">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                            쏙쏙 강의
+                                        </button>` : ''}
+                                    </div>` : ''}
+                                </div>
+                                <div class="flex flex-col h-full relative">
+                                    <div class="flex justify-between items-end mb-2">
+                                        <label class="text-[11px] font-bold text-slate-500 ml-1">답안 직접 입력해보기</label>
+                                        <div class="flex gap-1.5">
+                                            <button type="button" onclick="app.togglePreview(${idx})" class="text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded font-bold transition flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> 정답 보기
+                                            </button>
+                                            <button type="button" onclick="app.resetSinglePractice(${idx})" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold transition flex items-center gap-1">
+                                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> 다시 풀기
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="preview-box-${idx}" class="hidden mb-2 p-3 bg-indigo-50/80 border border-indigo-100 rounded-xl text-xs text-indigo-800 leading-relaxed font-medium break-keep whitespace-pre-wrap">
+                                        <div class="text-[10px] text-indigo-500 font-extrabold mb-1">모범 정답</div>${q.a}
+                                    </div>
+                                    ${inputAreaHtml}
+                                    
+                                    <div id="feedback-${idx}" class="hidden absolute inset-0 z-10 flex-col p-4 rounded-xl border fade-in bg-white/95 backdrop-blur-sm overflow-y-auto">
+                                        <div class="flex items-center justify-between border-b pb-2 mb-2 border-slate-200">
+                                            <div class="flex items-center gap-1.5"><span id="feedback-icon-${idx}"></span><h4 class="font-bold text-sm" id="feedback-title-${idx}">결과</h4></div>
+                                            <button onclick="app.resetSinglePractice(${idx})" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">다시 풀기</button>
+                                        </div>
+                                        <div class="text-[10px] text-slate-500 font-bold mb-1">판독 결과 (기호 무시)</div>
+                                        <div id="diff-view-${idx}" class="bg-white p-2.5 rounded border border-slate-100 leading-relaxed break-all font-medium text-xs whitespace-pre-wrap"></div>
+                                        <div class="mt-3 text-[10px] text-slate-500 font-bold mb-1">모범 정답</div>
+                                        <div class="bg-slate-50 p-2.5 rounded border border-slate-100 leading-relaxed text-xs text-slate-700 whitespace-pre-wrap">${q.a}</div>
+                                        ${q.tutor ? `
+                                            <div class="mt-3 bg-amber-50/80 border border-amber-200 rounded-lg p-3">
+                                                <div class="text-[11px] text-amber-600 font-black mb-1 flex items-center gap-1">💡 쏙쏙 강의</div>
+                                                <div class="text-xs text-amber-900 leading-relaxed font-medium break-keep whitespace-pre-wrap">${q.tutor}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="submit-${idx}" onclick="app.checkAnswer(${idx})" class="mt-3 w-full py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-200 text-sm font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition shadow-sm">정답 확인 (제출)</button>
+                        </div>`;
+                    });
+                } else if (appState.currentMode === 'exam') {
+                    const isLongText = (appState.currentSubject === 'elemFinal' || appState.currentSubject === 'midFinal' || appState.currentSubject === 'highFinal' || appState.currentSubject === 'totalFinal');
+                    appState.questions.forEach((q, idx) => {
+                        const questionText = isLongText ? q.q.replace(/^\d+\.\s*/, '') : q.q;
+                        const titleSize = isLongText ? "text-xs md:text-sm" : "text-base";
+                        
+                        let inputAreaHtml = '';
+                        if (isLongText) {
+                            const subAnswers = this.parseSubQuestions(q.a);
+                            if (subAnswers.length > 1) {
+                                inputAreaHtml = `<div class="flex flex-col gap-2.5 mt-2 h-full">`;
+                                subAnswers.forEach((subA, subIdx) => {
+                                    let match = subA.match(/^([①-⑩])/);
+                                    let badge = match ? match[1] : `Q${subIdx+1}`;
+                                    let content = match ? subA.substring(1).trim() : subA;
+                                    
+                                    let lines = content.split('\n');
+                                    
+                                    inputAreaHtml += `
+                                        <div class="flex gap-2 items-start relative">
+                                            <span class="mt-2 text-indigo-500 font-black text-sm w-5 flex-shrink-0 text-center">${badge}</span>
+                                            <div class="relative w-full flex flex-col gap-2">
+                                    `;
+                                    
+                                    lines.forEach((line, lineIdx) => {
+                                        let prefix = "";
+                                        let colonMatch = line.match(/^(.*?):\s+(.*)$/);
+                                        if (colonMatch) prefix = colonMatch[1];
+                                        
+                                        inputAreaHtml += `
+                                            <div class="relative w-full flex items-stretch">
+                                                ${prefix ? `<div class="bg-indigo-50/50 border border-slate-300 border-r-0 rounded-l-xl px-3 py-2 flex items-center justify-center text-[12px] font-bold text-indigo-800 break-keep min-w-[60px] max-w-[120px] md:max-w-[160px] text-center print:bg-slate-100 print:border-slate-400 print:text-slate-800">${prefix}</div>` : ''}
+                                                <textarea id="input-${idx}-${subIdx}-${lineIdx}" data-index="${idx}" data-subindex="${subIdx}" data-lineindex="${lineIdx}" class="w-full min-h-[48px] h-12 p-2 border border-slate-300 ${prefix ? 'rounded-r-xl' : 'rounded-xl'} text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none print:border-slate-400" placeholder="${prefix ? '답안 입력' : '소문항 정답 입력'}"></textarea>
+                                                <div id="sub-stamp-box-${idx}-${subIdx}-${lineIdx}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div>
+                                            </div>
+                                        `;
+                                    });
+                                    inputAreaHtml += `
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                inputAreaHtml += `</div>`;
+                            } else {
+                                inputAreaHtml = `<div class="relative w-full h-full"><textarea id="input-${idx}" data-index="${idx}" class="w-full p-3 border border-slate-300 rounded-lg text-sm h-24 md:h-32 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
+                            }
+                        } else {
+                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" class="w-full p-3 border border-slate-300 rounded-lg text-sm h-24 md:h-32 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea>`;
+                        }
+
+                        html += `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-col relative stamp-container transition-all mb-4 fade-in print-page-break" id="card-${idx}">
+                            <div id="stamp-box-${idx}"></div>
+                            <div class="flex justify-between items-center pb-2 mb-2 border-b border-slate-200">
+                                <label class="font-extrabold text-slate-800 ${titleSize} flex items-start print-keep w-full">
+                                    <span id="num-badge-${idx}" class="bg-slate-200 text-slate-600 text-[11px] px-2 py-0.5 rounded mr-2 mt-0.5 font-black transition-colors flex-shrink-0">${idx + 1}</span>
+                                    <span class="whitespace-pre-wrap leading-relaxed w-full break-keep">${questionText}</span>
+                                </label>
+                            </div>
+                            ${inputAreaHtml}
+                        </div>`;
+                    });
+                }
+                els.questionsContainer.innerHTML = html;
+            },
+
+            checkAnswer(index) {
+                if (appState.results[index]) return;
+                const q = appState.questions[index];
+                const isFinalExam = appState.currentSubject && appState.currentSubject.endsWith('Final');
+                
+                let status = 'incorrect';
+                let subResults = null;
+                let diff = null;
+
+                if (isFinalExam) {
+                    const subAnswers = this.parseSubQuestions(q.a);
+                    if (subAnswers.length > 1) {
+                        let allCorrect = true;
+                        let anyEmpty = false;
+                        subResults = [];
+                        let combinedDiff = [];
+                        let incorrectSubCount = 0;
+                        
+                        subAnswers.forEach((subA, subIdx) => {
+                            let match = subA.match(/^([①-⑩])/);
+                            let badge = match ? match[1] : `Q${subIdx+1}`;
+                            let content = match ? subA.substring(1).trim() : subA;
+                            let lines = content.split('\n');
+                            
+                            let isSubCorrect = true;
+                            let subDiff = [];
+
+                            if (subIdx > 0) subDiff.push({ type: 'match', text: '\n' });
+                            subDiff.push({ type: 'match', text: `${badge} ` });
+                            
+                            lines.forEach((line, lineIdx) => {
+                                const inputEl = document.getElementById(`input-${index}-${subIdx}-${lineIdx}`);
+                                const userVal = inputEl ? inputEl.value.trim() : '';
+                                if (!userVal) anyEmpty = true;
+                                
+                                let expected = line;
+                                let prefix = "";
+                                let colonMatch = line.match(/^(.*?):\s+(.*)$/);
+                                if (colonMatch) {
+                                    prefix = colonMatch[1];
+                                    expected = colonMatch[2];
+                                }
+                                
+                                let isLineCorrect = this.strictCompare(userVal, expected);
+                                
+                                if (!isLineCorrect && this.strictCompare(userVal, line)) isLineCorrect = true;
+                                if (!isLineCorrect && q.id === undefined && index >= 10 && index <= 19 && appState.currentSubject === 'elemFinal') {
+                                    if (this.strictCompare(userVal, expected)) isLineCorrect = true;
+                                }
+
+                                if (!isLineCorrect) {
+                                    isSubCorrect = false;
+                                    allCorrect = false;
+                                }
+                                
+                                subResults.push({ el: inputEl, isCorrect: isLineCorrect, subIdx: subIdx, lineIdx: lineIdx });
+
+                                if (lineIdx > 0) subDiff.push({ type: 'match', text: '\n  ' });
+                                if (prefix) subDiff.push({ type: 'match', text: `${prefix}: ` });
+                                
+                                if (isLineCorrect) {
+                                    subDiff.push({ type: 'match', text: expected });
+                                } else {
+                                    subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
+                                }
+                            });
+                            
+                            if (!isSubCorrect) incorrectSubCount++;
+                            combinedDiff = combinedDiff.concat(subDiff);
+                        });
+                        
+                        if (anyEmpty && appState.currentMode === 'practice') { this.showMessage("모든 소문항의 정답을 입력해주세요."); return; }
+                        
+                        status = allCorrect ? 'correct' : 'incorrect';
+                        appState.results[index] = { q: q.q, status: status, expected: q.a, actual: 'sub-answers', diff: combinedDiff, totalSubCount: subAnswers.length, incorrectSubCount: incorrectSubCount };
+                        this.updateCardUI(index, status, combinedDiff, subResults);
+                        this.updateProgress();
+                        return;
+                    }
+                }
+
+                // 단일 입력창 로직
+                const inputEl = document.getElementById(`input-${index}`);
+                if (!inputEl) return;
+                
+                const userInput = inputEl.value.trim();
+                
+                if (!userInput && appState.currentMode === 'practice') { this.showMessage("정답을 입력해주세요."); inputEl.focus(); return; }
+                const isCorrect = this.strictCompare(userInput, q.a);
+                status = isCorrect ? 'correct' : 'incorrect';
+                diff = isCorrect ? [{ type: 'match', text: this.normalizeString(q.a) }] : this.diffChars(userInput, q.a);
+                
+                appState.results[index] = { q: q.q, status: status, expected: q.a, actual: userInput, diff: diff, totalSubCount: 1, incorrectSubCount: isCorrect ? 0 : 1 };
+                this.updateCardUI(index, status, diff, null);
+                this.updateProgress();
+            },
+            resetSinglePractice(index) {
+                appState.results[index] = null;
+                
+                let subIdx = 0;
+                while (true) {
+                    let lineIdx = 0;
+                    let foundSub = false;
+                    while (document.getElementById(`input-${index}-${subIdx}-${lineIdx}`)) {
+                        foundSub = true;
+                        const el = document.getElementById(`input-${index}-${subIdx}-${lineIdx}`);
+                        const subStamp = document.getElementById(`sub-stamp-box-${index}-${subIdx}-${lineIdx}`);
+                        if (el) {
+                            el.disabled = false;
+                            el.value = '';
+                            el.classList.remove('correct', 'incorrect');
+                            if (subStamp) subStamp.innerHTML = '';
+                        }
+                        lineIdx++;
+                    }
+                    if (!foundSub) break;
+                    subIdx++;
+                }
+
+                const inputEl = document.getElementById(`input-${index}`); const feedbackArea = document.getElementById(`feedback-${index}`);
+                const submitBtn = document.getElementById(`submit-${index}`); const cardEl = document.getElementById(`card-${index}`);
+                const stampBox = document.getElementById(`stamp-box-${index}`); const previewBox = document.getElementById(`preview-box-${index}`);
+
+                if (inputEl) { inputEl.disabled = false; inputEl.value = ''; inputEl.classList.remove('correct', 'incorrect'); }
+                if (feedbackArea) feedbackArea.classList.add('hidden');
+                if (submitBtn) submitBtn.classList.remove('hidden');
+                if (previewBox) { previewBox.classList.add('hidden'); previewBox.classList.remove('fade-in'); }
+                if (cardEl) cardEl.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col p-4 transition-colors relative stamp-container";
+                if (stampBox) stampBox.innerHTML = '';
+
+                this.updateProgress();
+                
+                const firstSubInput = document.getElementById(`input-${index}-0-0`);
+                if (firstSubInput) {
+                    firstSubInput.focus();
+                    firstSubInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (inputEl) {
+                    inputEl.focus();
+                    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            },
+            updateCardUI(index, status, diff, subResults) {
+                const inputEl = document.getElementById(`input-${index}`); const feedbackArea = document.getElementById(`feedback-${index}`);
+                const iconEl = document.getElementById(`feedback-icon-${index}`); const titleEl = document.getElementById(`feedback-title-${index}`);
+                const diffViewEl = document.getElementById(`diff-view-${index}`); const submitBtn = document.getElementById(`submit-${index}`);
+                const cardEl = document.getElementById(`card-${index}`); const stampBox = document.getElementById(`stamp-box-${index}`);
+                const numBadge = document.getElementById(`num-badge-${index}`);
+                const previewBox = document.getElementById(`preview-box-${index}`);
+
+                const isElemFinalPractice = appState.currentSubject === 'elemFinal' && appState.currentMode === 'practice';
+
+                if (subResults) {
+                    subResults.forEach(sub => {
+                        if (sub.el) {
+                            sub.el.disabled = true;
+                            if (sub.isCorrect) sub.el.classList.add('correct');
+                            else sub.el.classList.add('incorrect');
+                            
+                            const subStampBox = document.getElementById(`sub-stamp-box-${index}-${sub.subIdx}-${sub.lineIdx}`);
+                            if (subStampBox) {
+                                if (sub.isCorrect) {
+                                    subStampBox.innerHTML = '<div class="grading-stamp stamp-o" style="width: 50px; height: 50px; border-width: 4px; font-size: 32px;">◯</div>';
+                                } else {
+                                    subStampBox.innerHTML = '<div class="grading-stamp stamp-slash" style="font-size: 50px;">／</div>';
+                                }
+                            }
+                        }
+                    });
+                    if (submitBtn) submitBtn.classList.add('hidden');
+                } else {
+                    if (inputEl) inputEl.disabled = true;
+                    if (submitBtn) submitBtn.classList.add('hidden');
+                    if (feedbackArea && !isElemFinalPractice) { feedbackArea.classList.remove('hidden'); feedbackArea.classList.add('flex'); diffViewEl.innerHTML = this.generateDiffHtml(diff); }
+                }
+
+                if (stampBox && (appState.currentMode === 'exam' || !subResults)) {
+                    if (status === 'correct') {
+                        if(appState.currentMode === 'practice') stampBox.innerHTML = '<div class="grading-stamp stamp-o">◯</div>';
+                        else stampBox.innerHTML = '<div class="indicator-box indicator-o">◯</div>';
+                        
+                        if (iconEl) iconEl.innerHTML = `<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`;
+                        if (titleEl) titleEl.innerHTML = '<span class="text-emerald-700 font-extrabold">완벽 정답</span>';
+                        if (feedbackArea && !isElemFinalPractice) feedbackArea.className = "hidden absolute inset-0 z-10 flex-col p-4 rounded-xl border border-emerald-200 fade-in bg-emerald-50/95 backdrop-blur-sm overflow-y-auto";
+                        if (inputEl) inputEl.classList.add('correct');
+                        if (cardEl && appState.currentMode === 'practice') cardEl.classList.add('border-emerald-400', 'shadow-emerald-100');
+                        if (numBadge) numBadge.className = "bg-emerald-100 text-emerald-700 text-[11px] px-2 py-0.5 rounded mr-2 font-black transition-colors flex-shrink-0";
+                    } else {
+                        if(appState.currentMode === 'practice') stampBox.innerHTML = '<div class="grading-stamp stamp-slash">／</div>';
+                        else stampBox.innerHTML = '<div class="indicator-box indicator-slash">／</div>';
+                        
+                        if (iconEl) iconEl.innerHTML = `<svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                        if (titleEl) titleEl.innerHTML = '<span class="text-rose-600 font-extrabold">오답</span>';
+                        if (feedbackArea && !isElemFinalPractice) feedbackArea.className = "hidden absolute inset-0 z-10 flex-col p-4 rounded-xl border border-rose-200 fade-in bg-rose-50/95 backdrop-blur-sm overflow-y-auto";
+                        if (inputEl) inputEl.classList.add('incorrect');
+                        if (cardEl && appState.currentMode === 'practice') cardEl.classList.add('border-rose-400', 'shadow-rose-100');
+                        if (numBadge) numBadge.className = "bg-rose-100 text-rose-600 text-[11px] px-2 py-0.5 rounded mr-2 font-black transition-colors flex-shrink-0";
+                    }
+                    if (feedbackArea && !isElemFinalPractice) { feedbackArea.classList.remove('hidden'); feedbackArea.classList.add('flex'); }
+                }
+
+                if (isElemFinalPractice && previewBox) {
+                    previewBox.classList.remove('hidden');
+                    previewBox.classList.add('fade-in');
+                }
+            },
+            
+            updateProgress() {
+                let completedCount = 0; let totalLength = 0;
+                if(appState.currentMode === 'quiz') {
+                    completedCount = appState.currentQuizIndex; totalLength = appState.quizQuestions.length;
+                } else {
+                    totalLength = appState.questions.length;
+                    if (appState.currentMode === 'exam' && appState.results.every(r => r === null)) {
+                        appState.questions.forEach((_, idx) => {
+                            const subInputs = document.querySelectorAll(`textarea[data-index="${idx}"]`);
+                            let hasValue = false;
+                            subInputs.forEach(inputEl => { if (inputEl.value.trim() !== '') hasValue = true; });
+                            if (hasValue) completedCount++;
+                        });
+                    } else { completedCount = appState.results.filter(r => r !== null).length; }
+                }
+                const percent = (completedCount / totalLength) * 100;
+                els.progressText.textContent = completedCount; els.progressBar.style.width = `${percent}%`;
+            },
+            handleFinishRequest() {
+                let unfilledCount = 0;
+                const isFinalExam = appState.currentSubject && appState.currentSubject.endsWith('Final');
+                appState.questions.forEach((q, idx) => {
+                    if (!appState.results[idx]) {
+                        if (isFinalExam) {
+                            const subAnswers = this.parseSubQuestions(q.a);
+                            if (subAnswers.length > 1) {
+                                let isFullyFilled = true;
+                                for (let subIdx = 0; subIdx < subAnswers.length; subIdx++) {
+                                    let content = (subAnswers[subIdx].match(/^([①-⑩])/) ? subAnswers[subIdx].substring(1).trim() : subAnswers[subIdx]);
+                                    let lines = content.split('\n');
+                                    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                                        const inputEl = document.getElementById(`input-${idx}-${subIdx}-${lineIdx}`);
+                                        if (!inputEl || inputEl.value.trim() === '') { isFullyFilled = false; break; }
+                                    }
+                                    if (!isFullyFilled) break;
+                                }
+                                if (!isFullyFilled) unfilledCount++;
+                            } else {
+                                const inputEl = document.getElementById(`input-${idx}`);
+                                if (!inputEl || inputEl.value.trim() === '') unfilledCount++;
+                            }
+                        } else {
+                            const inputEl = document.getElementById(`input-${idx}`);
+                            if (!inputEl || inputEl.value.trim() === '') unfilledCount++;
+                        }
+                    }
+                });
+                if (unfilledCount > 0) this.showConfirm(`미작성 문항(또는 소문항)이 ${unfilledCount}개 있습니다. 이대로 최종 제출하시겠습니까? (미작성은 오답 처리됩니다)`, () => this.finishTest());
+                else this.finishTest();
+            },
+            finishTest() {
+                const isFinalExam = appState.currentSubject && appState.currentSubject.endsWith('Final');
+                appState.questions.forEach((q, idx) => {
+                    if (!appState.results[idx]) {
+                        let hasAnyValue = false;
+                        
+                        if (isFinalExam) {
+                            const subAnswers = this.parseSubQuestions(q.a);
+                            if (subAnswers.length > 1) {
+                                for (let subIdx = 0; subIdx < subAnswers.length; subIdx++) {
+                                    let content = (subAnswers[subIdx].match(/^([①-⑩])/) ? subAnswers[subIdx].substring(1).trim() : subAnswers[subIdx]);
+                                    let lines = content.split('\n');
+                                    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                                        const inputEl = document.getElementById(`input-${idx}-${subIdx}-${lineIdx}`);
+                                        if (inputEl && inputEl.value.trim() !== '') { hasAnyValue = true; break; }
+                                    }
+                                    if (hasAnyValue) break;
+                                }
+                            } else {
+                                const inputEl = document.getElementById(`input-${idx}`);
+                                if (inputEl && inputEl.value.trim() !== '') hasAnyValue = true;
+                            }
+                        } else {
+                            const inputEl = document.getElementById(`input-${idx}`);
+                            if (inputEl && inputEl.value.trim() !== '') hasAnyValue = true;
+                        }
+
+                        if (hasAnyValue) {
+                            this.checkAnswer(idx);
+                        } else {
+                            let totalSub = 1;
+                            let incorrectSub = 1;
+                            if (isFinalExam) {
+                                const subAnswers = this.parseSubQuestions(q.a);
+                                totalSub = subAnswers.length;
+                                incorrectSub = subAnswers.length;
+                                
+                                if (subAnswers.length > 1) {
+                                    subAnswers.forEach((subA, subIdx) => {
+                                        let content = (subA.match(/^([①-⑩])/) ? subA.substring(1).trim() : subA);
+                                        let lines = content.split('\n');
+                                        lines.forEach((_, lineIdx) => {
+                                            const inputEl = document.getElementById(`input-${idx}-${subIdx}-${lineIdx}`);
+                                            if (inputEl) { inputEl.disabled = true; inputEl.value = "미작성"; inputEl.classList.add('text-rose-400', 'italic', 'incorrect'); }
+                                            const subStampBox = document.getElementById(`sub-stamp-box-${idx}-${subIdx}-${lineIdx}`);
+                                            if (subStampBox) subStampBox.innerHTML = '<div class="grading-stamp stamp-slash" style="font-size: 50px;">／</div>';
+                                        });
+                                    });
+                                } else {
+                                    const inputEl = document.getElementById(`input-${idx}`);
+                                    if (inputEl) { inputEl.disabled = true; inputEl.value = "미작성"; inputEl.classList.add('text-rose-400', 'italic', 'incorrect'); }
+                                    const subStampBox = document.getElementById(`sub-stamp-box-${idx}-0`);
+                                    if (subStampBox) subStampBox.innerHTML = '<div class="grading-stamp stamp-slash" style="font-size: 50px;">／</div>';
+                                }
+                            } else {
+                                const inputEl = document.getElementById(`input-${idx}`);
+                                if (inputEl) { inputEl.disabled = true; inputEl.value = "미작성"; inputEl.classList.add('text-rose-400', 'italic', 'incorrect'); }
+                            }
+
+                            appState.results[idx] = { 
+                                q: q.q, status: 'incorrect', expected: q.a, actual: '', 
+                                diff: this.diffChars('', q.a),
+                                totalSubCount: totalSub,
+                                incorrectSubCount: incorrectSub
+                            };
+
+                            const stampBox = document.getElementById(`stamp-box-${idx}`);
+                            if (stampBox) stampBox.innerHTML = appState.currentMode === 'practice' ? '<div class="grading-stamp stamp-slash">／</div>' : '<div class="indicator-box indicator-slash">／</div>';
+                        }
+                    }
+                });
+                this.updateProgress(); this.showMessage("채점이 모두 완료되었습니다."); setTimeout(() => this.showResults(), 600);
+            },
+
+            retryFailedQuestions() {
+                const failedQuestions = [];
+                appState.results.forEach((r, idx) => {
+                    if (r && r.status === 'incorrect') {
+                        failedQuestions.push(appState.questions[idx]);
+                    }
+                });
+                if (failedQuestions.length === 0) return;
+                appState.questions = failedQuestions;
+                this.restartCurrentMode();
+            },
+            showResults() {
+                els.progressBar.style.width = '100%'; els.showOnlyFailedToggle.checked = false; this.updateTabsUI();
+                
+                let correctCount = 0; 
+                let totalSubCountAll = 0;
+                let incorrectSubCountAll = 0;
+                
+                appState.results.forEach((res) => { 
+                    if (res) {
+                        if (res.status === 'correct') correctCount++; 
+                        totalSubCountAll += res.totalSubCount || 1;
+                        incorrectSubCountAll += res.incorrectSubCount || (res.status === 'correct' ? 0 : 1);
+                    }
+                });
+                const totalCount = appState.questions.length;
+
+                let finalScore = 0;
+                let scoreLabelText = "최종 점수";
+
+                if (appState.currentMode === 'quiz') {
+                    finalScore = Math.round((correctCount / totalCount) * 100);
+                    scoreLabelText = "퀴즈 정답률";
+                } else if (appState.currentSubject === 'elemFinal' || appState.currentSubject === 'totalFinal') {
+                    finalScore = Math.max(0, 100 - (incorrectSubCountAll * 1)); 
+                    scoreLabelText = "최종 점수 (소문항당 -1점 감점)";
+                } else if (appState.currentSubject === 'midFinal' || appState.currentSubject === 'highFinal') {
+                    finalScore = Math.max(0, 100 - (incorrectSubCountAll * 2)); 
+                    scoreLabelText = "최종 점수 (소문항당 -2점 감점)";
+                } else {
+                    finalScore = Math.round((correctCount / totalCount) * 100);
+                    scoreLabelText = "최종 점수 (백분율 환산)";
+                }
+
+                els.scoreLabel.textContent = scoreLabelText; 
+                els.resultScore.textContent = finalScore;
+                els.printScoreText.textContent = finalScore + " 점"; 
+                els.resultScoreUnit.textContent = "점";
+                
+                const isFinalExam = appState.currentSubject && appState.currentSubject.endsWith('Final');
+                const totalLabel = document.getElementById('result-total-label');
+                const correctLabel = document.getElementById('result-correct-label');
+                
+                if (isFinalExam) {
+                    if (totalLabel) totalLabel.textContent = "총 소문항";
+                    if (correctLabel) correctLabel.textContent = "정답 소문항";
+                    els.resultTotal.textContent = totalSubCountAll; 
+                    els.resultCorrect.textContent = totalSubCountAll - incorrectSubCountAll;
+                } else {
+                    if (totalLabel) totalLabel.textContent = "총 문항";
+                    if (correctLabel) correctLabel.textContent = "정답 문항";
+                    els.resultTotal.textContent = totalCount; 
+                    els.resultCorrect.textContent = correctCount;
+                }
+                
+                els.resultTitle.textContent = "수고하셨습니다!"; els.resultDesc.textContent = "오답을 확인하고 인쇄/저장하여 복습해 보세요.";
+                
+                if(appState.currentMode === 'exam') { els.pdfDownloadArea.classList.remove('hidden'); els.pdfDownloadArea.classList.add('flex'); }
+                else { els.pdfDownloadArea.classList.add('hidden'); els.pdfDownloadArea.classList.remove('flex'); }
+                
+                els.reviewHeader.classList.remove('hidden'); els.reviewHeader.classList.add('flex');
+                els.reviewList.classList.remove('hidden'); 
+                
+                let btnHtml = '';
+                if (correctCount < totalCount) {
+                    btnHtml += `<button onclick="app.retryFailedQuestions()" class="px-6 py-3 bg-rose-500 text-white font-bold rounded-xl shadow-md hover:bg-rose-600 transition flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> 틀린 문항 전체 다시 풀기</button>`;
+                }
+                btnHtml += `<button onclick="app.startTest('${appState.currentMode}')" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition">전체 다시 풀기</button>`;
+                btnHtml += `<button onclick="app.showHome()" class="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl shadow-md hover:bg-slate-200 transition">과목 선택으로</button>`;
+                
+                els.resultActionBtns.innerHTML = btnHtml;
+                els.resultActionBtns.classList.remove('hidden'); els.resultActionBtns.classList.add('flex');
+                
+                this.renderReviewItems(false); this.showView('results'); window.scrollTo(0, 0);
+            },
+            
+            renderReviewItems(showOnlyFailed) {
+                let html = '';
+                const isLongText = (appState.currentSubject === 'elemFinal' || appState.currentSubject === 'midFinal' || appState.currentSubject === 'highFinal' || appState.currentSubject === 'totalFinal');
+                appState.results.forEach((res, idx) => {
+                    if (!res) return;
+                    if (showOnlyFailed && res.status === 'correct') return; 
+
+                    const isCorrect = res.status === 'correct';
+                    const statusText = isCorrect ? '정답' : '오답';
+                    const statusClass = isCorrect ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200';
+                    const printMark = isCorrect ? '<span class="text-emerald-500 font-black mr-1">◯</span>' : '<span class="text-rose-500 font-black mr-1">/</span>';
+                    const questionText = isLongText ? res.q.replace(/^\d+\.\s*/, '') : res.q;
+                    const titleSize = isLongText ? "text-sm print:text-xs" : "text-lg print:text-base";
+
+                    html += `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3 relative stamp-container print:border-none print:shadow-none print:p-2 print:border-b" id="review-card-${idx}">
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-3 print:border-none print:pb-1 relative">
+                                <h4 class="font-black text-slate-800 ${titleSize} flex items-start gap-2 pr-20 whitespace-pre-wrap leading-relaxed w-full">
+                                    <span class="bg-slate-100 text-slate-500 w-6 h-6 rounded flex items-center justify-center text-xs font-bold no-print flex-shrink-0 mt-0.5">${idx + 1}</span>
+                                    <span class="hidden print:inline-block flex-shrink-0 mt-0.5">${printMark} ${idx + 1}.</span>
+                                    <span class="mt-0.5 break-keep">${questionText}</span>
+                                </h4>
+                                <div class="flex items-center gap-2 absolute right-0 top-0 no-print">
+                                    ${!isCorrect ? `
+                                        <button onclick="app.setupInlineRetry(${idx})" class="text-[11px] bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded font-bold transition flex items-center gap-1 shadow-sm">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                            다시 쓰기
+                                        </button>
+                                    ` : ''}
+                                    <span class="text-xs px-2.5 py-1 rounded border font-bold ${statusClass} flex-shrink-0">${statusText}</span>
+                                </div>
+                            </div>
+                            
+                            <div id="review-content-${idx}">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 print:block print:mt-0">
+                                    <div class="print:mb-1">
+                                        <div class="text-[11px] text-indigo-500 font-bold mb-1.5 flex items-center gap-1 no-print"><div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div> 모범 정답</div>
+                                        <div class="text-xs bg-indigo-50/50 p-3 rounded-lg border border-indigo-100 leading-relaxed text-slate-700 break-keep print:bg-white print:border-none print:p-0 print:text-slate-800 print:font-bold whitespace-pre-wrap">${res.expected}</div>
+                                    </div>
+                                    <div class="print:mt-1">
+                                        <div class="text-[11px] text-rose-500 font-bold mb-1.5 flex items-center gap-1 no-print"><div class="w-1.5 h-1.5 rounded-full bg-rose-500"></div> 작성한 답안 (오답 분석)</div>
+                                        <div class="text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 leading-relaxed break-all whitespace-pre-wrap print:bg-white print:border-none print:p-0">${this.generateDiffHtml(res.diff)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 개별 다시 쓰기 영역 (초기엔 숨김) -->
+                            <div id="inline-retry-${idx}" class="hidden mt-2 flex flex-col gap-2 no-print">
+                                <div class="text-[11px] text-slate-500 font-bold flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div> 다시 정답을 적어보세요</div>
+                                <textarea id="retry-input-${idx}" class="w-full h-24 p-3 border border-indigo-300 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="${this.getPlaceholder()}" onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); app.checkInlineRetry(${idx}); }"></textarea>
+                                <div class="flex justify-end gap-2 mt-1">
+                                    <button onclick="app.cancelInlineRetry(${idx})" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition">취소</button>
+                                    <button onclick="app.checkInlineRetry(${idx})" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-sm">정답 확인</button>
+                                </div>
+                                <div id="retry-feedback-${idx}" class="hidden mt-2 text-sm font-bold text-center p-2 rounded-lg"></div>
+                            </div>
+
+                        </div>`;
+                });
+                if (html === '') html = `<div class="text-center py-10 bg-slate-50 rounded-xl text-slate-500 text-sm font-bold border border-slate-200 no-print">오답 문항이 없습니다. 완벽합니다! 🎉</div>`;
+                els.reviewList.innerHTML = html;
+            },
+            
+            setupInlineRetry(index) {
+                const contentArea = document.getElementById(`review-content-${index}`);
+                const retryArea = document.getElementById(`inline-retry-${index}`);
+                const inputEl = document.getElementById(`retry-input-${index}`);
+                const feedbackEl = document.getElementById(`retry-feedback-${index}`);
+                
+                contentArea.classList.add('hidden');
+                retryArea.classList.remove('hidden');
+                retryArea.classList.add('flex');
+                
+                inputEl.value = '';
+                inputEl.disabled = false;
+                inputEl.className = `w-full h-24 p-3 border border-indigo-300 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`;
+                feedbackEl.classList.add('hidden');
+                
+                inputEl.focus();
+            },
+            cancelInlineRetry(index) {
+                const contentArea = document.getElementById(`review-content-${index}`);
+                const retryArea = document.getElementById(`inline-retry-${index}`);
+                
+                retryArea.classList.add('hidden');
+                retryArea.classList.remove('flex');
+                contentArea.classList.remove('hidden');
+            },
+            checkInlineRetry(index) {
+                const inputEl = document.getElementById(`retry-input-${index}`);
+                const feedbackEl = document.getElementById(`retry-feedback-${index}`);
+                const userInput = inputEl.value.trim();
+                const q = appState.questions[index];
+                
+                if (!userInput) {
+                    this.showMessage("정답을 입력해주세요.");
+                    inputEl.focus();
+                    return;
+                }
+                
+                const isCorrect = this.strictCompare(userInput, q.a);
+                feedbackEl.classList.remove('hidden');
+                
+                if (isCorrect) {
+                    feedbackEl.className = "mt-2 text-sm font-extrabold text-center p-3 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 fade-in";
+                    feedbackEl.innerHTML = `정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">모범 정답과 정확히 일치합니다.</span>`;
+                    inputEl.className = `w-full h-24 p-3 border-2 border-emerald-400 bg-emerald-50 rounded-lg text-sm text-emerald-800 transition-colors`;
+                    inputEl.disabled = true;
+                    
+                    // 정답 맞혔을 경우 1.5초 후 원래 리뷰 화면으로 복귀 (업데이트된 상태는 유지 안함. 단순히 연습용이므로)
+                    setTimeout(() => {
+                        this.cancelInlineRetry(index);
+                    }, 1500);
+
+                } else {
+                    let charDiff = this.diffChars(userInput, q.a);
+                    feedbackEl.className = "mt-2 text-sm font-extrabold p-3 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 fade-in text-left";
+                    feedbackEl.innerHTML = `
+                        <div class="flex items-center gap-1 mb-2 justify-center"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg> 오답입니다. 다시 시도해보세요.</div>
+                        <div class="bg-white p-2 rounded border border-rose-100 text-xs font-normal break-keep mb-2"><span class="font-bold text-rose-500">모범 정답:</span> <br><span class="whitespace-pre-wrap">${q.a}</span></div>
+                        <div class="bg-white p-2 rounded border border-rose-100 text-xs font-normal break-all"><span class="font-bold text-rose-500">작성 분석:</span> ${this.generateDiffHtml(charDiff)}</div>
+                    `;
+                    inputEl.className = `w-full h-24 p-3 border-2 border-rose-400 bg-rose-50 rounded-lg text-sm text-rose-900 transition-colors focus:ring-2 focus:ring-rose-500 focus:border-rose-500`;
+                    inputEl.focus();
+                }
+            },
+            toggleResultFilter() { this.renderReviewItems(els.showOnlyFailedToggle.checked); },
+
+            showMessage(text) {
+                els.msgBoxText.textContent = text; els.msgBox.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                els.msgBox.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => { els.msgBox.classList.remove('opacity-100', 'translate-y-0'); els.msgBox.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'); }, 2500);
+            },
+            showConfirm(message, onConfirm) {
+                els.confirmModalBody.textContent = message; els.confirmModal.classList.remove('hidden'); void els.confirmModal.offsetWidth;
+                els.confirmModal.classList.remove('opacity-0'); document.getElementById('confirm-modal-content').classList.remove('scale-95'); document.getElementById('confirm-modal-content').classList.add('scale-100');
+                els.confirmOkBtn.onclick = () => { this.hideConfirm(); onConfirm(); }; els.confirmCancelBtn.onclick = () => this.hideConfirm();
+            },
+            hideConfirm() {
+                els.confirmModal.classList.add('opacity-0'); document.getElementById('confirm-modal-content').classList.remove('scale-100'); document.getElementById('confirm-modal-content').classList.add('scale-95');
+                setTimeout(() => els.confirmModal.classList.add('hidden'), 200);
+            }
+        };
+
+        window.onload = function () { app.init(); }
+    </script>
+</body>
+</html>
