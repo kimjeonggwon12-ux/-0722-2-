@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>시온 공부방</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#0ea5e9',
+                        accent: '#f59e0b',
+                        background: '#f8fafc',
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-jua { font-family: 'Jua', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .login-photo {
+            position: relative;
+            aspect-ratio: 770 / 1250;
+            width: min(100%, 420px, calc((100vh - 40px) * 0.616));
+            width: min(100%, 420px, calc((100dvh - 40px) * 0.616));
+            background: url('assets/login-cover.jpg') center / cover no-repeat;
+            border-radius: 20px;
+            box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+            overflow: hidden;
+        }
+        .login-input-zone {
+            position: absolute;
+            left: 14%;
+            right: 14%;
+            top: 87.5%;
+        }
+        .rooms-photo {
+            position: relative;
+            aspect-ratio: 820 / 1200;
+            width: min(100%, 420px, calc((100vh - 40px) * 0.683));
+            width: min(100%, 420px, calc((100dvh - 40px) * 0.683));
+            background: url('assets/rooms-cover.png') center / cover no-repeat;
+            border-radius: 20px;
+            box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+            overflow: hidden;
+        }
+        .rooms-hotspot {
+            position: absolute;
+            display: block;
+            border-radius: 18px;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        .rooms-hotspot:active { transform: scale(0.97); background-color: rgba(255,255,255,0.15); }
+        .rooms-hotspot--pill { display: block; }
+        .rooms-pill-content {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, #c7d2fe, #a5b4fc);
+            border-radius: 999px;
+            box-shadow: 0 4px 10px rgba(79,70,229,0.25);
+            padding: 0 10px;
+        }
+        .rooms-pill-icon-box {
+            flex-shrink: 0;
+            width: 26px; height: 26px;
+            border-radius: 9px;
+            background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
+            color: #4f46e5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .rooms-pill-text {
+            flex-grow: 1;
+            color: #312e81; font-weight: 800; font-size: 11px; line-height: 1.25;
+            text-align: left;
+        }
+        .rooms-pill-chevron-box {
+            flex-shrink: 0;
+            width: 20px; height: 20px;
+            border-radius: 999px;
+            background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
+            color: #4f46e5; font-weight: 900; font-size: 12px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <main class="container mx-auto px-3 py-4 flex-grow flex flex-col max-w-2xl">
+
+        <!-- 로그인 화면 -->
+        <div id="view-login" class="flex flex-col flex-grow justify-center items-center py-2 fade-in">
+            <div class="login-photo">
+                <div class="login-input-zone">
+                    <p id="login-error-msg" class="absolute bottom-full left-0 right-0 mb-2 text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-white/90 rounded-full px-3 py-1.5 shadow-sm">코드가 올바르지 않거나 조건에 맞지 않습니다.</p>
+                    <div class="flex items-center bg-white rounded-full shadow-md p-2 w-full transition-shadow focus-within:shadow-lg">
+                        <svg class="w-5 h-5 text-slate-500 flex-shrink-0 ml-2.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
+                        </svg>
+                        <input type="password" id="entry-code-input" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold tracking-[0.2em] placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal" placeholder="암호 입력" oninput="checkAutoLogin()" onkeydown="if(event.key==='Enter') checkLogin()">
+                        <button onclick="checkLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-black transition-colors flex-shrink-0">입장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 방 선택 화면 -->
+        <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
+            <div class="rooms-photo">
+                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:0; top:32.9%; width:50%; height:37.1%;" aria-label="도통 계시록"></a>
+                <a href="신학기초/index.html" class="rooms-hotspot" style="left:50%; top:32.9%; width:50%; height:37.1%;" aria-label="초중고 공부방"></a>
+                <a href="도통계시록/index.html#grade" class="rooms-hotspot" style="left:0; top:73.75%; width:50%; height:8.75%;" aria-label="계시록 급수 시험"></a>
+                <a href="신학기초/index.html#grade" class="rooms-hotspot" style="left:50%; top:73.75%; width:50%; height:8.75%;" aria-label="초중고 급수 시험"></a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const AUTH_KEY = 'sion_auth';
+
+        function isSpecificOrPatternCode(code) {
+            const isSpecificCode = code === "0012000" || code === "7777";
+            const isPatternCode = code.length === 13 && /^(000|001|002|003|004)\d{10}$/.test(code);
+            return isSpecificCode || isPatternCode;
+        }
+
+        function showRooms() {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-login').classList.remove('flex');
+            document.getElementById('view-rooms').classList.remove('hidden');
+            document.getElementById('view-rooms').classList.add('flex');
+        }
+
+        function checkAutoLogin() {
+            const code = document.getElementById('entry-code-input').value.trim();
+            if (isSpecificOrPatternCode(code)) {
+                document.getElementById('login-error-msg').classList.add('opacity-0');
+                document.getElementById('entry-code-input').value = '';
+                localStorage.setItem(AUTH_KEY, '1');
+                showRooms();
+            }
+        }
+
+        function checkLogin() {
+            const code = document.getElementById('entry-code-input').value.trim();
+            const errorMsg = document.getElementById('login-error-msg');
+            if (isSpecificOrPatternCode(code)) {
+                errorMsg.classList.add('opacity-0');
+                document.getElementById('entry-code-input').value = '';
+                localStorage.setItem(AUTH_KEY, '1');
+                showRooms();
+            } else {
+                errorMsg.classList.remove('opacity-0');
+                document.getElementById('entry-code-input').focus();
+            }
+        }
+
+        // 방에서 "방 선택"으로 돌아온 경우(#rooms)에만 로그인을 건너뛴다.
+        // 앱을 새로 열 때(직접 접속)는 항상 로그인 화면부터 보여준다.
+        if (window.location.hash === '#rooms' && localStorage.getItem(AUTH_KEY) === '1') {
+            showRooms();
+        }
+    </script>
+</body>
+</html>
