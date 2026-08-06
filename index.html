@@ -473,6 +473,7 @@
                     <p class="text-slate-400 text-[11px] mt-1 break-keep">이름과 고유번호로 신청 내역을 조회하세요</p>
                 </div>
                 <p id="cancel-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">이름과 고유번호를 모두 입력해주세요.</p>
+                <p id="cancel-lookup-msg" class="hidden text-blue-700 text-[11px] font-bold text-center bg-blue-50 rounded-full px-3 py-1.5 mb-3"></p>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3 mb-4">
                     <div>
                         <label class="field-label">이름</label>
@@ -490,6 +491,11 @@
     </main>
 
     <script>
+        // ─────────────────────────────────────────────────────────
+        // 시험 신청 → Google 스프레드시트 연동 (Apps Script 웹앱)
+        // ─────────────────────────────────────────────────────────
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
+
         const AUTH_KEY = 'sion_auth';
         const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-apply', 'view-applycancel'];
 
@@ -559,27 +565,19 @@
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        // 시험 신청 (Google 스프레드시트 연동)
-        //
-        // 아래 GAS_URL에 Apps Script 웹앱 배포 URL을 붙여넣으면
-        // 신청/취소/조회가 구글 시트로 저장·조회됩니다.
-        // URL이 비어있는 동안에는 이 기기(브라우저)의 localStorage에만
+        // GAS_URL이 비어있는 동안에는 이 기기(브라우저)의 localStorage에만
         // 임시 저장되어 기능은 그대로 동작합니다.
-        // ─────────────────────────────────────────────────────────
-        const GAS_URL = '';
-
         async function gasCall(payload) {
-            if (!GAS_URL) return { ok: false, offline: true };
+            if (!GAS_URL) return { success: false, offline: true, message: '' };
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain이어야 CORS 프리플라이트가 발생하지 않는다
                     body: JSON.stringify(payload)
                 });
                 return await res.json();
             } catch (err) {
-                return { ok: false, offline: true, error: String(err) };
+                return { success: false, offline: true, message: '', error: String(err) };
             }
         }
 
@@ -612,14 +610,15 @@
             const church = document.getElementById('apply-church').value;
             const dept = document.getElementById('apply-dept').value;
             const name = document.getElementById('apply-name').value.trim();
-            const uid = document.getElementById('apply-uid').value.trim();
+            const memberId = document.getElementById('apply-uid').value.trim();
             const phone = document.getElementById('apply-phone').value.trim();
             const subject = document.getElementById('apply-subject').value;
             const grade = document.getElementById('apply-grade').value;
             const examTime = document.getElementById('apply-time').value;
             const errEl = document.getElementById('apply-error-msg');
 
-            if (!church || !dept || !name || !uid || !phone || !subject || !grade || !examTime) {
+            if (!church || !dept || !name || !memberId || !phone || !subject || !grade || !examTime) {
+                errEl.textContent = '모든 항목을 입력(선택)해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
             }
@@ -629,37 +628,46 @@
                 id: genApplyId(),
                 appliedAt: nowStr(),
                 status: '접수완료',
-                tribe, church, dept, name, uid, phone, subject, grade, examTime,
-                cancelledAt: '', cancelReason: ''
+                tribe, church, dept, position: '', name, memberId, phone, examTime, subject, grade,
+                cancelledAt: '', reason: ''
             };
 
             const submitBtn = document.getElementById('apply-submit-btn');
             submitBtn.disabled = true;
             submitBtn.textContent = '접수 처리 중...';
 
-            const result = await gasCall({ action: 'submit', ...app });
+            const result = await gasCall({
+                action: 'apply',
+                tribe, church, dept, position: '', name, memberId, phone, examTime,
+                subjects: [{ subject, grade }]
+            });
 
             submitBtn.disabled = false;
             submitBtn.textContent = '신청하기';
 
-            // 구글 시트가 최종 접수번호를 부여해 돌려주면 그 번호를 우선 사용한다.
-            if (result && result.ok && result.id) app.id = result.id;
+            if (result && !result.offline && !result.success) {
+                // 서버가 신청을 명시적으로 거부한 경우 (예: 중복 신청 등) - 폼에 남아 재시도하도록 안내만 띄운다.
+                errEl.textContent = result.message || '신청 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+                errEl.classList.remove('opacity-0');
+                return;
+            }
 
             const list = loadApplications();
             list.push(app);
             saveApplications(list);
 
-            showApplySuccess(app, !!(result && result.ok));
+            const message = (result && result.message) || (result && result.offline
+                ? '이 기기에 임시 저장되었습니다. (구글 시트 연동 대기 중)'
+                : '신청이 접수되었습니다.');
+            showApplySuccess(app, message);
         }
 
-        function showApplySuccess(app, synced) {
+        function showApplySuccess(app, message) {
             document.getElementById('apply-form-section').classList.add('hidden');
             document.getElementById('apply-success-section').classList.remove('hidden');
             document.getElementById('apply-success-id').textContent = app.id;
             document.getElementById('apply-success-detail').textContent = `${app.subject} · ${app.grade} · ${app.name} · ${app.examTime}`;
-            document.getElementById('apply-success-sync').textContent = synced
-                ? '구글 시트에 정상적으로 저장되었습니다.'
-                : '이 기기에 임시 저장되었습니다. (구글 시트 연동 대기 중)';
+            document.getElementById('apply-success-sync').textContent = message;
         }
 
         function resetApplyForm() {
@@ -670,31 +678,40 @@
             document.getElementById('apply-success-section').classList.add('hidden');
         }
 
+        const CANCEL_REASONS = ['일정이 맞지 않음', '준비 부족', '급수 변경 희망', '건강상의 이유', '기타'];
+
         async function lookupApplications() {
             const name = document.getElementById('cancel-name').value.trim();
-            const uid = document.getElementById('cancel-uid').value.trim();
+            const memberId = document.getElementById('cancel-uid').value.trim();
             const errEl = document.getElementById('cancel-error-msg');
+            const msgEl = document.getElementById('cancel-lookup-msg');
 
-            if (!name || !uid) {
+            if (!name || !memberId) {
+                errEl.textContent = '이름과 고유번호를 모두 입력해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
             }
             errEl.classList.add('opacity-0');
+            msgEl.classList.add('hidden');
 
             const btn = document.getElementById('cancel-lookup-btn');
             btn.disabled = true;
             btn.textContent = '조회 중...';
 
-            const result = await gasCall({ action: 'lookup', name, uid });
+            const result = await gasCall({ action: 'lookup', name, memberId });
 
             btn.disabled = false;
             btn.textContent = '조회하기';
 
             let rows;
-            if (result && result.ok) {
-                rows = result.rows;
+            if (result && result.success) {
+                rows = result.rows || result.applications || result.data || [];
             } else {
-                rows = loadApplications().filter(a => a.name === name && a.uid === uid);
+                rows = loadApplications().filter(a => a.name === name && a.memberId === memberId);
+            }
+            if (result && result.message) {
+                msgEl.textContent = result.message;
+                msgEl.classList.remove('hidden');
             }
             renderCancelResults(rows);
         }
@@ -705,39 +722,83 @@
                 el.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
                 return;
             }
+            const reasonOptions = CANCEL_REASONS.map(r => `<option value="${r}">${r}</option>`).join('');
             el.innerHTML = rows.map(r => `
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
                         <span class="font-black text-slate-800 text-sm break-keep">${r.subject} · ${r.grade}</span>
                         <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === '취소' ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-700'}">${r.status}</span>
                     </div>
-                    <p class="text-[11px] text-slate-400">접수번호 ${r.id}</p>
-                    <p class="text-[11px] text-slate-400">접수일시 ${r.appliedAt}</p>
+                    <p class="text-[11px] text-slate-400">접수번호 ${r.id || ''}</p>
+                    <p class="text-[11px] text-slate-400">접수일시 ${r.appliedAt || ''}</p>
                     ${r.examTime ? `<p class="text-[11px] text-slate-400">시험 시간 ${r.examTime}</p>` : ''}
                     ${r.status === '취소'
                         ? `<p class="text-[11px] text-slate-400">취소일시 ${r.cancelledAt || ''}</p>
-                           ${r.cancelReason ? `<p class="text-[11px] text-slate-400">취소 사유 ${r.cancelReason}</p>` : ''}`
-                        : `<input type="text" id="cancel-reason-${r.id}" class="field-input mt-1" placeholder="취소 사유 (선택)">
-                           <button onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-black py-2 rounded-xl transition-colors">취소하기</button>`
+                           ${r.reason ? `<p class="text-[11px] text-slate-400">취소 사유 ${r.reason}</p>` : ''}`
+                        : `<select id="cancel-reason-${r.id}" class="field-input mt-1" onchange="onCancelReasonChange('${r.id}')">
+                               <option value="">취소 사유를 선택하세요</option>
+                               ${reasonOptions}
+                           </select>
+                           <input type="text" id="cancel-reason-etc-${r.id}" class="field-input mt-1 hidden" placeholder="사유를 직접 입력하세요" oninput="updateCancelBtnState('${r.id}')">
+                           <button id="cancel-btn-${r.id}" disabled onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-slate-200 text-slate-400 text-xs font-black py-2 rounded-xl transition-colors cursor-not-allowed">취소하기</button>`
                     }
                 </div>
             `).join('');
         }
 
+        function onCancelReasonChange(id) {
+            const sel = document.getElementById(`cancel-reason-${id}`);
+            const etc = document.getElementById(`cancel-reason-etc-${id}`);
+            etc.classList.toggle('hidden', sel.value !== '기타');
+            updateCancelBtnState(id);
+        }
+
+        function getCancelReason(id) {
+            const sel = document.getElementById(`cancel-reason-${id}`);
+            if (!sel) return '';
+            if (sel.value === '기타') {
+                const etc = document.getElementById(`cancel-reason-etc-${id}`);
+                return etc ? etc.value.trim() : '';
+            }
+            return sel.value;
+        }
+
+        function updateCancelBtnState(id) {
+            const btn = document.getElementById(`cancel-btn-${id}`);
+            if (!btn) return;
+            const reason = getCancelReason(id);
+            btn.disabled = !reason;
+            btn.className = reason
+                ? 'mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-black py-2 rounded-xl transition-colors'
+                : 'mt-1 w-full bg-slate-200 text-slate-400 text-xs font-black py-2 rounded-xl transition-colors cursor-not-allowed';
+        }
+
         async function cancelApplication(id) {
+            const reason = getCancelReason(id);
+            if (!reason) return;
             const cancelledAt = nowStr();
-            const reasonEl = document.getElementById(`cancel-reason-${id}`);
-            const cancelReason = reasonEl ? reasonEl.value.trim() : '';
-            await gasCall({ action: 'cancel', id, cancelledAt, cancelReason });
 
             const list = loadApplications();
+            const rec = list.find(a => a.id === id);
+            const name = rec ? rec.name : document.getElementById('cancel-name').value.trim();
+            const memberId = rec ? rec.memberId : document.getElementById('cancel-uid').value.trim();
+
+            const result = await gasCall({ action: 'cancel', name, memberId, reason });
+
             const idx = list.findIndex(a => a.id === id);
             if (idx > -1) {
                 list[idx].status = '취소';
                 list[idx].cancelledAt = cancelledAt;
-                list[idx].cancelReason = cancelReason;
+                list[idx].reason = reason;
                 saveApplications(list);
             }
+
+            const msgEl = document.getElementById('cancel-lookup-msg');
+            if (msgEl) {
+                msgEl.textContent = (result && result.message) || '취소되었습니다.';
+                msgEl.classList.remove('hidden');
+            }
+
             lookupApplications();
         }
 
