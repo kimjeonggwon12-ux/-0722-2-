@@ -404,6 +404,10 @@
                             </select>
                         </div>
                         <div>
+                            <label class="field-label">직책 (선택)</label>
+                            <input type="text" id="apply-position" class="field-input" placeholder="직책이 있다면 입력하세요">
+                        </div>
+                        <div>
                             <label class="field-label">이름</label>
                             <input type="text" id="apply-name" class="field-input" placeholder="이름을 입력하세요">
                         </div>
@@ -444,7 +448,7 @@
                         </div>
                         <button type="submit" id="apply-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">신청하기</button>
                     </form>
-                    <button onclick="showApplyCancel()" class="w-full text-center text-slate-400 hover:text-rose-500 text-[11px] font-bold mt-4 transition-colors">신청 조회 · 신청 취소</button>
+                    <button onclick="showApplyCancel()" class="w-full text-center bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 text-base font-black py-3 rounded-xl mt-4 transition-colors">신청 조회 · 신청 취소</button>
                 </div>
 
                 <!-- 신청 완료 -->
@@ -569,15 +573,22 @@
         // 임시 저장되어 기능은 그대로 동작합니다.
         async function gasCall(payload) {
             if (!GAS_URL) return { success: false, offline: true, message: '' };
+            let res;
             try {
-                const res = await fetch(GAS_URL, {
+                res = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain이어야 CORS 프리플라이트가 발생하지 않는다
                     body: JSON.stringify(payload)
                 });
+            } catch (err) {
+                // 네트워크 자체가 막힌 경우에만 "오프라인"으로 취급한다.
+                return { success: false, offline: true, message: '', error: String(err) };
+            }
+            try {
                 return await res.json();
             } catch (err) {
-                return { success: false, offline: true, message: '', error: String(err) };
+                // 서버에는 도달했지만 응답을 해석하지 못한 경우 - 오프라인으로 오인해 조용히 넘어가지 않고 오류로 알린다.
+                return { success: false, offline: false, message: '서버 응답을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.', error: String(err) };
             }
         }
 
@@ -608,7 +619,8 @@
         async function submitApplication() {
             const tribe = document.getElementById('apply-tribe').value.trim() || '도마';
             const church = document.getElementById('apply-church').value;
-            const dept = document.getElementById('apply-dept').value;
+            const department = document.getElementById('apply-dept').value;
+            const position = document.getElementById('apply-position').value.trim();
             const name = document.getElementById('apply-name').value.trim();
             const memberId = document.getElementById('apply-uid').value.trim();
             const phone = document.getElementById('apply-phone').value.trim();
@@ -617,7 +629,7 @@
             const examTime = document.getElementById('apply-time').value;
             const errEl = document.getElementById('apply-error-msg');
 
-            if (!church || !dept || !name || !memberId || !phone || !subject || !grade || !examTime) {
+            if (!church || !department || !name || !memberId || !phone || !subject || !grade || !examTime) {
                 errEl.textContent = '모든 항목을 입력(선택)해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
@@ -628,7 +640,7 @@
                 id: genApplyId(),
                 appliedAt: nowStr(),
                 status: '접수완료',
-                tribe, church, dept, position: '', name, memberId, phone, examTime, subject, grade,
+                tribe, church, department, position, name, memberId, phone, examTime, subject, grade,
                 cancelledAt: '', reason: ''
             };
 
@@ -638,7 +650,7 @@
 
             const result = await gasCall({
                 action: 'apply',
-                tribe, church, dept, position: '', name, memberId, phone, examTime,
+                tribe, church, department, position, name, memberId, phone, examTime,
                 subjects: [{ subject, grade }]
             });
 
@@ -740,7 +752,7 @@
                                ${reasonOptions}
                            </select>
                            <input type="text" id="cancel-reason-etc-${r.id}" class="field-input mt-1 hidden" placeholder="사유를 직접 입력하세요" oninput="updateCancelBtnState('${r.id}')">
-                           <button id="cancel-btn-${r.id}" disabled onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-slate-200 text-slate-400 text-xs font-black py-2 rounded-xl transition-colors cursor-not-allowed">취소하기</button>`
+                           <button id="cancel-btn-${r.id}" disabled onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-slate-200 text-slate-400 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed">취소하기</button>`
                     }
                 </div>
             `).join('');
@@ -769,31 +781,44 @@
             const reason = getCancelReason(id);
             btn.disabled = !reason;
             btn.className = reason
-                ? 'mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-black py-2 rounded-xl transition-colors'
-                : 'mt-1 w-full bg-slate-200 text-slate-400 text-xs font-black py-2 rounded-xl transition-colors cursor-not-allowed';
+                ? 'mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-sm font-black py-2.5 rounded-xl transition-colors'
+                : 'mt-1 w-full bg-slate-200 text-slate-400 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed';
         }
 
         async function cancelApplication(id) {
             const reason = getCancelReason(id);
             if (!reason) return;
-            const cancelledAt = nowStr();
 
             const list = loadApplications();
             const rec = list.find(a => a.id === id);
             const name = rec ? rec.name : document.getElementById('cancel-name').value.trim();
             const memberId = rec ? rec.memberId : document.getElementById('cancel-uid').value.trim();
 
+            const btn = document.getElementById(`cancel-btn-${id}`);
+            if (btn) { btn.disabled = true; btn.textContent = '취소 처리 중...'; }
+
             const result = await gasCall({ action: 'cancel', name, memberId, reason });
+
+            const msgEl = document.getElementById('cancel-lookup-msg');
+
+            if (result && !result.offline && !result.success) {
+                // 서버가 취소를 거부한 경우 - 로컬 상태는 그대로 두고 사유만 안내한다.
+                if (msgEl) {
+                    msgEl.textContent = result.message || '취소 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+                    msgEl.classList.remove('hidden');
+                }
+                if (btn) { btn.disabled = false; btn.textContent = '취소하기'; }
+                return;
+            }
 
             const idx = list.findIndex(a => a.id === id);
             if (idx > -1) {
                 list[idx].status = '취소';
-                list[idx].cancelledAt = cancelledAt;
+                list[idx].cancelledAt = nowStr();
                 list[idx].reason = reason;
                 saveApplications(list);
             }
 
-            const msgEl = document.getElementById('cancel-lookup-msg');
             if (msgEl) {
                 msgEl.textContent = (result && result.message) || '취소되었습니다.';
                 msgEl.classList.remove('hidden');
