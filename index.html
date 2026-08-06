@@ -69,6 +69,17 @@
             overflow: hidden;
             container-type: inline-size;
         }
+        .cert-photo {
+            position: relative;
+            aspect-ratio: 820 / 1220;
+            width: min(100%, 420px, calc((100vh - 40px) * 0.672));
+            width: min(100%, 420px, calc((100dvh - 40px) * 0.672));
+            background: url('assets/모의고사1.png') center / cover no-repeat;
+            border-radius: 20px;
+            box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
+            overflow: hidden;
+            container-type: inline-size;
+        }
         .rooms-hotspot {
             position: absolute;
             display: block;
@@ -283,51 +294,12 @@
         </div>
 
         <!-- 모의고사 -->
-        <div id="view-cert" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
-            <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    뒤로가기
-                </button>
-                <div class="flex items-center justify-between mb-5 gap-2">
-                    <div>
-                        <h1 class="text-3xl font-black text-violet-700 font-jua break-keep">모의고사</h1>
-                        <p class="text-slate-400 text-[11px] mt-1 break-keep">준비할 자격증 시험을 선택하세요</p>
-                    </div>
-                    <div class="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0" style="background: url('assets/sion-girl.png') center 20% / 120% no-repeat, #eef2ff;"></div>
-                </div>
-                <div class="space-y-3">
-                    <a href="신학기초/index.html#grade" class="no-underline bg-white hover:bg-emerald-50 border-2 border-slate-100 hover:border-emerald-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #6ee7b7, #059669);">🌳</div>
-                            <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">초중고 신학 자격증<br>급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 신학 교재 종합 암기</p>
-                            </div>
-                        </div>
-                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="도통계시록/index.html#grade" class="no-underline bg-white hover:bg-indigo-50 border-2 border-slate-100 hover:border-indigo-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #a5b4fc, #4f46e5);">📖</div>
-                            <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">계시록 통달 자격증<br>급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 계시록 본문의 참 뜻과 핵심 성구</p>
-                            </div>
-                        </div>
-                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <a href="#memorize-grade" onclick="showMemorizeGrade()" class="no-underline bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #c084fc, #6d28d9);">👩‍🎤</div>
-                            <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">계시록 암기 자격증<br>급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 계시록 전장 암기</p>
-                            </div>
-                        </div>
-                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                </div>
+        <div id="view-cert" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
+            <div class="cert-photo">
+                <a href="#rooms" onclick="showRooms()" class="rooms-hotspot" style="left:2%; top:1.5%; width:25%; height:6%;" aria-label="뒤로가기"></a>
+                <a href="신학기초/index.html#grade" class="rooms-hotspot" style="left:2%; top:37.5%; width:96%; height:18.5%;" aria-label="초중고 신학 자격증 급수별 모의고사"></a>
+                <a href="도통계시록/index.html#grade" class="rooms-hotspot" style="left:2%; top:57.8%; width:96%; height:18.5%;" aria-label="계시록 통달 자격증 급수별 모의고사"></a>
+                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="rooms-hotspot" style="left:2%; top:77.5%; width:96%; height:18.5%;" aria-label="계시록 암기 자격증 급수별 모의고사"></a>
             </div>
         </div>
 
