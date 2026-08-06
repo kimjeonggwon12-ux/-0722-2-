@@ -73,9 +73,16 @@
             position: absolute;
             display: block;
             border-radius: 18px;
-            transition: transform 0.15s ease, background-color 0.15s ease;
+            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.12s ease, box-shadow 0.12s ease;
         }
-        .rooms-hotspot:active { transform: scale(0.97); background-color: rgba(255,255,255,0.15); }
+        .rooms-hotspot:active {
+            transform: scale(0.91);
+            background-color: rgba(255,255,255,0.28);
+            box-shadow: inset 0 0 0 3px rgba(255,255,255,0.55), 0 0 14px rgba(255,255,255,0.4);
+        }
+        @media (hover: hover) {
+            .rooms-hotspot:hover { transform: scale(1.035); background-color: rgba(255,255,255,0.12); }
+        }
         .rooms-hotspot--pill { display: block; }
         .rooms-pill-content {
             position: absolute; inset: 0;
@@ -282,42 +289,83 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
-                <div class="text-center mb-5">
-                    <h1 class="text-2xl font-black text-violet-700 font-jua break-keep">모의고사</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">준비할 자격증 시험을 선택하세요</p>
+                <div class="flex items-center justify-between mb-5 gap-2">
+                    <div>
+                        <h1 class="text-3xl font-black text-violet-700 font-jua break-keep">모의고사</h1>
+                        <p class="text-slate-400 text-[11px] mt-1 break-keep">준비할 자격증 시험을 선택하세요</p>
+                    </div>
+                    <div class="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-white flex-shrink-0" style="background: url('assets/sion-girl.png') center 20% / 120% no-repeat, #eef2ff;"></div>
                 </div>
                 <div class="space-y-3">
                     <a href="신학기초/index.html#grade" class="no-underline bg-white hover:bg-emerald-50 border-2 border-slate-100 hover:border-emerald-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #6ee7b7, #059669);">🏫</div>
+                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #6ee7b7, #059669);">🌳</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">초중고 신학 자격증 급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[10px] mt-0.5 break-keep">1~4급 · 신학 교재 종합 암기</p>
+                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">초중고 신학 자격증<br>급수별 모의고사</h3>
+                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 신학 교재 종합 암기</p>
                             </div>
                         </div>
-                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </a>
                     <a href="도통계시록/index.html#grade" class="no-underline bg-white hover:bg-indigo-50 border-2 border-slate-100 hover:border-indigo-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #a5b4fc, #4f46e5);">📖</div>
+                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #a5b4fc, #4f46e5);">📖</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">계시록 통달 자격증 급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[10px] mt-0.5 break-keep">1~4급 · 계시록 본문의 참 뜻과 핵심 성구</p>
+                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">계시록 통달 자격증<br>급수별 모의고사</h3>
+                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 계시록 본문의 참 뜻과 핵심 성구</p>
                             </div>
                         </div>
-                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </a>
-                    <div class="relative bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 opacity-70 cursor-not-allowed select-none">
+                    <a href="#memorize-grade" onclick="showMemorizeGrade()" class="no-underline bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #cbd5e1, #64748b);">🧠</div>
+                            <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #c084fc, #6d28d9);">👩‍🎤</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-500 text-sm break-keep">계시록 암기 자격증 급수별 모의고사</h3>
-                                <p class="text-slate-400 text-[10px] mt-0.5 break-keep">4급 계 1~7장 · 3급 계 8~15장 · 2급 계 16~22장 · 1급 계 1~22장</p>
+                                <h3 class="font-extrabold text-slate-800 text-base leading-tight break-keep">계시록 암기 자격증<br>급수별 모의고사</h3>
+                                <p class="text-slate-400 text-[11px] mt-1 break-keep">1~4급 : 계시록 전장 암기</p>
                             </div>
                         </div>
-                        <span class="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-1 rounded-full flex-shrink-0">준비중</span>
-                    </div>
+                        <svg class="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
                 </div>
+            </div>
+        </div>
+
+        <!-- 계시록 암기 급수 선택 (준비중 안내) -->
+        <div id="view-memorize-grade" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="backToCert()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <div class="text-center mb-5">
+                    <h1 class="text-2xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 급수 시험</h1>
+                    <p class="text-slate-400 text-[11px] mt-1 break-keep">응시할 급수를 선택하세요</p>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="notifyComingSoonRoot()" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                        <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #e9a6f7, #a21caf);">4급</div>
+                        <h3 class="font-extrabold text-slate-800 text-base flex-grow">계시록 암기 4급</h3>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button onclick="notifyComingSoonRoot()" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                        <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #d68af0, #86198f);">3급</div>
+                        <h3 class="font-extrabold text-slate-800 text-base flex-grow">계시록 암기 3급</h3>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button onclick="notifyComingSoonRoot()" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                        <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #c26beb, #701a75);">2급</div>
+                        <h3 class="font-extrabold text-slate-800 text-base flex-grow">계시록 암기 2급</h3>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button onclick="notifyComingSoonRoot()" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-amber-300 transition-all rounded-2xl p-4 text-left shadow-sm shadow-amber-200/40 flex items-center gap-4 group relative overflow-hidden">
+                        <span class="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">최고 급수 👑</span>
+                        <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #4c1d95, #1e1b4b);">1급</div>
+                        <h3 class="font-extrabold text-slate-800 text-base flex-grow">계시록 암기 1급</h3>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+                <p class="text-center text-slate-400 text-[11px] mt-4">문항을 준비 중입니다. 곧 만나요!</p>
             </div>
         </div>
 
@@ -332,7 +380,7 @@
                 <!-- 신청서 입력 -->
                 <div id="apply-form-section">
                     <div class="text-center mb-5">
-                        <h1 class="text-2xl font-black text-blue-700 font-jua break-keep">시험 신청서</h1>
+                        <h1 class="text-3xl font-black text-blue-700 break-keep">시험 신청서</h1>
                         <p class="text-slate-400 text-[11px] mt-1 break-keep">아래 정보를 입력하고 신청하기를 눌러주세요</p>
                     </div>
                     <p id="apply-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">모든 항목을 입력(선택)해주세요.</p>
@@ -471,7 +519,7 @@
 
     <script>
         const AUTH_KEY = 'sion_auth';
-        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-apply', 'view-applycancel'];
+        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-apply', 'view-applycancel'];
 
         function isSpecificOrPatternCode(code) {
             const isSpecificCode = code === "0012000" || code === "7777";
@@ -497,12 +545,22 @@
         function showRooms() { showView('view-rooms'); }
         function showExamInfo() { showView('view-examinfo'); }
         function showCert() { showView('view-cert'); }
+        function showMemorizeGrade() { showView('view-memorize-grade'); }
         function showApply() { showView('view-apply'); }
         function showApplyCancel() { showView('view-applycancel'); }
 
         function backToRooms() {
             window.location.hash = '#rooms';
             showRooms();
+        }
+
+        function backToCert() {
+            window.location.hash = '#cert';
+            showCert();
+        }
+
+        function notifyComingSoonRoot() {
+            alert('문제를 준비 중입니다. 곧 만나요!');
         }
 
         function checkAutoLogin() {
@@ -718,6 +776,8 @@
             const hash = window.location.hash;
             if (hash === '#cert') {
                 showRooms(); showCert();
+            } else if (hash === '#memorize-grade') {
+                showRooms(); showCert(); showMemorizeGrade();
             } else if (hash === '#apply') {
                 showRooms(); showApply();
             } else if (hash === '#applycancel') {
