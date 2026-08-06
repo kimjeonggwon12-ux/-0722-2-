@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>도통 계시록</title>
+    <title>계시록 통달</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -295,7 +295,7 @@
 
             <div class="w-full relative z-10 flex flex-col items-center pt-2 pb-6">
                 <div class="w-24 h-24 rounded-full overflow-hidden shadow-md border-2 border-white mb-3" style="background: url('../assets/tongdari.png') center 22% / 170% no-repeat, #efe9ff;"></div>
-                <div class="font-['Jalnan'] text-2xl text-[#4f46e5]">도통 계시록</div>
+                <div class="font-['Jalnan'] text-2xl text-[#4f46e5]">계시록 통달</div>
                 <p class="text-slate-400 text-[12px] font-bold mt-1">계시록 본문의 참 뜻과 핵심 성구</p>
             </div>
 
@@ -541,6 +541,19 @@
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
                 </button>
+
+                <button onclick="showGrade4Rooms()" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-lg shadow-[#5c6bc0]/20 active:scale-95 transition-transform text-left border-2 border-[#c7d2fe] mt-2">
+                    <div class="w-14 h-14 rounded-full text-white flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, #8b98f7, #5c6bc0);">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <div class="flex-grow ml-4">
+                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">전장 기본 144문항</div>
+                        <div class="text-[13px] text-slate-400 font-bold leading-tight mt-1">계 1~22장 144문항 · 범위 공부 · 전체 시험</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-[#e8eaf6] text-[#5c6bc0] flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </button>
             </div>
 
             <!-- 하단 책상 일러스트 (레퍼런스 스타일) -->
@@ -554,6 +567,10 @@
 
         <!-- View 1b: 급수 시험방 (Grade Select) -->
         <div id="screen-grade-select" class="hidden flex-col items-center justify-start pt-16 px-6 text-center z-10 bg-[#f4f6fc] fade-enter overflow-y-auto w-full h-full pb-10 relative">
+            <a href="../index.html#cert" class="absolute top-4 left-4 z-20 bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-1.5 shadow-sm text-[12px] font-bold flex items-center gap-1 active:scale-95 transition-transform hover:bg-[#e0e7ff] no-underline">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                뒤로가기
+            </a>
             <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div class="absolute top-10 left-6 grid grid-cols-3 gap-2 opacity-10">
                     <div class="w-1.5 h-1.5 rounded-full bg-[#1e1b4b]"></div><div class="w-1.5 h-1.5 rounded-full bg-[#1e1b4b]"></div><div class="w-1.5 h-1.5 rounded-full bg-[#1e1b4b]"></div>
@@ -568,17 +585,17 @@
 
             <div class="w-full relative z-10 flex flex-col items-center pt-8 pb-6">
                 <div class="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-white mb-3" style="background: url('../assets/tongdari.png') center 22% / 170% no-repeat, #efe9ff;"></div>
-                <div class="font-['Jalnan'] text-2xl text-[#4f46e5]">계시록 급수 시험</div>
+                <div class="font-['Jalnan'] text-2xl text-[#4f46e5]">계시록 통달 급수 시험</div>
                 <p class="text-slate-400 text-[12px] font-bold mt-2 break-keep">응시할 급수를 선택하세요<br>선택한 급수의 범위에서 문제가 출제됩니다</p>
             </div>
 
             <div class="w-full space-y-4 relative z-10 pb-10">
-                <button onclick="showGrade4Rooms()" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-transform text-left border-2 border-transparent hover:border-[#5c6bc0]/20">
+                <button onclick="startGradeMock('grade4')" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-transform text-left border-2 border-transparent hover:border-[#5c6bc0]/20">
                     <div class="w-14 h-14 rounded-full text-white flex items-center justify-center font-['Jalnan'] text-xl shadow-sm shrink-0" style="background: linear-gradient(135deg, #8b98f7, #5c6bc0);">4급</div>
                     <div class="flex-grow ml-4">
-                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">4급 범위 시험과 모의 시험</div>
-                        <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장 중 144문항</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">범위 공부 / 전체 시험 / 모의고사</div>
+                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 4급 모의고사</div>
+                        <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장</span></div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">144문항 중 30문항 랜덤</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#e8eaf6] text-[#5c6bc0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -588,9 +605,9 @@
                 <button onclick="switchGradeLevel('grade3')" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-transform text-left border-2 border-transparent hover:border-[#7c6ff0]/20">
                     <div class="w-14 h-14 rounded-full text-white flex items-center justify-center font-['Jalnan'] text-xl shadow-sm shrink-0" style="background: linear-gradient(135deg, #a89bf9, #7c6ff0);">3급</div>
                     <div class="flex-grow ml-4">
-                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">3급 모의고사</div>
+                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 3급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~7장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">50문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">30문항</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ece9fe] text-[#7c6ff0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -600,9 +617,9 @@
                 <button onclick="switchGradeLevel('grade2')" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-transform text-left border-2 border-transparent hover:border-[#4f46e5]/20">
                     <div class="w-14 h-14 rounded-full text-white flex items-center justify-center font-['Jalnan'] text-xl shadow-sm shrink-0" style="background: linear-gradient(135deg, #7c78f0, #4f46e5);">2급</div>
                     <div class="flex-grow ml-4">
-                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">2급 모의고사</div>
+                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 2급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~15장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~7장 10문항 + 계 8~15장 40문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~7장 6문항 + 계 8~15장 24문항</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -613,9 +630,9 @@
                     <span class="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">최고 급수 👑</span>
                     <div class="w-14 h-14 rounded-full text-white flex items-center justify-center font-['Jalnan'] text-xl shadow-sm shrink-0" style="background: linear-gradient(135deg, #4b4790, #1e1b4b);">1급</div>
                     <div class="flex-grow ml-4">
-                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">1급 모의고사</div>
+                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 1급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~15장 20문항 + 계 16~22장 30문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~15장 12문항 + 계 16~22장 18문항</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ede9fe] text-[#1e1b4b] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -624,17 +641,18 @@
             </div>
         </div>
 
-        <!-- View 1c: 4급 시험 - 방 선택 -->
+        <!-- View 1c: 4급 시험 - 세부 메뉴 -->
         <div id="screen-grade4-rooms" class="hidden flex-col items-center justify-start pt-16 px-6 text-center z-10 bg-[#f4f6fc] fade-enter overflow-y-auto w-full h-full pb-10 relative">
-            <button onclick="showScreen('gradeSelect')" class="absolute top-4 left-4 z-20 bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-1.5 shadow-sm text-[12px] font-bold flex items-center gap-1 active:scale-95 transition-transform hover:bg-[#e0e7ff]">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6"/></svg>
-                급수 선택
+            <button onclick="showScreen('home')" class="absolute top-4 left-4 z-20 bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-1.5 shadow-sm text-[12px] font-bold flex items-center gap-1 active:scale-95 transition-transform hover:bg-[#e0e7ff]">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                뒤로가기
             </button>
 
             <div class="w-full relative z-10 flex flex-col items-center pt-8 pb-6">
                 <div class="w-14 h-14 rounded-full bg-[#5c6bc0] text-white flex items-center justify-center font-['Jalnan'] text-lg shadow-sm mb-3">4급</div>
-                <div class="font-['Jalnan'] text-xl text-[#4f46e5]">4급 범위 시험과 모의 시험</div>
+                <div class="font-['Jalnan'] text-xl text-[#4f46e5]">계시록 통달 4급 시험</div>
                 <p class="text-slate-400 text-[12px] font-bold mt-2 break-keep">계 1~22장 144문항 공식 문제</p>
+                <p class="inline-block bg-[#fef08a] text-[#854d0e] text-[11px] font-black px-3 py-1 rounded-full mt-2">계시록 통달 4급 시험 범위입니다</p>
             </div>
 
             <div class="w-full space-y-4 relative z-10 pb-10">
@@ -657,22 +675,9 @@
                     </div>
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">4급 전체 시험</div>
-                        <div class="text-[13px] text-slate-400 font-bold leading-tight mt-1">144문항 전체 · 정답 개수 실시간 체크</div>
+                        <div class="text-[13px] text-slate-400 font-bold leading-tight mt-1">전장 기본 144문항 시험 · 정답 개수 실시간 체크</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ece9fe] text-[#7c6ff0] flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                </button>
-
-                <button onclick="startGrade4Mock()" class="w-full bg-white rounded-3xl p-4 flex items-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] active:scale-95 transition-transform text-left border-2 border-[#c7d2fe]">
-                    <div class="w-14 h-14 rounded-full bg-[#1e1b4b] text-white flex items-center justify-center shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
-                    </div>
-                    <div class="flex-grow ml-4">
-                        <div class="text-[#1e1b4b] text-[18px] font-black mb-1">4급 모의고사</div>
-                        <div class="text-[13px] text-slate-400 font-bold leading-tight mt-1">랜덤 25문항 · 각 4점 · 100점 만점</div>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-[#ede9fe] text-[#1e1b4b] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
                 </button>
@@ -684,10 +689,10 @@
             <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <button onclick="showScreen('grade4Rooms')" class="text-slate-400 hover:text-slate-600 flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    방 선택
+                    뒤로가기
                 </button>
                 <div class="flex flex-col items-center justify-center text-center min-w-0">
-                    <span class="text-[10px] text-slate-400 font-bold">계시록 급수 시험 · 4급</span>
+                    <span class="text-[10px] text-slate-400 font-bold">계시록 통달 급수 시험 · 4급</span>
                     <span id="grade4-study-title" class="text-sm font-black text-[#1e1b4b] truncate">4급 시험 범위 공부</span>
                 </div>
                 <div class="flex gap-1 flex-shrink-0">
@@ -707,10 +712,10 @@
             <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0 no-print">
                 <button onclick="showScreen('grade4Rooms')" class="text-slate-400 hover:text-slate-600 flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    방 선택
+                    뒤로가기
                 </button>
                 <div class="flex flex-col items-center justify-center text-center min-w-0">
-                    <span class="text-[10px] text-slate-400 font-bold">계시록 급수 시험 · 4급</span>
+                    <span class="text-[10px] text-slate-400 font-bold">계시록 통달 급수 시험 · 4급</span>
                     <span class="text-sm font-black text-[#1e1b4b] truncate">4급 전체 시험</span>
                 </div>
                 <div class="flex gap-1 flex-shrink-0">
@@ -739,10 +744,10 @@
             <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <button id="g4-mock-back-btn" onclick="showScreen('grade4Rooms')" class="text-slate-400 hover:text-slate-600 flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    방 선택
+                    뒤로가기
                 </button>
                 <div class="flex flex-col items-center justify-center text-center min-w-0">
-                    <span id="g4-mock-header-sub" class="text-[10px] text-slate-400 font-bold">계시록 급수 시험 · 4급</span>
+                    <span id="g4-mock-header-sub" class="text-[10px] text-slate-400 font-bold">계시록 통달 급수 시험 · 4급</span>
                     <span id="g4-mock-header-title" class="text-sm font-black text-[#1e1b4b] truncate">4급 모의고사</span>
                 </div>
                 <div id="g4-mock-tabs" class="flex gap-1 flex-shrink-0">
@@ -10367,11 +10372,10 @@
         const GRADE4_LEVEL_AVAILABLE = { grade4: true, grade3: true, grade2: true, grade1: true };
         function switchGradeLevel(key) {
             if (!GRADE4_LEVEL_AVAILABLE[key]) { notifyComingSoon(); return; }
-            if (key === 'grade4') { showGrade4Rooms(); return; }
             startGradeMock(key);
         }
 
-        // ===== 계시록 급수 시험 4급 공식 문제 (144문항, 계 1~22장) =====
+        // ===== 계시록 통달 급수 시험 4급 공식 문제 (144문항, 계 1~22장) =====
         // PDF "계시록급수시험(4급) 144문제(수정)" 원본의 장별 요약을 그대로 옮기되,
         // 원본에서 파란색 KoPub Pro 볼드로 강조된 단어만 {{}}로 감싸 빈칸 처리했습니다.
         // v: 해당 문항이 인용/요약하는 성경 절 번호(계 {ch}:{v}) — 본문 표시에 사용됩니다.
@@ -12039,9 +12043,9 @@
         }
 
         const GRADE_MOCK_CONFIG = {
-            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 50 }] },
-            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 10 }, { from: 8, to: 15, count: 40 }] },
-            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 20 }, { from: 16, to: 22, count: 30 }] },
+            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 30 }] },
+            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 6 }, { from: 8, to: 15, count: 24 }] },
+            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 12 }, { from: 16, to: 22, count: 18 }] },
         };
 
         function pickWeightedMockItems(cfg) {
@@ -12390,14 +12394,14 @@
             const label = cfg ? cfg.label : '4급';
             const sub = document.getElementById('g4-mock-header-sub');
             const title = document.getElementById('g4-mock-header-title');
-            if (sub) sub.textContent = `계시록 급수 시험 · ${label}`;
+            if (sub) sub.textContent = `계시록 통달 급수 시험 · ${label}`;
             if (title) title.textContent = `${label} 모의고사`;
             document.querySelectorAll('#g4-mock-tabs button').forEach(btn => {
                 const active = btn.dataset.grade === gradeKey;
                 btn.className = `px-1.5 h-7 rounded-lg text-[11px] font-black transition-all ${active ? 'bg-[#5c6bc0] text-white shadow-sm' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`;
             });
             const backBtn = document.getElementById('g4-mock-back-btn');
-            if (backBtn) backBtn.setAttribute('onclick', gradeKey === 'grade4' ? "showScreen('grade4Rooms')" : "showScreen('gradeSelect')");
+            if (backBtn) backBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             const hint = document.getElementById('g4-mock-hint');
             if (hint) hint.textContent = gradeKey === 'grade4'
                 ? '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요'
@@ -12407,9 +12411,9 @@
         function startGradeMock(gradeKey = 'grade4') {
             let items, pointPer;
             if (gradeKey === 'grade4') {
-                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 25).sort((a, b) => a - b);
+                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 30).sort((a, b) => a - b);
                 items = pickedIdx.map(i => GRADE4_ALL_ITEMS[i]);
-                pointPer = 4;
+                pointPer = 2;
             } else {
                 items = pickWeightedMockItems(GRADE_MOCK_CONFIG[gradeKey]);
                 pointPer = 2;
@@ -12479,9 +12483,9 @@
             document.getElementById('grade4-mock-final-total').textContent = total;
             const cfg = GRADE_MOCK_CONFIG[g4MockState.gradeKey];
             const resultTitle = document.getElementById('g4-mock-result-title');
-            if (resultTitle) resultTitle.textContent = `${cfg ? cfg.label : '4급'} 모의고사 결과`;
+            if (resultTitle) resultTitle.textContent = `계시록 통달 ${cfg ? cfg.label : '4급'} 모의고사 결과`;
             const resultBackBtn = document.getElementById('g4-mock-result-back-btn');
-            if (resultBackBtn) resultBackBtn.setAttribute('onclick', g4MockState.gradeKey === 'grade4' ? "showScreen('grade4Rooms')" : "showScreen('gradeSelect')");
+            if (resultBackBtn) resultBackBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             showScreen('grade4MockResult');
         }
 

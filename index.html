@@ -60,13 +60,14 @@
         }
         .rooms-photo {
             position: relative;
-            aspect-ratio: 820 / 1200;
-            width: min(100%, 420px, calc((100vh - 40px) * 0.683));
-            width: min(100%, 420px, calc((100dvh - 40px) * 0.683));
-            background: url('assets/rooms-cover.png') center / cover no-repeat;
+            aspect-ratio: 820 / 1220;
+            width: min(100%, 420px, calc((100vh - 40px) * 0.672));
+            width: min(100%, 420px, calc((100dvh - 40px) * 0.672));
+            background: url('assets/cover-new.jpg') center / cover no-repeat;
             border-radius: 20px;
             box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
             overflow: hidden;
+            container-type: inline-size;
         }
         .rooms-hotspot {
             position: absolute;
@@ -106,6 +107,29 @@
             display: flex; align-items: center; justify-content: center;
             color: #4f46e5; font-weight: 900; font-size: 12px;
         }
+        .field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .field-input {
+            width: 100%;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            outline: none;
+            transition: border-color 0.15s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .field-input:focus { border-color: #a78bfa; }
+        .field-input:disabled { color: #94a3b8; }
     </style>
 </head>
 <body class="antialiased">
@@ -128,63 +152,146 @@
         </div>
 
         <!-- 방 선택 화면 -->
-        <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
-            <div class="w-full max-w-md px-2">
-                <div class="text-center mb-5">
-                    <span class="text-3xl text-indigo-600 drop-shadow-sm font-jua">시온 공부방</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="신학기초/index.html" class="no-underline relative overflow-hidden rounded-3xl p-3 pt-4 pb-3 shadow-lg flex flex-col items-center gap-1.5 group transition-transform hover:scale-[1.02] active:scale-[0.98]" style="background: linear-gradient(160deg, #baf0d4 0%, #6fcf9e 55%, #4fae82 100%);">
-                        <div class="pointer-events-none absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/25 blur-[1px]"></div>
-                        <div class="pointer-events-none absolute top-3 left-3 text-white/80 text-[10px]">✦</div>
-                        <div class="pointer-events-none absolute bottom-10 right-4 text-white/60 text-[8px]">✦</div>
-                        <div class="w-14 h-14 rounded-full bg-white/95 shadow-inner flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏫</div>
-                        <div class="text-center leading-tight">
-                            <h3 class="font-black text-white text-sm break-keep drop-shadow-sm">초중고 공부방</h3>
-                            <p class="text-emerald-50/90 text-[9px] mt-0.5 font-bold break-keep">신학 교재 종합 암기</p>
-                        </div>
-                        <div class="w-6 h-6 rounded-full bg-white/95 flex items-center justify-center shadow group-hover:translate-x-0.5 transition-transform">
-                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                    </a>
-                    <a href="도통계시록/index.html" class="no-underline relative overflow-hidden rounded-3xl p-3 pt-4 pb-3 shadow-lg flex flex-col items-center gap-1.5 group transition-transform hover:scale-[1.02] active:scale-[0.98]" style="background: linear-gradient(160deg, #d3c4f9 0%, #a48ceb 55%, #8570d9 100%);">
-                        <div class="pointer-events-none absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/25 blur-[1px]"></div>
-                        <div class="pointer-events-none absolute top-3 left-3 text-white/80 text-[10px]">✦</div>
-                        <div class="pointer-events-none absolute bottom-10 right-4 text-white/60 text-[8px]">✦</div>
-                        <div class="w-14 h-14 rounded-full bg-white/95 shadow-inner flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📖</div>
-                        <div class="text-center leading-tight">
-                            <h3 class="font-black text-white text-sm break-keep drop-shadow-sm">새 노래 공부방</h3>
-                            <p class="text-violet-50/90 text-[9px] mt-0.5 font-bold break-keep">계시록 본문의 참 뜻과 핵심 성구</p>
-                        </div>
-                        <div class="w-6 h-6 rounded-full bg-white/95 flex items-center justify-center shadow group-hover:translate-x-0.5 transition-transform">
-                            <svg class="w-3.5 h-3.5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                    </a>
-                </div>
-                <a href="#cert" onclick="showCert()" class="no-underline mt-3 w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all rounded-2xl px-4 py-4 shadow-md shadow-violet-200 flex items-center justify-center gap-2">
-                    <span class="text-white font-black text-sm break-keep">계시록 통달 자격증 시험 준비</span>
-                    <svg class="w-4 h-4 text-white/80 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                </a>
+        <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
+            <div class="rooms-photo">
+                <a href="신학기초/index.html" class="rooms-hotspot" style="left:6.5%; top:38%; width:42%; height:35%;" aria-label="초중고 신학 공부방"></a>
+                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:52%; top:38%; width:42%; height:35%;" aria-label="계시록 통달 공부방"></a>
+                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:81%; width:29%; height:17%;" aria-label="시험 안내"></a>
+                <a href="#apply" onclick="showApply()" class="rooms-hotspot" style="left:37%; top:81%; width:27%; height:17%;" aria-label="시험 신청"></a>
+                <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:81%; width:29%; height:17%;" aria-label="모의고사"></a>
             </div>
         </div>
 
-        <!-- 계시록 통달 자격증 시험 방 -->
-        <div id="view-cert" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+        <!-- 시험 안내 화면 -->
+        <div id="view-examinfo" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRoomsFromCert()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    방 선택으로
+                    뒤로가기
                 </button>
                 <div class="text-center mb-5">
-                    <h1 class="text-2xl font-black text-violet-700 font-jua break-keep">계시록 통달 자격증 시험</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">준비할 자격증을 선택하세요</p>
+                    <h1 class="text-xl font-black text-blue-700 font-jua break-keep">[신 43년 1차 계시록 통달 자격증]</h1>
+                    <h2 class="text-lg font-black text-blue-700 font-jua break-keep -mt-1">시험 안내</h2>
+                    <p class="text-slate-400 text-[11px] mt-2 break-keep">계시록을 통달하여 걸어다니는 성경이 되고자 하는<br>성도님들의 많은 참여를 바랍니다</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-2.5">
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">📅</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">시험 일시</p>
+                                <p class="text-sm font-extrabold text-slate-800">신 43년 11월 15일(일)</p>
+                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">오전 09:30~10:30 또는 오후 15:00~16:00 중 택 1</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100"></div>
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">📝</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">신청 기간</p>
+                                <p class="text-sm font-extrabold text-slate-800">8월 10일 ~ 10월 15일</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100"></div>
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">📖</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">신청 과목</p>
+                                <p class="text-sm font-extrabold text-slate-800 break-keep">세 과목 중 하나만 선택 (중복 신청 불가)</p>
+                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">전 과목·전 급수 소문항 50개 출제</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
+                        <p class="text-[11px] font-black text-slate-400 mb-2">급수별 시험 범위</p>
+                        <div class="overflow-x-auto -mx-1">
+                            <table class="w-full text-[11px] border-collapse min-w-[420px]">
+                                <thead>
+                                    <tr class="text-slate-500">
+                                        <th class="p-1.5 text-left font-black">급수</th>
+                                        <th class="p-1.5 text-left font-black">초중고 신학</th>
+                                        <th class="p-1.5 text-left font-black">계시록 통달</th>
+                                        <th class="p-1.5 text-left font-black">계시록 암기</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-slate-700 font-bold">
+                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">4급</td><td class="p-1.5">초등 종강 시험</td><td class="p-1.5">계 1~22장 중 144문항</td><td class="p-1.5">계 1~5장</td></tr>
+                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">3급</td><td class="p-1.5">초등 종강 시험·비유</td><td class="p-1.5">계 1~7장</td><td class="p-1.5">계 1~10장</td></tr>
+                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">2급</td><td class="p-1.5">초·중·고 종강·비유</td><td class="p-1.5">계 1~15장</td><td class="p-1.5">계 1~16장</td></tr>
+                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">1급</td><td class="p-1.5">초·중·고 종강·비유·수료</td><td class="p-1.5">계 1~22장</td><td class="p-1.5">계 1~22장</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
+                        <p class="text-[11px] font-black text-emerald-700 mb-1">🏅 합격 기준 및 혜택</p>
+                        <p class="text-[12px] text-emerald-900 font-bold break-keep">각 과목 90점 이상 합격</p>
+                        <p class="text-[12px] text-emerald-900 font-bold break-keep mt-1">합격 시 자격증 카드가 부여되며, 교적부에 기록됩니다</p>
+                    </div>
+
+                    <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
+                        <p class="text-[11px] font-black text-amber-700 mb-1">🌟 자문회 특별 전형</p>
+                        <p class="text-[12px] text-amber-900 font-bold break-keep">전장 144문항(일반 4급용)을 실시한 후 점수별로 급수가 정해집니다.</p>
+                        <p class="text-[11px] text-amber-800 font-bold mt-1">90점 이상 1급 · 80점 이상 2급 · 70점 이상 3급 · 60점 이상 4급</p>
+                        <p class="text-[11px] bg-yellow-200 text-yellow-900 font-bold rounded-lg px-2 py-1.5 mt-2 break-keep">※ 자문회 성도여도 희망자는 일반 성도와 동일하게 급수별 시험을 선택하여 치를 수 있음</p>
+                        <p class="text-[11px] text-amber-800 font-bold mt-1">계시록 암기 자격증은 일반 성도와 동일하게 응시</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-2.5">
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">✍️</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">신청 방법</p>
+                                <p class="text-sm font-extrabold text-slate-800 break-keep">[시험 신청]을 눌러 지파·교회·부서·이름·고유번호·전화번호 등 정보를 입력해 주세요</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100"></div>
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">⚠️</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">유의 사항</p>
+                                <ul class="text-[12px] text-slate-600 font-bold mt-0.5 space-y-1 list-disc pl-4 break-keep">
+                                    <li>취소는 [시험 신청] 화면에서 이름·고유번호로 조회 후 직접 진행</li>
+                                    <li>취소는 신청 기간 내에만 가능</li>
+                                    <li>수집된 정보는 시험 운영 목적으로만 사용, 종료 후 파기</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-100"></div>
+                        <div class="flex gap-3">
+                            <span class="text-lg flex-shrink-0">📚</span>
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-black text-slate-400">시험 준비</p>
+                                <p class="text-[12px] text-slate-600 font-bold break-keep">시온 공부방의 각 과목 자격증 준비방에서 급수별 문항으로 미리 연습하실 수 있습니다</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="showApply()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">시험 신청하러 가기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모의고사 -->
+        <div id="view-cert" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <div class="text-center mb-5">
+                    <h1 class="text-2xl font-black text-violet-700 font-jua break-keep">모의고사</h1>
+                    <p class="text-slate-400 text-[11px] mt-1 break-keep">준비할 자격증 시험을 선택하세요</p>
                 </div>
                 <div class="space-y-3">
                     <a href="신학기초/index.html#grade" class="no-underline bg-white hover:bg-emerald-50 border-2 border-slate-100 hover:border-emerald-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0">🏫</div>
+                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #6ee7b7, #059669);">🏫</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">초중고 신학 자격증 준비</h3>
+                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">초중고 신학 자격증 급수별 모의고사</h3>
                                 <p class="text-slate-400 text-[10px] mt-0.5 break-keep">1~4급 · 신학 교재 종합 암기</p>
                             </div>
                         </div>
@@ -192,9 +299,9 @@
                     </a>
                     <a href="도통계시록/index.html#grade" class="no-underline bg-white hover:bg-indigo-50 border-2 border-slate-100 hover:border-indigo-400 transition-all rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3 group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0">📖</div>
+                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform flex-shrink-0" style="background: linear-gradient(135deg, #a5b4fc, #4f46e5);">📖</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">새 노래 계시 말씀 자격증 준비</h3>
+                                <h3 class="font-extrabold text-slate-800 text-sm break-keep">계시록 통달 자격증 급수별 모의고사</h3>
                                 <p class="text-slate-400 text-[10px] mt-0.5 break-keep">1~4급 · 계시록 본문의 참 뜻과 핵심 성구</p>
                             </div>
                         </div>
@@ -202,9 +309,9 @@
                     </a>
                     <div class="relative bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-3 opacity-70 cursor-not-allowed select-none">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-200 text-slate-400 flex items-center justify-center text-xl flex-shrink-0">🧠</div>
+                            <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center text-xl shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #cbd5e1, #64748b);">🧠</div>
                             <div class="min-w-0">
-                                <h3 class="font-extrabold text-slate-500 text-sm break-keep">계시록 암기 자격증 준비</h3>
+                                <h3 class="font-extrabold text-slate-500 text-sm break-keep">계시록 암기 자격증 급수별 모의고사</h3>
                                 <p class="text-slate-400 text-[10px] mt-0.5 break-keep">4급 계 1~7장 · 3급 계 8~15장 · 2급 계 16~22장 · 1급 계 1~22장</p>
                             </div>
                         </div>
@@ -213,10 +320,158 @@
                 </div>
             </div>
         </div>
+
+        <!-- 시험 신청 화면 -->
+        <div id="view-apply" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+
+                <!-- 신청서 입력 -->
+                <div id="apply-form-section">
+                    <div class="text-center mb-5">
+                        <h1 class="text-2xl font-black text-blue-700 font-jua break-keep">시험 신청서</h1>
+                        <p class="text-slate-400 text-[11px] mt-1 break-keep">아래 정보를 입력하고 신청하기를 눌러주세요</p>
+                    </div>
+                    <p id="apply-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">모든 항목을 입력(선택)해주세요.</p>
+                    <form id="apply-form" onsubmit="event.preventDefault(); submitApplication();" class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div>
+                            <label class="field-label">지파</label>
+                            <select id="apply-tribe" class="field-input">
+                                <option value="도마">도마</option>
+                                <option value="요한">요한</option>
+                                <option value="베드로">베드로</option>
+                                <option value="야고보">야고보</option>
+                                <option value="안드레">안드레</option>
+                                <option value="다대오">다대오</option>
+                                <option value="빌립">빌립</option>
+                                <option value="시몬">시몬</option>
+                                <option value="바돌로매">바돌로매</option>
+                                <option value="마태">마태</option>
+                                <option value="맛디아">맛디아</option>
+                                <option value="서울야고보">서울야고보</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">교회</label>
+                            <select id="apply-church" class="field-input">
+                                <option value="">교회를 선택하세요</option>
+                                <option value="전주">전주</option>
+                                <option value="익산">익산</option>
+                                <option value="군산">군산</option>
+                                <option value="정읍">정읍</option>
+                                <option value="남원">남원</option>
+                                <option value="김제">김제</option>
+                                <option value="완주">완주</option>
+                                <option value="고창">고창</option>
+                                <option value="부안">부안</option>
+                                <option value="형제지파">형제지파</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">부서</label>
+                            <select id="apply-dept" class="field-input">
+                                <option value="">부서를 선택하세요</option>
+                                <option value="교역자">교역자</option>
+                                <option value="장로회">장로회</option>
+                                <option value="자문회">자문회</option>
+                                <option value="장년회">장년회</option>
+                                <option value="부녀회">부녀회</option>
+                                <option value="청년회">청년회</option>
+                                <option value="학생회">학생회</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">이름</label>
+                            <input type="text" id="apply-name" class="field-input" placeholder="이름을 입력하세요">
+                        </div>
+                        <div>
+                            <label class="field-label">고유번호</label>
+                            <input type="text" id="apply-uid" inputmode="numeric" class="field-input" placeholder="- 없이 숫자만 입력하세요" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        </div>
+                        <div>
+                            <label class="field-label">전화번호</label>
+                            <input type="text" id="apply-phone" inputmode="numeric" class="field-input" placeholder="- 없이 숫자만 입력하세요" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        </div>
+                        <div>
+                            <label class="field-label">과목</label>
+                            <select id="apply-subject" class="field-input">
+                                <option value="">과목을 선택하세요</option>
+                                <option value="초중고 신학">초중고 신학</option>
+                                <option value="계시록 통달">계시록 통달</option>
+                                <option value="계시록 암기" disabled>계시록 암기 (준비중)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">급수</label>
+                            <select id="apply-grade" class="field-input">
+                                <option value="">급수를 선택하세요</option>
+                                <option value="4급">4급</option>
+                                <option value="3급">3급</option>
+                                <option value="2급">2급</option>
+                                <option value="1급">1급</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">시험 시간</label>
+                            <select id="apply-time" class="field-input">
+                                <option value="">시험 시간을 선택하세요</option>
+                                <option value="오전 09:30~10:30">오전 09:30~10:30</option>
+                                <option value="오후 15:00~16:00">오후 15:00~16:00</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="apply-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">신청하기</button>
+                    </form>
+                    <button onclick="showApplyCancel()" class="w-full text-center text-slate-400 hover:text-rose-500 text-[11px] font-bold mt-4 transition-colors">신청 조회 · 신청 취소</button>
+                </div>
+
+                <!-- 신청 완료 -->
+                <div id="apply-success-section" class="hidden bg-white border-2 border-emerald-200 rounded-2xl p-6 shadow-sm text-center space-y-3">
+                    <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto">✅</div>
+                    <h2 class="text-lg font-black text-slate-800">신청이 접수되었습니다</h2>
+                    <p class="text-slate-400 text-[11px]">접수번호</p>
+                    <p id="apply-success-id" class="text-violet-700 font-black text-sm break-all"></p>
+                    <p id="apply-success-detail" class="text-slate-500 text-[12px] font-bold"></p>
+                    <p id="apply-success-sync" class="text-slate-400 text-[10px]"></p>
+                    <button onclick="resetApplyForm()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-xs font-black transition-colors mt-2">새로 신청하기</button>
+                    <button onclick="backToRooms()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-xs font-black transition-colors">뒤로가기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 시험 신청 취소 / 조회 화면 -->
+        <div id="view-applycancel" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="showApply()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <div class="text-center mb-5">
+                    <h1 class="text-2xl font-black text-rose-600 font-jua break-keep">신청 조회 · 신청 취소</h1>
+                    <p class="text-slate-400 text-[11px] mt-1 break-keep">이름과 고유번호로 신청 내역을 조회하세요</p>
+                </div>
+                <p id="cancel-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">이름과 고유번호를 모두 입력해주세요.</p>
+                <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3 mb-4">
+                    <div>
+                        <label class="field-label">이름</label>
+                        <input type="text" id="cancel-name" class="field-input" placeholder="이름을 입력하세요">
+                    </div>
+                    <div>
+                        <label class="field-label">고유번호</label>
+                        <input type="text" id="cancel-uid" inputmode="numeric" class="field-input" placeholder="- 없이 숫자만 입력하세요" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    </div>
+                    <button id="cancel-lookup-btn" onclick="lookupApplications()" class="w-full bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-3 text-sm font-black transition-colors">조회하기</button>
+                </div>
+                <div id="cancel-results" class="space-y-3"></div>
+            </div>
+        </div>
     </main>
 
     <script>
         const AUTH_KEY = 'sion_auth';
+        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-apply', 'view-applycancel'];
 
         function isSpecificOrPatternCode(code) {
             const isSpecificCode = code === "0012000" || code === "7777";
@@ -224,23 +479,28 @@
             return isSpecificCode || isPatternCode;
         }
 
-        function showRooms() {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('flex');
-            document.getElementById('view-cert').classList.add('hidden');
-            document.getElementById('view-cert').classList.remove('flex');
-            document.getElementById('view-rooms').classList.remove('hidden');
-            document.getElementById('view-rooms').classList.add('flex');
+        function hideAllViews() {
+            ALL_VIEWS.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
         }
 
-        function showCert() {
-            document.getElementById('view-rooms').classList.add('hidden');
-            document.getElementById('view-rooms').classList.remove('flex');
-            document.getElementById('view-cert').classList.remove('hidden');
-            document.getElementById('view-cert').classList.add('flex');
+        function showView(id) {
+            hideAllViews();
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            el.classList.add('flex');
         }
 
-        function backToRoomsFromCert() {
+        function showRooms() { showView('view-rooms'); }
+        function showExamInfo() { showView('view-examinfo'); }
+        function showCert() { showView('view-cert'); }
+        function showApply() { showView('view-apply'); }
+        function showApplyCancel() { showView('view-applycancel'); }
+
+        function backToRooms() {
             window.location.hash = '#rooms';
             showRooms();
         }
@@ -269,13 +529,202 @@
             }
         }
 
-        // 방에서 "방 선택"(#rooms) 또는 "계시록 통달 자격증 시험 방"(#cert)으로 돌아온 경우에만 로그인을 건너뛴다.
+        // ─────────────────────────────────────────────────────────
+        // 시험 신청 (Google 스프레드시트 연동)
+        //
+        // 아래 GAS_URL에 Apps Script 웹앱 배포 URL을 붙여넣으면
+        // 신청/취소/조회가 구글 시트로 저장·조회됩니다.
+        // URL이 비어있는 동안에는 이 기기(브라우저)의 localStorage에만
+        // 임시 저장되어 기능은 그대로 동작합니다.
+        // ─────────────────────────────────────────────────────────
+        const GAS_URL = '';
+
+        async function gasCall(payload) {
+            if (!GAS_URL) return { ok: false, offline: true };
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                return await res.json();
+            } catch (err) {
+                return { ok: false, offline: true, error: String(err) };
+            }
+        }
+
+        const APPLY_KEY = 'sion_exam_applications';
+
+        function loadApplications() {
+            try { return JSON.parse(localStorage.getItem(APPLY_KEY)) || []; } catch (e) { return []; }
+        }
+        function saveApplications(list) {
+            localStorage.setItem(APPLY_KEY, JSON.stringify(list));
+        }
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function nowStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+        }
+        // 접수번호 형식: YYMM-00001 (해당 연월 안에서 5자리 일련번호)
+        function genApplyId() {
+            const d = new Date();
+            const ym = String(d.getFullYear()).slice(2) + pad2(d.getMonth() + 1);
+            const seqKey = 'sion_apply_seq_' + ym;
+            const seq = (parseInt(localStorage.getItem(seqKey) || '0', 10) + 1);
+            localStorage.setItem(seqKey, String(seq));
+            return `${ym}-${String(seq).padStart(5, '0')}`;
+        }
+
+        async function submitApplication() {
+            const tribe = document.getElementById('apply-tribe').value.trim() || '도마';
+            const church = document.getElementById('apply-church').value;
+            const dept = document.getElementById('apply-dept').value;
+            const name = document.getElementById('apply-name').value.trim();
+            const uid = document.getElementById('apply-uid').value.trim();
+            const phone = document.getElementById('apply-phone').value.trim();
+            const subject = document.getElementById('apply-subject').value;
+            const grade = document.getElementById('apply-grade').value;
+            const examTime = document.getElementById('apply-time').value;
+            const errEl = document.getElementById('apply-error-msg');
+
+            if (!church || !dept || !name || !uid || !phone || !subject || !grade || !examTime) {
+                errEl.classList.remove('opacity-0');
+                return;
+            }
+            errEl.classList.add('opacity-0');
+
+            const app = {
+                id: genApplyId(),
+                appliedAt: nowStr(),
+                status: '접수완료',
+                tribe, church, dept, name, uid, phone, subject, grade, examTime,
+                cancelledAt: '', cancelReason: ''
+            };
+
+            const submitBtn = document.getElementById('apply-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '접수 처리 중...';
+
+            const result = await gasCall({ action: 'submit', ...app });
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = '신청하기';
+
+            // 구글 시트가 최종 접수번호를 부여해 돌려주면 그 번호를 우선 사용한다.
+            if (result && result.ok && result.id) app.id = result.id;
+
+            const list = loadApplications();
+            list.push(app);
+            saveApplications(list);
+
+            showApplySuccess(app, !!(result && result.ok));
+        }
+
+        function showApplySuccess(app, synced) {
+            document.getElementById('apply-form-section').classList.add('hidden');
+            document.getElementById('apply-success-section').classList.remove('hidden');
+            document.getElementById('apply-success-id').textContent = app.id;
+            document.getElementById('apply-success-detail').textContent = `${app.subject} · ${app.grade} · ${app.name} · ${app.examTime}`;
+            document.getElementById('apply-success-sync').textContent = synced
+                ? '구글 시트에 정상적으로 저장되었습니다.'
+                : '이 기기에 임시 저장되었습니다. (구글 시트 연동 대기 중)';
+        }
+
+        function resetApplyForm() {
+            document.getElementById('apply-form').reset();
+            document.getElementById('apply-tribe').value = '도마';
+            document.getElementById('apply-error-msg').classList.add('opacity-0');
+            document.getElementById('apply-form-section').classList.remove('hidden');
+            document.getElementById('apply-success-section').classList.add('hidden');
+        }
+
+        async function lookupApplications() {
+            const name = document.getElementById('cancel-name').value.trim();
+            const uid = document.getElementById('cancel-uid').value.trim();
+            const errEl = document.getElementById('cancel-error-msg');
+
+            if (!name || !uid) {
+                errEl.classList.remove('opacity-0');
+                return;
+            }
+            errEl.classList.add('opacity-0');
+
+            const btn = document.getElementById('cancel-lookup-btn');
+            btn.disabled = true;
+            btn.textContent = '조회 중...';
+
+            const result = await gasCall({ action: 'lookup', name, uid });
+
+            btn.disabled = false;
+            btn.textContent = '조회하기';
+
+            let rows;
+            if (result && result.ok) {
+                rows = result.rows;
+            } else {
+                rows = loadApplications().filter(a => a.name === name && a.uid === uid);
+            }
+            renderCancelResults(rows);
+        }
+
+        function renderCancelResults(rows) {
+            const el = document.getElementById('cancel-results');
+            if (!rows || rows.length === 0) {
+                el.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
+                return;
+            }
+            el.innerHTML = rows.map(r => `
+                <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-1.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-black text-slate-800 text-sm break-keep">${r.subject} · ${r.grade}</span>
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === '취소' ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-700'}">${r.status}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">접수번호 ${r.id}</p>
+                    <p class="text-[11px] text-slate-400">접수일시 ${r.appliedAt}</p>
+                    ${r.examTime ? `<p class="text-[11px] text-slate-400">시험 시간 ${r.examTime}</p>` : ''}
+                    ${r.status === '취소'
+                        ? `<p class="text-[11px] text-slate-400">취소일시 ${r.cancelledAt || ''}</p>
+                           ${r.cancelReason ? `<p class="text-[11px] text-slate-400">취소 사유 ${r.cancelReason}</p>` : ''}`
+                        : `<input type="text" id="cancel-reason-${r.id}" class="field-input mt-1" placeholder="취소 사유 (선택)">
+                           <button onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-black py-2 rounded-xl transition-colors">취소하기</button>`
+                    }
+                </div>
+            `).join('');
+        }
+
+        async function cancelApplication(id) {
+            const cancelledAt = nowStr();
+            const reasonEl = document.getElementById(`cancel-reason-${id}`);
+            const cancelReason = reasonEl ? reasonEl.value.trim() : '';
+            await gasCall({ action: 'cancel', id, cancelledAt, cancelReason });
+
+            const list = loadApplications();
+            const idx = list.findIndex(a => a.id === id);
+            if (idx > -1) {
+                list[idx].status = '취소';
+                list[idx].cancelledAt = cancelledAt;
+                list[idx].cancelReason = cancelReason;
+                saveApplications(list);
+            }
+            lookupApplications();
+        }
+
+        // 방에서 "방 선택"(#rooms), "시험 안내"(#examinfo), "모의고사"(#cert),
+        // "시험 신청"(#apply)으로 돌아온 경우에만 로그인을 건너뛴다.
         // 앱을 새로 열 때(직접 접속)는 항상 로그인 화면부터 보여준다.
         if (localStorage.getItem(AUTH_KEY) === '1') {
-            if (window.location.hash === '#cert') {
-                showRooms();
-                showCert();
-            } else if (window.location.hash === '#rooms') {
+            const hash = window.location.hash;
+            if (hash === '#cert') {
+                showRooms(); showCert();
+            } else if (hash === '#apply') {
+                showRooms(); showApply();
+            } else if (hash === '#applycancel') {
+                showRooms(); showApply(); showApplyCancel();
+            } else if (hash === '#examinfo') {
+                showRooms(); showExamInfo();
+            } else if (hash === '#rooms') {
                 showRooms();
             }
         }
