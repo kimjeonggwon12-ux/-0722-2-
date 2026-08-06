@@ -573,6 +573,7 @@
         // 임시 저장되어 기능은 그대로 동작합니다.
         async function gasCall(payload) {
             if (!GAS_URL) return { success: false, offline: true, message: '' };
+            console.log('[GAS 요청]', payload);
             let res;
             try {
                 res = await fetch(GAS_URL, {
@@ -582,13 +583,24 @@
                 });
             } catch (err) {
                 // 네트워크 자체가 막힌 경우에만 "오프라인"으로 취급한다.
+                console.error('[GAS 네트워크 오류]', err);
                 return { success: false, offline: true, message: '', error: String(err) };
             }
+            let text;
             try {
-                return await res.json();
+                text = await res.text();
+                const json = JSON.parse(text);
+                console.log('[GAS 응답]', res.status, json);
+                return json;
             } catch (err) {
                 // 서버에는 도달했지만 응답을 해석하지 못한 경우 - 오프라인으로 오인해 조용히 넘어가지 않고 오류로 알린다.
-                return { success: false, offline: false, message: '서버 응답을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.', error: String(err) };
+                console.error('[GAS 응답 파싱 실패]', res.status, text, err);
+                return {
+                    success: false,
+                    offline: false,
+                    message: `서버 응답을 처리하지 못했습니다. (status ${res.status}${text ? ': ' + text.slice(0, 200) : ''})`,
+                    error: String(err)
+                };
             }
         }
 
@@ -659,7 +671,7 @@
 
             if (result && !result.offline && !result.success) {
                 // 서버가 신청을 명시적으로 거부한 경우 (예: 중복 신청 등) - 폼에 남아 재시도하도록 안내만 띄운다.
-                errEl.textContent = result.message || '신청 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+                errEl.textContent = result.message || `신청 처리에 실패했습니다. (서버 응답: ${JSON.stringify(result)})`;
                 errEl.classList.remove('opacity-0');
                 return;
             }
@@ -804,7 +816,7 @@
             if (result && !result.offline && !result.success) {
                 // 서버가 취소를 거부한 경우 - 로컬 상태는 그대로 두고 사유만 안내한다.
                 if (msgEl) {
-                    msgEl.textContent = result.message || '취소 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+                    msgEl.textContent = result.message || `취소 처리에 실패했습니다. (서버 응답: ${JSON.stringify(result)})`;
                     msgEl.classList.remove('hidden');
                 }
                 if (btn) { btn.disabled = false; btn.textContent = '취소하기'; }
