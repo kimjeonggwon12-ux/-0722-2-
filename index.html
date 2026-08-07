@@ -177,7 +177,7 @@
                 <a href="신학기초/index.html" class="rooms-hotspot" style="left:6.5%; top:38%; width:42%; height:35%;" aria-label="초중고 신학 공부방"></a>
                 <a href="도통계시록/index.html" class="rooms-hotspot" style="left:52%; top:38%; width:42%; height:35%;" aria-label="계시록 통달 공부방"></a>
                 <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:81%; width:29%; height:17%;" aria-label="시험 안내"></a>
-                <a href="#apply" onclick="showApply()" class="rooms-hotspot" style="left:37%; top:81%; width:27%; height:17%;" aria-label="시험 신청"></a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:37%; top:81%; width:27%; height:17%;" aria-label="시험 신청"></a>
                 <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:81%; width:29%; height:17%;" aria-label="모의고사"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
@@ -268,37 +268,67 @@
                     </div>
 
                     <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
-                        <p class="text-[11px] font-black text-slate-400 mb-2">급수별 시험 범위</p>
-                        <div class="overflow-x-auto -mx-1">
-                            <table class="w-full text-[11px] border-collapse min-w-[420px]">
-                                <thead>
-                                    <tr class="text-slate-500">
-                                        <th class="p-1.5 text-left font-black">급수</th>
-                                        <th class="p-1.5 text-left font-black">초중고 신학</th>
-                                        <th class="p-1.5 text-left font-black">계시록 통달</th>
-                                        <th class="p-1.5 text-left font-black">계시록 암기</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-slate-700 font-bold">
-                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">4급</td><td class="p-1.5">초등 종강 시험</td><td class="p-1.5">계 1~22장 중 144문항</td><td class="p-1.5">계 1~5장</td></tr>
-                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">3급</td><td class="p-1.5">초등 종강 시험·비유</td><td class="p-1.5">계 1~7장</td><td class="p-1.5">계 1~10장</td></tr>
-                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">2급</td><td class="p-1.5">초·중·고 종강·비유</td><td class="p-1.5">계 1~15장</td><td class="p-1.5">계 1~16장</td></tr>
-                                    <tr class="border-t border-slate-100"><td class="p-1.5 font-black text-emerald-600">1급</td><td class="p-1.5">초·중·고 종강·비유·수료</td><td class="p-1.5">계 1~22장</td><td class="p-1.5">계 1~22장</td></tr>
-                                </tbody>
-                            </table>
+                        <p class="text-[11px] font-black text-slate-400 mb-3">급수별 시험 범위</p>
+                        <div class="space-y-3">
+                            <div class="rounded-xl border-2 border-blue-100 bg-blue-50/60 p-3">
+                                <p class="text-[12px] font-black text-blue-700 mb-1.5">📘 초중고 신학</p>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 종강 시험</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 종강 시험·비유</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중·고 종강·비유</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중·고 종강·비유·수료</span></div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border-2 border-indigo-100 bg-indigo-50/60 p-3">
+                                <p class="text-[12px] font-black text-indigo-700 mb-1.5">📖 계시록 통달</p>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장 중 144문항</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~7장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~15장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border-2 border-fuchsia-100 bg-fuchsia-50/60 p-3">
+                                <p class="text-[12px] font-black text-fuchsia-700 mb-1.5">✍️ 계시록 암기</p>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~5장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~10장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~16장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
+                        <p class="text-[11px] font-black text-slate-400 mb-2">✅ 과목별 채점 기준</p>
+                        <div class="space-y-2">
+                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-blue-700 flex-shrink-0 w-[62px]">초중고 신학</span><span class="text-[12px] text-slate-600 font-bold break-keep">토씨 오탈자 없이 정확히 기록하시기 바랍니다.</span></div>
+                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-indigo-700 flex-shrink-0 w-[62px]">계시록 통달</span><span class="text-[12px] text-slate-600 font-bold break-keep">조사(은/는/이/가/을/를 등)는 채점에 반영하지 않습니다.</span></div>
+                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-fuchsia-700 flex-shrink-0 w-[62px]">계시록 암기</span><span class="text-[12px] text-slate-600 font-bold break-keep">토씨 오탈자 없이 정확히 기록하시기 바랍니다.</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4">
+                        <p class="text-[11px] font-black text-sky-700 mb-1">📋 시험 유형</p>
+                        <p class="text-[12px] text-sky-900 font-bold break-keep">각 과목, 각 급수별 모의고사 참고 (동일한 유형으로 출제합니다.)</p>
                     </div>
 
                     <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
                         <p class="text-[11px] font-black text-emerald-700 mb-1">🏅 합격 기준 및 혜택</p>
                         <p class="text-[12px] text-emerald-900 font-bold break-keep">각 과목 90점 이상 합격</p>
-                        <p class="text-[12px] text-emerald-900 font-bold break-keep mt-1">합격 시 자격증 카드가 부여되며, 교적부에 기록됩니다</p>
+                        <p class="text-[12px] text-emerald-900 font-bold break-keep mt-1">합격 시 자격증서와 자격증 카드가 부여됩니다.</p>
                     </div>
 
                     <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
                         <p class="text-[11px] font-black text-amber-700 mb-1">🌟 자문회 특별 전형 (계시록 통달 자격증에 한함)</p>
                         <p class="text-[12px] text-amber-900 font-bold break-keep">전장 144문항(일반 4급용)을 실시한 후 점수별로 급수가 정해집니다.</p>
-                        <p class="text-[11px] text-amber-800 font-bold mt-1">90점 이상 1급 · 80점 이상 2급 · 70점 이상 3급 · 60점 이상 4급</p>
+                        <div class="grid grid-cols-2 gap-1.5 mt-2">
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">1급</span><span class="text-[11px] text-amber-900 font-bold">90점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">2급</span><span class="text-[11px] text-amber-900 font-bold">80점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">3급</span><span class="text-[11px] text-amber-900 font-bold">70점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">4급</span><span class="text-[11px] text-amber-900 font-bold">60점 이상</span></div>
+                        </div>
                         <p class="text-[11px] bg-yellow-200 text-yellow-900 font-bold rounded-lg px-2 py-1.5 mt-2 break-keep">※ 자문회 성도여도 희망자는 일반 성도와 동일하게 급수별 시험을 선택하여 치를 수 있음</p>
                         <p class="text-[11px] text-amber-800 font-bold mt-1 break-keep">초중고 신학, 계시록 암기 자격증은 자문회도 일반 성도와 동일하게 응시</p>
                     </div>
@@ -333,7 +363,7 @@
                         </div>
                     </div>
 
-                    <button onclick="showApply()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">시험 신청하러 가기</button>
+                    <button onclick="showApplyMenu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">시험 신청하러 가기</button>
                 </div>
             </div>
         </div>
@@ -356,6 +386,15 @@
                     뒤로가기
                 </button>
                 <div class="text-center mb-5">
+                    <div class="w-20 h-20 rounded-full shadow-md border-2 border-white mb-3 flex items-center justify-center mx-auto" style="background: linear-gradient(135deg, #f0abfc, #a21caf);">
+                        <svg viewBox="0 0 48 48" class="w-11 h-11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="새 노래를 부르는 여인">
+                            <circle cx="19" cy="13" r="5.5" fill="#ffffff"/>
+                            <path d="M9 38c0-9 4.5-15.5 10-15.5S29 29 29 38" fill="#ffffff"/>
+                            <path d="M33 34V17l7-2v17" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <ellipse cx="31.3" cy="34.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 31.3 34.3)"/>
+                            <ellipse cx="38.3" cy="32.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 38.3 32.3)"/>
+                        </svg>
+                    </div>
                     <h1 class="text-2xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 급수 시험</h1>
                     <p class="text-slate-400 text-[11px] mt-1 break-keep">응시할 급수를 선택하세요</p>
                 </div>
@@ -414,6 +453,7 @@
                     <div class="text-center mb-4">
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
                         <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep">출제 범위: 계 1~5장 · 1~10번 구절 괄호 넣기 · 11~25번 구절 쓰기</p>
+                        <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[11px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
                     </div>
                     <div>
                         <label class="field-label">이름</label>
@@ -455,10 +495,42 @@
             </div>
         </div>
 
+        <!-- 시험 신청 진입 선택 화면 -->
+        <div id="view-apply-menu" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-black text-blue-700 font-jua break-keep">시험 신청</h1>
+                    <p class="text-slate-400 text-[11px] mt-1 break-keep">원하시는 항목을 선택해주세요</p>
+                </div>
+                <div class="space-y-3">
+                    <button onclick="showApply()" class="w-full bg-white hover:bg-blue-50 border-2 border-slate-100 hover:border-blue-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">✍️</div>
+                        <div class="flex-grow">
+                            <h3 class="font-extrabold text-slate-800 text-base">신청하기</h3>
+                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">새로 시험을 신청합니다</p>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button onclick="showApplyCancel()" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                        <div class="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">🔍</div>
+                        <div class="flex-grow">
+                            <h3 class="font-extrabold text-slate-800 text-base">신청 조회 · 신청 취소</h3>
+                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">이전에 넣은 신청 내역을 확인하거나 취소합니다</p>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- 시험 신청 화면 -->
         <div id="view-apply" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showApplyMenu()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -582,7 +654,7 @@
         <!-- 시험 신청 취소 / 조회 화면 -->
         <div id="view-applycancel" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="showApply()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showApplyMenu()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -615,7 +687,7 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
 
         const AUTH_KEY = 'sion_auth';
-        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply', 'view-applycancel'];
+        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel'];
         const MEMO_VERSES = {
  "ch1": {
   "1": "예수 그리스도의 계시라 이는 하나님이 그에게 주사 반드시 속히 될 일을 그 종들에게 보이시려고 그 천사를 그 종 요한에게 보내어 지시하신 것이라",
@@ -1518,6 +1590,7 @@
         function showExamInfo() { showView('view-examinfo'); }
         function showCert() { showView('view-cert'); }
         function showMemorizeGrade() { showView('view-memorize-grade'); renderMemoHistoryList(); }
+        function showApplyMenu() { showView('view-apply-menu'); }
         function showApply() { showView('view-apply'); }
         function showApplyCancel() { showView('view-applycancel'); }
 
@@ -1647,7 +1720,7 @@
                 return;
             }
             const res = await gasCall({ action: 'visit', date: today, visitedAt: nowStr() });
-            if (res && res.ok && typeof res.count === 'number') {
+            if (res && res.success && typeof res.count === 'number') {
                 renderVisitorBadge(res.count, true);
             } else {
                 const n = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
@@ -1709,6 +1782,13 @@
 
             if (!church || !department || !name || !memberId || !phone || !subject || !grade || !examTime) {
                 errEl.textContent = '모든 항목을 입력(선택)해주세요.';
+                errEl.classList.remove('opacity-0');
+                return;
+            }
+
+            const isDuplicate = loadApplications().some(a => a.name === name && a.memberId === memberId && a.status !== '취소');
+            if (isDuplicate) {
+                errEl.textContent = '이미 신청하셨습니다. 이전 신청을 취소하고 다시 신청해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
             }
