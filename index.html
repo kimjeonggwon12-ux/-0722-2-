@@ -65,7 +65,7 @@
             aspect-ratio: 820 / 1220;
             width: min(100%, 420px, calc((100vh - 40px) * 0.672));
             width: min(100%, 420px, calc((100dvh - 40px) * 0.672));
-            background: url('assets/cover-new.jpg') center / cover no-repeat;
+            background: url('assets/rooms-cover-v2.jpg') center / cover no-repeat;
             border-radius: 20px;
             box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
             overflow: hidden;
@@ -127,6 +127,35 @@
             display: flex; align-items: center; justify-content: center;
             color: #4f46e5; font-weight: 900; font-size: 12px;
         }
+        .visitor-badge, .suggest-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 6px 14px 6px 6px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #64748b;
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+        }
+        .suggest-badge { cursor: pointer; border: none; color: #b45309; }
+        .suggest-badge:active, .visitor-badge:active { transform: scale(0.95); }
+        @media (hover: hover) {
+            .suggest-badge:hover { box-shadow: 0 5px 12px rgba(180, 83, 9, 0.18); }
+        }
+        .badge-icon {
+            flex-shrink: 0;
+            width: 22px; height: 22px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+        }
+        .visitor-badge .badge-icon { background: linear-gradient(160deg, #c4b5fd, #7c3aed); }
+        .suggest-badge .badge-icon { background: linear-gradient(160deg, #fde68a, #f59e0b); }
         .field-label {
             display: block;
             font-size: 11px;
@@ -174,19 +203,22 @@
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
             <div class="rooms-photo">
-                <a href="신학기초/index.html" class="rooms-hotspot" style="left:6.5%; top:38%; width:42%; height:35%;" aria-label="초중고 신학 공부방"></a>
-                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:52%; top:38%; width:42%; height:35%;" aria-label="계시록 통달 공부방"></a>
-                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:81%; width:29%; height:17%;" aria-label="시험 안내"></a>
-                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:37%; top:81%; width:27%; height:17%;" aria-label="시험 신청"></a>
-                <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:81%; width:29%; height:17%;" aria-label="모의고사"></a>
+                <a href="신학기초/index.html" class="rooms-hotspot" style="left:7%; top:34.5%; width:29%; height:33%;" aria-label="초중고 신학 공부방"></a>
+                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:38%; top:34.5%; width:29%; height:33%;" aria-label="계시록 통달 공부방"></a>
+                <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:34.5%; width:27%; height:33%;" aria-label="계시록 암기 공부방"></a>
+                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:76%; width:29%; height:19%;" aria-label="시험 안내"></a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:37%; top:76%; width:27%; height:19%;" aria-label="시험 신청"></a>
+                <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:76%; width:29%; height:19%;" aria-label="모의고사"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
-                <span class="inline-flex items-center gap-1 bg-white/90 border border-slate-200 rounded-full px-3 py-1 text-[11px] font-black text-slate-500 shadow-sm">
-                    👀 오늘 방문자 <span id="visitor-badge-count" class="text-violet-600">-</span>명
+                <span class="visitor-badge">
+                    <span class="badge-icon">👀</span>
+                    오늘 방문자 <span id="visitor-badge-count" class="text-violet-600">-</span>명
                     <span id="visitor-badge-note" class="text-slate-300 font-bold"></span>
                 </span>
-                <button onclick="showSuggest()" class="inline-flex items-center gap-1 bg-white/90 hover:bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-[11px] font-black text-amber-600 shadow-sm transition-colors active:scale-95">
-                    💡 개선 건의하기
+                <button onclick="showSuggest()" class="suggest-badge">
+                    <span class="badge-icon">💡</span>
+                    개선 건의하기
                 </button>
             </div>
         </div>
@@ -378,7 +410,7 @@
             </div>
         </div>
 
-        <!-- 계시록 암기 급수 선택 (준비중 안내) -->
+        <!-- 계시록 암기 급수 선택 -->
         <div id="view-memorize-grade" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
                 <button onclick="backToCert()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
