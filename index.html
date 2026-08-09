@@ -611,7 +611,7 @@
                                 <option value="">과목을 선택하세요</option>
                                 <option value="초중고 신학">초중고 신학</option>
                                 <option value="계시록 통달">계시록 통달</option>
-                                <option value="계시록 암기" disabled>계시록 암기 (준비중)</option>
+                                <option value="계시록 암기">계시록 암기</option>
                             </select>
                         </div>
                         <div>
@@ -1591,7 +1591,7 @@
         function showCert() { showView('view-cert'); }
         function showMemorizeGrade() { showView('view-memorize-grade'); renderMemoHistoryList(); }
         function showApplyMenu() { showView('view-apply-menu'); }
-        function showApply() { showView('view-apply'); }
+        function showApply() { resetApplyForm(); showView('view-apply'); }
         function showApplyCancel() { showView('view-applycancel'); }
 
         function showSuggest() {
