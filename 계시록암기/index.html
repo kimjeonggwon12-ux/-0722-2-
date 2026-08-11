@@ -15,16 +15,26 @@
             /* 산뜻한 민트/에메랄드 테마 */
             --bg-gradient-start: #f0fdfa; /* teal-50 */
             --bg-gradient-end: #eff6ff;   /* blue-50 */
-            --card-bg: #ffffff;
+            --card-bg: #faf5ea;           /* 완전 흰색 대신 은은한 아이보리 톤 (야간 학습 눈부심 완화) */
             --primary-color: #0d9488;     /* teal-600 */
             --primary-hover: #0f766e;     /* teal-700 */
-            --text-main: #334155;         /* slate-700 */
+            --text-main: #1e293b;         /* slate-800, 기존보다 한 단계 더 진하게 */
             --text-sub: #64748b;          /* slate-500 */
         }
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: var(--text-main);
+        }
+        /* 카드/입력창 등 흰색 배경을 전부 아이보리 톤으로, 주요 본문 글자는 더 진하게
+           (디자인·레이아웃은 그대로 두고 색만 조정 — Tailwind CDN 유틸리티는 레이어에 속해 있어
+           레이어 밖에 있는 이 규칙이 소스 순서와 무관하게 항상 우선 적용됨) */
+        .bg-white,
+        .focus\:bg-white:focus {
+            background-color: var(--card-bg) !important;
+        }
+        .text-slate-700 {
+            color: var(--text-main) !important;
         }
         .cursive {
             font-family: 'Nanum Pen Script', cursive;
