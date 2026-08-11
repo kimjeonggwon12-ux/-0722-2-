@@ -179,6 +179,23 @@
         }
         .field-input:focus { border-color: #a78bfa; }
         .field-input:disabled { color: #94a3b8; }
+        .memo-inline-input {
+            display: inline-block;
+            min-width: 60px;
+            width: 8em;
+            max-width: 100%;
+            background: #fdf4ff;
+            border: none;
+            border-bottom: 2px solid #e879f9;
+            padding: 1px 4px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #a21caf;
+            outline: none;
+            font-family: inherit;
+            vertical-align: baseline;
+        }
+        .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
     </style>
 </head>
 <body class="antialiased">
@@ -465,7 +482,7 @@
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
-                <p class="text-center text-slate-400 text-[11px] mt-4">괄호 넣기 10문항 + 구절 쓰기 15문항, 총 25문항 · 90점 이상 합격</p>
+                <p class="text-center text-slate-400 text-[11px] mt-4">범위 내 4개 장 전문 제시 · 괄호 넣기 50문항 + 구절 전체 쓰기(급수별 1~2문항) · 90점 이상 합격</p>
 
                 <div id="memo-history-section" class="hidden mt-5">
                     <p class="text-[11px] font-black text-slate-400 mb-2">📅 최근 응시 기록 (이 기기 기준)</p>
@@ -489,13 +506,13 @@
                     </div>
                     <div>
                         <label class="field-label">이름</label>
-                        <input type="text" id="memo-exam-name-input" class="field-input" placeholder="이름을 입력하세요" autocomplete="off">
+                        <input type="text" id="memo-exam-name-input" class="field-input" placeholder="이름을 입력하세요" autocomplete="off" lang="ko">
                     </div>
                     <p id="memo-exam-name-error" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mt-2">이름을 입력해주세요.</p>
                     <p class="text-[10px] text-slate-400 font-bold mt-2 text-center break-keep">문항을 쓰고 Enter를 누르면 다음 문항으로 이동합니다 · 띄어쓰기·기호는 채점에서 무시됩니다</p>
                 </div>
                 <div id="memo-exam-container" class="space-y-3"></div>
-                <button id="memo-exam-submit-btn" onclick="memoSubmitExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3.5 text-sm font-black transition-colors mt-4 mb-10">25번까지 작성 후 제출하고 채점하기</button>
+                <button id="memo-exam-submit-btn" onclick="memoSubmitExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3.5 text-sm font-black transition-colors mt-4 mb-10">작성 후 제출하고 채점하기</button>
             </div>
         </div>
 
@@ -1172,13 +1189,22 @@
 };
 
         // ─────────────────────────────────────────────────────────
-        // 계시록 암기 모의고사 (급수별 25문항: 1~10 괄호 넣기 / 11~25 구절 쓰기)
+        // 계시록 암기 모의고사 (범위 내 4개 장 전문 제시, 괄호 50문항 + 최상 난이도 절 전체 쓰기)
         // ─────────────────────────────────────────────────────────
         const MEMO_GRADES = {
-            grade4: { label: '4급', maxCh: 5, rangeLabel: '계 1~5장' },
-            grade3: { label: '3급', maxCh: 10, rangeLabel: '계 1~10장' },
-            grade2: { label: '2급', maxCh: 16, rangeLabel: '계 1~16장' },
-            grade1: { label: '1급', maxCh: 22, rangeLabel: '계 1~22장' },
+            grade4: { label: '4급', maxCh: 5, rangeLabel: '계 1~5장', topCount: 1 },
+            grade3: { label: '3급', maxCh: 10, rangeLabel: '계 1~10장', topCount: 1 },
+            grade2: { label: '2급', maxCh: 16, rangeLabel: '계 1~16장', topCount: 2 },
+            grade1: { label: '1급', maxCh: 22, rangeLabel: '계 1~22장', topCount: 2 },
+        };
+
+        // 최상 난이도(절 전체 쓰기) 후보 구절 범위 (장별 "n" 또는 "a-b" 콤마 구분)
+        const MEMO_TOP_RANGES = {
+            1: '1-8,19,20', 2: '7,10,11,17,26-28', 3: '4,5,10,12,14-21', 4: '1-8', 5: '1-4,9-10',
+            6: '1-14', 7: '1-4,9-14', 8: '1-12', 9: '1-21', 10: '1-11', 11: '1-12,15,21',
+            12: '1-12,14-17', 13: '1-8,10-18', 14: '1-6,14-16,20', 15: '1-8', 16: '1-4,8-17,19,21',
+            17: '1-17', 18: '1-8,14,20,24', 19: '1,2,6,7-8,10,11-20', 20: '1-15',
+            21: '1-8,12-21,27', 22: '1-5,6-8,10-18',
         };
 
         function memoChVerseCount(ch) { return Object.keys(MEMO_VERSES['ch' + ch]).length; }
@@ -1194,73 +1220,87 @@
             return a;
         }
 
-        // 1~10번: 범위 내 임의 구절 10개, 각각 3~10어절 괄호 넣기
-        function pickMemoBlankQuestions(maxCh) {
-            const used = new Set();
-            const questions = [];
-            let guard = 0;
-            while (questions.length < 10 && guard < 800) {
-                guard++;
-                const ch = memoRandInt(1, maxCh);
-                const vCount = memoChVerseCount(ch);
-                const v = memoRandInt(1, vCount);
-                const key = ch + ':' + v;
-                if (used.has(key)) continue;
-                const text = memoVerseText(ch, v);
-                const tokens = text.split(' ');
-                if (tokens.length < 4) continue;
-                const maxLen = Math.min(10, tokens.length - 1);
-                const minLen = Math.min(3, maxLen);
-                if (maxLen < minLen) continue;
-                const len = memoRandInt(minLen, maxLen);
-                const start = memoRandInt(0, tokens.length - len);
-                const before = tokens.slice(0, start).join(' ');
-                const answer = tokens.slice(start, start + len).join(' ');
-                const after = tokens.slice(start + len).join(' ');
-                used.add(key);
-                questions.push({ type: 'blank', ch, v, address: `계 ${ch}:${v}`, before, after, answer });
+        function memoTopCandidates(maxCh) {
+            const list = [];
+            for (let ch = 1; ch <= maxCh; ch++) {
+                const spec = MEMO_TOP_RANGES[ch];
+                if (!spec) continue;
+                const vc = memoChVerseCount(ch);
+                spec.split(',').forEach(part => {
+                    if (part.includes('-')) {
+                        const [a, b] = part.split('-').map(Number);
+                        for (let v = a; v <= b; v++) if (v >= 1 && v <= vc) list.push({ ch, v });
+                    } else {
+                        const v = Number(part);
+                        if (v >= 1 && v <= vc) list.push({ ch, v });
+                    }
+                });
             }
-            return questions;
+            return list;
         }
 
-        // 11~25번: 범위 내 두 개 장을 임의로 골라 각 장에서 연속된 구절을 이어서 쓰게 함 (총 15문항)
-        function pickMemoVerseRangeQuestions(maxCh) {
-            let guard = 0;
-            while (guard < 500) {
-                guard++;
-                const chapters = memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1));
-                const chA = chapters[0];
-                const vcA = memoChVerseCount(chA);
-                const maxA = Math.min(10, vcA);
-                const minA = Math.min(5, maxA);
-                if (maxA < 3) continue;
-                const sizeA = memoRandInt(minA, maxA);
-                const sizeB = 15 - sizeA;
-                if (sizeB < 1) continue;
-                const chB = chapters.slice(1).find(c => memoChVerseCount(c) >= sizeB);
-                if (!chB) continue;
-                const vcB = memoChVerseCount(chB);
-                const startA = memoRandInt(1, vcA - sizeA + 1);
-                const startB = memoRandInt(1, vcB - sizeB + 1);
-                const questions = [];
-                for (let i = 0; i < sizeA; i++) {
-                    const v = startA + i;
-                    questions.push({ type: 'verse', ch: chA, v, address: `계 ${chA}:${v}`, answer: memoVerseText(chA, v) });
-                }
-                for (let i = 0; i < sizeB; i++) {
-                    const v = startB + i;
-                    questions.push({ type: 'verse', ch: chB, v, address: `계 ${chB}:${v}`, answer: memoVerseText(chB, v) });
-                }
-                return questions;
-            }
-            return [];
+        // 범위 내에서 서로 다른 4개 장을 골라 오름차순 정렬
+        function pickMemoChapters(maxCh) {
+            return memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1)).slice(0, 4).sort((a, b) => a - b);
         }
 
+        // 선택된 4개 장의 모든 절(전문)을 순서대로 나열
+        function buildMemoPassage(chapters) {
+            const verses = [];
+            chapters.forEach(ch => {
+                const vc = memoChVerseCount(ch);
+                for (let v = 1; v <= vc; v++) verses.push({ ch, v, text: memoVerseText(ch, v) });
+            });
+            return verses;
+        }
+
+        // 전문 안에서 난이도별(하 1~2어절 / 중 3~8어절 / 상 9~20어절) 괄호 50개를 배치
+        function assignMemoBlanks(verses) {
+            const order = memoShuffle(verses.map((_, i) => i));
+            const tiers = [{ min: 9, max: 20, count: 4 }, { min: 3, max: 8, count: 16 }, { min: 1, max: 2, count: 30 }];
+            const blanks = new Map();
+            let oi = 0;
+            tiers.forEach(tier => {
+                let picked = 0;
+                while (picked < tier.count && oi < order.length) {
+                    const idx = order[oi++];
+                    const tokens = verses[idx].text.split(' ');
+                    if (tokens.length < 2) continue;
+                    const maxLen = Math.min(tier.max, tokens.length);
+                    const minLen = Math.min(tier.min, maxLen);
+                    const len = memoRandInt(minLen, maxLen);
+                    const start = memoRandInt(0, tokens.length - len);
+                    blanks.set(idx, { len, start });
+                    picked++;
+                }
+            });
+            return blanks;
+        }
+
+        // 4개 장 전문 괄호 넣기 50문항 + 최상 난이도 절 전체 쓰기(급수별 1~2문항)
         function generateMemoExam(gradeKey) {
             const cfg = MEMO_GRADES[gradeKey];
-            const blanks = pickMemoBlankQuestions(cfg.maxCh);
-            const verses = pickMemoVerseRangeQuestions(cfg.maxCh);
-            return blanks.concat(verses);
+            const chapters = pickMemoChapters(cfg.maxCh);
+            const passage = buildMemoPassage(chapters);
+            const blanks = assignMemoBlanks(passage);
+
+            const questions = [];
+            passage.forEach((vObj, idx) => {
+                const b = blanks.get(idx);
+                if (!b) return;
+                const tokens = vObj.text.split(' ');
+                const before = tokens.slice(0, b.start).join(' ');
+                const answer = tokens.slice(b.start, b.start + b.len).join(' ');
+                const after = tokens.slice(b.start + b.len).join(' ');
+                questions.push({ type: 'blank', ch: vObj.ch, v: vObj.v, address: `계 ${vObj.ch}:${vObj.v}`, before, after, answer });
+            });
+
+            const topPicked = memoShuffle(memoTopCandidates(cfg.maxCh)).slice(0, cfg.topCount);
+            topPicked.forEach(({ ch, v }) => {
+                questions.push({ type: 'verse', ch, v, address: `계 ${ch}:${v}`, answer: memoVerseText(ch, v), top: true });
+            });
+
+            return { chapters, passage, questions };
         }
 
         // 채점: 띄어쓰기·기호 무시, "찌"↔"지" 계열 어미는 동일하게 처리 (예: 찌어다=지어다, 찌니라=지니라)
@@ -1336,37 +1376,14 @@
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        let memoState = { gradeKey: 'grade4', name: '', questions: [], answers: [], lastResult: null };
-
-        // 문항 카드 하나(HTML) 생성: 1~10번 괄호 넣기 / 11~25번 구절 쓰기
-        function memoQuestionCardHtml(q, idx) {
-            const num = idx + 1;
-            if (q.type === 'blank') {
-                return `
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="w-7 h-7 rounded-full bg-fuchsia-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">${num}</span>
-                    <span class="text-[11px] font-black text-fuchsia-600">구절 괄호 넣기</span>
-                    <span class="text-[11px] font-black text-slate-400 ml-auto">${escapeHtml(q.address)}</span>
-                </div>
-                <p class="text-[14px] leading-relaxed text-slate-800 break-keep mb-2">${escapeHtml(q.before)} <span class="inline-block px-2 border-b-2 border-fuchsia-400 text-fuchsia-300">　　　　</span> ${escapeHtml(q.after)}</p>
-                <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="field-input memo-answer-input" placeholder="괄호에 들어갈 말을 쓰세요" autocomplete="off" spellcheck="false">
-            </div>`;
-            }
-            return `
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="w-7 h-7 rounded-full bg-fuchsia-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">${num}</span>
-                    <span class="text-[11px] font-black text-fuchsia-600">구절 쓰기</span>
-                    <span class="text-[11px] font-black text-slate-400 ml-auto">${escapeHtml(q.address)}</span>
-                </div>
-                <textarea id="memo-ans-${idx}" data-idx="${idx}" class="field-input memo-answer-input" rows="2" placeholder="구절을 그대로 써보세요" spellcheck="false"></textarea>
-            </div>`;
-        }
+        let memoState = { gradeKey: 'grade4', name: '', chapters: [], passage: [], questions: [], answers: [], lastResult: null };
 
         function startMemoExamSheet(gradeKey) {
             memoState.gradeKey = gradeKey;
-            memoState.questions = generateMemoExam(gradeKey);
+            const exam = generateMemoExam(gradeKey);
+            memoState.chapters = exam.chapters;
+            memoState.passage = exam.passage;
+            memoState.questions = exam.questions;
             memoState.answers = new Array(memoState.questions.length).fill('');
             memoState.lastResult = null;
             showView('view-memo-exam');
@@ -1375,7 +1392,10 @@
 
         function retryMemoExam() {
             const keepName = memoState.name;
-            memoState.questions = generateMemoExam(memoState.gradeKey);
+            const exam = generateMemoExam(memoState.gradeKey);
+            memoState.chapters = exam.chapters;
+            memoState.passage = exam.passage;
+            memoState.questions = exam.questions;
             memoState.answers = new Array(memoState.questions.length).fill('');
             memoState.lastResult = null;
             showView('view-memo-exam');
@@ -1383,16 +1403,50 @@
             document.getElementById('memo-exam-name-input').value = keepName || '';
         }
 
-        // 25문항 전체를 한 페이지(시험지)에 렌더링한다
+        // 4개 장 전문 + 괄호 입력칸을 한 페이지(시험지)에 렌더링한다
         function renderMemoExamSheet() {
             const cfg = MEMO_GRADES[memoState.gradeKey];
+            const total = memoState.questions.length;
             document.getElementById('memo-exam-title').textContent = `계시록 암기 ${cfg.label} 모의고사`;
-            document.getElementById('memo-exam-range').textContent = `출제 범위: ${cfg.rangeLabel} · 1~10번 구절 괄호 넣기 · 11~25번 구절 쓰기`;
+            document.getElementById('memo-exam-range').textContent = `출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')} · 괄호 넣기 50문항 + 구절 전체 쓰기 ${cfg.topCount}문항`;
             document.getElementById('memo-exam-name-input').value = '';
             document.getElementById('memo-exam-name-error').classList.add('opacity-0');
 
-            const container = document.getElementById('memo-exam-container');
-            container.innerHTML = memoState.questions.map((q, idx) => memoQuestionCardHtml(q, idx)).join('');
+            const blankIdxByKey = {};
+            memoState.questions.forEach((q, idx) => { if (q.type === 'blank') blankIdxByKey[q.ch + ':' + q.v] = idx; });
+
+            let html = '';
+            let curCh = null;
+            memoState.passage.forEach(v => {
+                if (v.ch !== curCh) {
+                    curCh = v.ch;
+                    html += `<h3 class="text-[13px] font-black text-fuchsia-700 mt-4 mb-1.5 first:mt-0">계 ${curCh}장</h3>`;
+                }
+                const key = v.ch + ':' + v.v;
+                if (key in blankIdxByKey) {
+                    const idx = blankIdxByKey[key];
+                    const q = memoState.questions[idx];
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
+                } else {
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
+                }
+            });
+
+            html += `<h3 class="text-[13px] font-black text-fuchsia-700 mt-5 mb-2 pt-3 border-t-2 border-fuchsia-100">구절 전체 쓰기</h3>`;
+            memoState.questions.forEach((q, idx) => {
+                if (!q.top) return;
+                html += `
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-2">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-7 h-7 rounded-full bg-fuchsia-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">${idx + 1}</span>
+                        <span class="text-[11px] font-black text-slate-400">${escapeHtml(q.address)} 전체 쓰기</span>
+                    </div>
+                    <textarea id="memo-ans-${idx}" data-idx="${idx}" class="field-input memo-answer-input" rows="2" placeholder="구절을 그대로 써보세요" spellcheck="false" lang="ko"></textarea>
+                </div>`;
+            });
+
+            document.getElementById('memo-exam-container').innerHTML = html;
+            document.getElementById('memo-exam-submit-btn').textContent = `${total}번까지 작성 후 제출하고 채점하기`;
 
             memoState.questions.forEach((q, idx) => {
                 const el = document.getElementById(`memo-ans-${idx}`);
@@ -1400,7 +1454,8 @@
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         const nextEl = document.getElementById(`memo-ans-${idx + 1}`);
-                        if (nextEl) nextEl.focus();
+                        // setTimeout으로 다음 틱에 포커스를 옮기면 한글 IME가 영타로 풀리는 현상을 줄일 수 있음
+                        if (nextEl) setTimeout(() => nextEl.focus(), 0);
                         else memoSubmitExam();
                     }
                 });
@@ -1431,14 +1486,14 @@
 
         function renderMemoResult() {
             const cfg = MEMO_GRADES[memoState.gradeKey];
-            let score = 0;
+            let correctCount = 0;
             const perQ = [];
             const wrongCategoryCount = { 핵심단어: 0, 조사: 0, 문장전체: 0, 다른절혼동: 0 };
 
             memoState.questions.forEach((q, idx) => {
                 const userInput = memoState.answers[idx] || '';
                 const correct = isMemoAnswerCorrect(q, userInput);
-                if (correct) score += 4;
+                if (correct) correctCount++;
                 let diff = null, category = null;
                 if (!correct) {
                     diff = memoWordDiff(q.answer, userInput);
@@ -1447,12 +1502,13 @@
                 }
                 perQ.push({ q, idx, correct, userInput, diff, category });
             });
+            const score = Math.round(correctCount / memoState.questions.length * 100);
             const takenAt = nowStr();
             memoState.lastResult = { score, perQ, wrongCategoryCount, takenAt };
             saveMemoHistoryEntry({ gradeKey: memoState.gradeKey, gradeLabel: cfg.label, name: memoState.name, score, takenAt });
 
             document.getElementById('memo-result-title').textContent = `계시록 암기 ${cfg.label} 모의고사 결과`;
-            document.getElementById('memo-result-name').textContent = `${memoState.name} · 출제 범위: ${cfg.rangeLabel}`;
+            document.getElementById('memo-result-name').textContent = `${memoState.name} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')}`;
             document.getElementById('memo-result-taken-at').textContent = `📅 응시일시: ${takenAt}`;
             document.getElementById('memo-result-score').textContent = score;
             const msgEl = document.getElementById('memo-result-message');
