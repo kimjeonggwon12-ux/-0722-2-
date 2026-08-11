@@ -482,7 +482,7 @@
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
-                <p class="text-center text-slate-400 text-[11px] mt-4">범위 내 4개 장 전문 제시 · 괄호 넣기 50문항 + 구절 전체 쓰기(급수별 1~2문항) · 90점 이상 합격</p>
+                <p class="text-center text-slate-400 text-[11px] mt-4">범위 내 4개 장 전문 제시 · 총 50문항(괄호 넣기 + 구절 전체 쓰기 1~2문항), 문항당 2점 · 90점 이상 합격</p>
 
                 <div id="memo-history-section" class="hidden mt-5">
                     <p class="text-[11px] font-black text-slate-400 mb-2">📅 최근 응시 기록 (이 기기 기준)</p>
@@ -537,8 +537,7 @@
                 <div id="memo-result-guide" class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-4"></div>
             </div>
             <div class="w-full max-w-md px-2 space-y-2">
-                <button id="memo-result-pdf-btn" onclick="sendMemoResultPdf()" class="w-full bg-slate-800 hover:bg-black text-white rounded-xl py-3 text-sm font-black transition-colors">📤 결과 공유하기</button>
-                <p class="text-center text-slate-400 text-[10px] font-bold -mt-1">공유 가능한 기기(대부분의 휴대폰)에서는 목록에 뜨는 텔레그램 등으로 바로 보낼 수 있고, 지원하지 않으면 PDF로 저장됩니다</p>
+                <button id="memo-result-pdf-btn" onclick="sendMemoResultPdf()" class="w-full bg-slate-800 hover:bg-black text-white rounded-xl py-3 text-sm font-black transition-colors">📥 결과 다운로드</button>
                 <button id="memo-result-retry-btn" onclick="retryMemoExam()" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white rounded-xl py-3 text-sm font-black transition-colors">다시 도전하기</button>
                 <button onclick="showMemorizeGrade()" class="w-full bg-white border-2 border-slate-200 text-slate-600 rounded-xl py-3 text-sm font-black transition-colors">급수 선택으로</button>
             </div>
@@ -1254,10 +1253,11 @@
             return verses;
         }
 
-        // 전문 안에서 난이도별(하 1~2어절 / 중 3~8어절 / 상 9~20어절) 괄호 50개를 배치
-        function assignMemoBlanks(verses) {
+        // 전문 안에서 난이도별(하 1~2어절 / 중 3~8어절 / 상 9~20어절) 괄호를 blankCount개 배치
+        // (상·중 개수는 고정, 하 개수로 나머지를 채워 총 blankCount에 맞춘다)
+        function assignMemoBlanks(verses, blankCount) {
             const order = memoShuffle(verses.map((_, i) => i));
-            const tiers = [{ min: 9, max: 20, count: 4 }, { min: 3, max: 8, count: 16 }, { min: 1, max: 2, count: 30 }];
+            const tiers = [{ min: 9, max: 20, count: 4 }, { min: 3, max: 8, count: 16 }, { min: 1, max: 2, count: Math.max(0, blankCount - 20) }];
             const blanks = new Map();
             let oi = 0;
             tiers.forEach(tier => {
@@ -1277,12 +1277,12 @@
             return blanks;
         }
 
-        // 4개 장 전문 괄호 넣기 50문항 + 최상 난이도 절 전체 쓰기(급수별 1~2문항)
+        // 총 50문항 = 4개 장 전문 괄호 넣기 + 최상 난이도 절 전체 쓰기(급수별 1~2문항), 문항당 2점
         function generateMemoExam(gradeKey) {
             const cfg = MEMO_GRADES[gradeKey];
             const chapters = pickMemoChapters(cfg.maxCh);
             const passage = buildMemoPassage(chapters);
-            const blanks = assignMemoBlanks(passage);
+            const blanks = assignMemoBlanks(passage, 50 - cfg.topCount);
 
             const questions = [];
             passage.forEach((vObj, idx) => {
@@ -1408,7 +1408,7 @@
             const cfg = MEMO_GRADES[memoState.gradeKey];
             const total = memoState.questions.length;
             document.getElementById('memo-exam-title').textContent = `계시록 암기 ${cfg.label} 모의고사`;
-            document.getElementById('memo-exam-range').textContent = `출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')} · 괄호 넣기 50문항 + 구절 전체 쓰기 ${cfg.topCount}문항`;
+            document.getElementById('memo-exam-range').textContent = `출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')} · 총 ${total}문항(괄호 넣기 ${total - cfg.topCount} + 구절 전체 쓰기 ${cfg.topCount}), 문항당 2점`;
             document.getElementById('memo-exam-name-input').value = '';
             document.getElementById('memo-exam-name-error').classList.add('opacity-0');
 
@@ -1594,27 +1594,18 @@
             if (btn) { btn.disabled = true; btn.textContent = 'PDF 생성 중...'; }
             try {
                 const { blob, fileName } = await buildMemoResultPdfBlob();
-                const file = new File([blob], fileName, { type: 'application/pdf' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    // 모바일 공유 시트: 텔레그램이 설치되어 있으면 그 목록에도 뜬다
-                    await navigator.share({ files: [file], title: fileName, text: '계시록 암기 모의고사 결과' });
-                } else {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    URL.revokeObjectURL(link.href);
-                }
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(link.href);
             } catch (err) {
-                if (err && err.name === 'AbortError') { /* 사용자가 공유를 취소한 경우: 조용히 무시 */ }
-                else {
-                    console.error('[계시록 암기 결과 PDF 오류]', err);
-                    alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
-                }
+                console.error('[계시록 암기 결과 PDF 오류]', err);
+                alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
             } finally {
-                if (btn) { btn.disabled = false; btn.textContent = original || '📤 결과 공유하기'; }
+                if (btn) { btn.disabled = false; btn.textContent = original || '📥 결과 다운로드'; }
             }
         }
 
