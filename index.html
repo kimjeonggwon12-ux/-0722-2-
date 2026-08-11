@@ -1550,6 +1550,22 @@
                 perQ.push({ q, idx, correct, userInput, diff, category });
             });
             const score = Math.round(correctCount / memoState.questions.length * 100);
+            // 모의고사 결과를 시트로 비동기 전송 (화면 렌더링을 막지 않도록 await 없이, 실패는 무시)
+            fetch(GAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain이어야 CORS 프리플라이트가 발생하지 않는다
+                body: JSON.stringify({
+                    action: 'mockResult',
+                    submittedAt: new Date().toISOString(),
+                    name: memoState.name,
+                    memberId: '',
+                    subject: '계시록 암기',
+                    grade: cfg.label,
+                    score: score,
+                    correctCount: correctCount,
+                    totalCount: memoState.questions.length
+                })
+            }).catch(err => console.error('모의고사 기록 전송 실패', err));
             const takenAt = nowStr();
             memoState.lastResult = { score, perQ, wrongCategoryCount, takenAt };
             saveMemoHistoryEntry({ gradeKey: memoState.gradeKey, gradeLabel: cfg.label, name: memoState.name, score, takenAt });
