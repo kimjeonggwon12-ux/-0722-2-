@@ -602,7 +602,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 4급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">144문항 중 25문항 랜덤</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">144문항 중 50문항 랜덤(문항당 2점)</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#e8eaf6] text-[#5c6bc0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -614,7 +614,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 3급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~7장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">25문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">50문항(문항당 2점)</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ece9fe] text-[#7c6ff0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -626,7 +626,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 2급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~15장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~7장 5문항 + 계 8~15장 20문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~7장 10문항 + 계 8~15장 40문항</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#e0e7ff] text-[#4f46e5] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -639,7 +639,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 1급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~15장 10문항 + 계 16~22장 15문항</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">계 1~15장 20문항 + 계 16~22장 30문항</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ede9fe] text-[#1e1b4b] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -736,7 +736,7 @@
             </div>
         </div>
 
-        <!-- View 1f: 4급 모의고사 (랜덤 25문항 x 4점) -->
+        <!-- View 1f: 급수 모의고사 (랜덤 50문항 x 2점) -->
         <div id="screen-grade4-mock" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <button id="g4-mock-back-btn" onclick="showScreen('grade4Rooms')" class="text-slate-400 hover:text-slate-600 flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
@@ -760,6 +760,11 @@
                 <button onclick="submitGradeMock()" class="text-[11px] bg-[#4f46e5] text-white px-3 py-1.5 rounded-full font-bold active:scale-95 transition-transform">제출하기</button>
             </div>
             <p id="g4-mock-hint" class="text-[11px] text-slate-400 text-center bg-amber-50 border-b border-amber-100 py-1.5 shrink-0">빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요</p>
+            <div class="bg-white border-b border-slate-100 px-4 py-3 shrink-0">
+                <p id="g4-mock-range-text" class="text-[11px] text-slate-600 font-bold break-keep leading-relaxed mb-2"></p>
+                <input type="text" id="g4-mock-name-input" lang="ko" autocomplete="off" placeholder="이름을 입력하세요" class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#4f46e5] transition-colors">
+                <p id="g4-mock-name-error" class="hidden text-rose-600 text-[11px] font-bold mt-1 text-center bg-rose-50 rounded-full px-3 py-1.5">이름을 입력해주세요.</p>
+            </div>
             <div class="flex-grow overflow-y-auto p-4">
                 <div id="grade4-mock-container" class="space-y-4 pb-10"></div>
             </div>
@@ -778,7 +783,7 @@
                     <span id="grade4-mock-final-score" class="text-5xl font-black tracking-tighter text-[#4f46e5]">0</span>
                     <span class="text-lg font-bold text-slate-500 mb-1 ml-2">/ <span id="grade4-mock-final-total">100</span>점</span>
                 </div>
-                <div class="text-lg font-bold mb-8 px-4 leading-relaxed text-slate-600">수고하셨습니다!</div>
+                <div id="g4-mock-result-desc" class="text-lg font-bold mb-8 px-4 leading-relaxed text-slate-600">수고하셨습니다!</div>
                 <div class="w-full max-w-md space-y-3 no-print">
                     <button onclick="startGradeMock(g4MockState.gradeKey)" class="w-full bg-[#4f46e5] text-white rounded-2xl p-4 font-black shadow-lg shadow-[#4f46e5]/20 active:scale-95 transition-transform">다시 도전</button>
                     <button id="g4-mock-print-btn" onclick="window.print()" class="hidden w-full bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-2xl p-3 font-black active:scale-95 transition-transform">인쇄</button>
@@ -12040,14 +12045,19 @@
             return shuffle(pool).slice(0, count);
         }
 
+        // 총 문항수는 4개 급수 모두 50문항(문항당 2점)으로 통일. 급수별 장 범위 그룹 간 비율은
+        // 기존 설정(25문항 기준) 그대로 2배로 늘려서 유지한다.
         const GRADE_MOCK_CONFIG = {
-            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 25 }] },
-            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 5 }, { from: 8, to: 15, count: 20 }] },
-            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 10 }, { from: 16, to: 22, count: 15 }] },
+            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 50 }] },
+            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 10 }, { from: 8, to: 15, count: 40 }] },
+            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 20 }, { from: 16, to: 22, count: 30 }] },
         };
 
         function pickWeightedMockItems(cfg) {
-            const picked = cfg.groups.flatMap(g => pickRangeItems(g.from, g.to, g.count));
+            const picked = cfg.groups.flatMap(g => {
+                const label = g.from === g.to ? `계 ${g.from}장` : `계 ${g.from}~${g.to}장`;
+                return pickRangeItems(g.from, g.to, g.count).map(it => ({ ...it, _groupLabel: label }));
+            });
             return picked.sort((a, b) => a.ch - b.ch || (a.v || 0) - (b.v || 0));
         }
 
@@ -12381,9 +12391,9 @@
         }
 
         // ===== 방3: 급수별 모의고사 =====
-        // 4급: 공식 144문항(GRADE4_ALL_ITEMS)에서 25개를 무작위로 뽑아 4점씩(100점 만점)
+        // 4급: 공식 144문항(GRADE4_ALL_ITEMS)에서 50개를 무작위로 뽑아 2점씩(100점 만점)
         //      정답 보기/정답 확인 버튼이 없고, Enter는 다음 칸으로만 이동하며 제출하기를 눌러야 한 번에 채점됩니다.
-        // 3·2·1급: 원본 문제은행(quizDataStore)에서 장 범위 가중치대로 50개를 뽑아 2점씩(100점 만점)
+        // 3·2·1급: 원본 문제은행(quizDataStore/RICH_CHAPTERS)에서 장 범위 가중치대로 50개를 뽑아 2점씩(100점 만점)
         //      한 문항을 풀고 Enter를 누르면 그 자리에서 바로 채점되고 정답이 보입니다. 제출하기를 누르면 최종 점수/오답노트가 정리됩니다.
         let g4MockState = { items: [], results: new Map(), submitted: false, gradeKey: 'grade4', pointPer: 4 };
 
@@ -12404,12 +12414,23 @@
             if (hint) hint.textContent = gradeKey === 'grade4'
                 ? '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요'
                 : '빈칸에 답을 쓰고 Enter를 누르면 바로 채점되고 정답이 보여요. 다 풀면 제출하기를 눌러 최종 점수를 확인하세요';
+            const rangeText = document.getElementById('g4-mock-range-text');
+            if (rangeText) {
+                if (gradeKey === 'grade4') {
+                    rangeText.textContent = '출제 범위: 계 1~22장 · 총 50문항, 문항당 2점';
+                } else if (cfg) {
+                    const groupLabel = g => (g.from === g.to ? `계 ${g.from}장` : `계 ${g.from}~${g.to}장`);
+                    const total = cfg.groups.reduce((s, g) => s + g.count, 0);
+                    const breakdown = cfg.groups.length > 1 ? `(${cfg.groups.map(g => `${groupLabel(g)} ${g.count}문항`).join(' · ')})` : '';
+                    rangeText.textContent = `출제 ${cfg.rangeLabel} · 총 ${total}문항${breakdown}, 문항당 2점`;
+                }
+            }
         }
 
         function startGradeMock(gradeKey = 'grade4') {
             let items, pointPer;
             if (gradeKey === 'grade4') {
-                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 25).sort((a, b) => a - b);
+                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 50).sort((a, b) => a - b);
                 items = pickedIdx.map(i => GRADE4_ALL_ITEMS[i]);
                 pointPer = 2;
             } else {
@@ -12417,9 +12438,18 @@
                 pointPer = 2;
             }
             const immediateGrade = gradeKey !== 'grade4';
-            g4MockState = { items, results: new Map(), submitted: false, gradeKey, pointPer };
+            const keepName = g4MockState.studentName || '';
+            g4MockState = { items, results: new Map(), submitted: false, gradeKey, pointPer, studentName: keepName };
             let html = '';
-            items.forEach((item, idx) => { html += buildG4CardHtml(item, 'mock', idx, `checkG4MockAnswer(${idx})`, false); });
+            let curGroup = null;
+            items.forEach((item, idx) => {
+                if (item._groupLabel && item._groupLabel !== curGroup) {
+                    curGroup = item._groupLabel;
+                    const groupCount = items.filter(it => it._groupLabel === curGroup).length;
+                    html += `<div class="bg-[#4f46e5] text-white text-xs font-black px-4 py-2.5 rounded-xl ${idx === 0 ? '' : 'mt-6'} mb-1 flex items-center justify-between shadow-sm"><span>📘 ${curGroup}</span><span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">${groupCount}문항</span></div>`;
+                }
+                html += buildG4CardHtml(item, 'mock', idx, `checkG4MockAnswer(${idx})`, false);
+            });
             document.getElementById('grade4-mock-container').innerHTML = html;
             items.forEach((_, idx) => {
                 bindG4Enter('mock', idx, items.length, checkG4MockAnswer, immediateGrade);
@@ -12431,6 +12461,10 @@
             document.getElementById('grade4-mock-wronglist').classList.add('hidden');
             document.getElementById('g4-mock-print-btn').classList.add('hidden');
             updateGradeMockHeader(gradeKey);
+            const nameInput = document.getElementById('g4-mock-name-input');
+            if (nameInput) nameInput.value = keepName;
+            const nameError = document.getElementById('g4-mock-name-error');
+            if (nameError) nameError.classList.add('hidden');
             if (immediateGrade) updateG4MockLiveScore(); else updateG4MockProgress();
             showScreen('grade4Mock');
         }
@@ -12466,6 +12500,17 @@
         }
 
         function submitGradeMock() {
+            const nameInput = document.getElementById('g4-mock-name-input');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) {
+                const nameError = document.getElementById('g4-mock-name-error');
+                if (nameError) nameError.classList.remove('hidden');
+                if (nameInput) { nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); nameInput.focus(); }
+                return;
+            }
+            const nameError = document.getElementById('g4-mock-name-error');
+            if (nameError) nameError.classList.add('hidden');
+            g4MockState.studentName = name;
             g4MockState.items.forEach((_, idx) => checkG4MockAnswer(idx));
             g4MockState.submitted = true;
             const correct = [...g4MockState.results.values()].filter(Boolean).length;
@@ -12482,6 +12527,8 @@
             const cfg = GRADE_MOCK_CONFIG[g4MockState.gradeKey];
             const resultTitle = document.getElementById('g4-mock-result-title');
             if (resultTitle) resultTitle.textContent = `계시록 통달 ${cfg ? cfg.label : '4급'} 모의고사 결과`;
+            const resultDesc = document.getElementById('g4-mock-result-desc');
+            if (resultDesc) resultDesc.textContent = g4MockState.studentName ? `${g4MockState.studentName} · 수고하셨습니다!` : '수고하셨습니다!';
             const resultBackBtn = document.getElementById('g4-mock-result-back-btn');
             if (resultBackBtn) resultBackBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             showScreen('grade4MockResult');
