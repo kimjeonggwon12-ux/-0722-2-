@@ -12,29 +12,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            /* 산뜻한 민트/에메랄드 테마 */
-            --bg-gradient-start: #f0fdfa; /* teal-50 */
-            --bg-gradient-end: #eff6ff;   /* blue-50 */
+            /* 산뜻한 민트/에메랄드 테마 — 아이보리 배경과 어울리도록 살짝 톤을 낮춤 */
+            --bg-gradient-start: #eef7ee; /* 기존 teal-50보다 따뜻한 민트 */
+            --bg-gradient-end: #faf3e4;   /* 카드와 같은 계열의 따뜻한 크림 */
             --card-bg: #faf5ea;           /* 완전 흰색 대신 은은한 아이보리 톤 (야간 학습 눈부심 완화) */
             --primary-color: #0d9488;     /* teal-600 */
             --primary-hover: #0f766e;     /* teal-700 */
             --text-main: #1e293b;         /* slate-800, 기존보다 한 단계 더 진하게 */
             --text-sub: #64748b;          /* slate-500 */
+            --soft-white: #fffaf0;        /* 민트 버튼 위 글자 등에 쓰는, 눈부심을 줄인 아이보리빛 흰색 */
         }
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             color: var(--text-main);
         }
-        /* 카드/입력창 등 흰색 배경을 전부 아이보리 톤으로, 주요 본문 글자는 더 진하게
-           (디자인·레이아웃은 그대로 두고 색만 조정 — Tailwind CDN 유틸리티는 레이어에 속해 있어
-           레이어 밖에 있는 이 규칙이 소스 순서와 무관하게 항상 우선 적용됨) */
+        /* 카드/입력창 등 흰색 배경을 전부 아이보리 톤으로, 민트색 옅은 박스와 버튼 글자색도
+           같은 톤으로 맞춰 전체가 조화롭게 보이도록 함 (디자인·레이아웃은 그대로 두고 색만 조정
+           — Tailwind CDN 유틸리티는 레이어에 속해 있어 레이어 밖에 있는 이 규칙이 소스 순서와
+           무관하게 항상 우선 적용됨) */
         .bg-white,
         .focus\:bg-white:focus {
             background-color: var(--card-bg) !important;
         }
         .text-slate-700 {
             color: var(--text-main) !important;
+        }
+        .text-white {
+            color: var(--soft-white) !important;
+        }
+        .bg-teal-50,
+        .hover\:bg-teal-50:hover {
+            background-color: #eef6ee !important;
+        }
+        .bg-teal-100,
+        .hover\:bg-teal-100:hover {
+            background-color: #e2efe0 !important;
+        }
+        .bg-emerald-50 {
+            background-color: #eaf5e6 !important;
+        }
+        .from-teal-50 {
+            --tw-gradient-from: #eef6ee !important;
         }
         .cursive {
             font-family: 'Nanum Pen Script', cursive;
