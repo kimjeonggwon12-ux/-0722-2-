@@ -755,8 +755,9 @@
                 </div>
             </div>
             <p class="text-[11px] text-indigo-700 bg-indigo-50 text-center font-black py-1.5 shrink-0 border-b border-indigo-100">채점 기준: 조사(은/는/이/가/을/를 등)는 채점에 반영하지 않습니다.</p>
-            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center justify-between shrink-0">
+            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center justify-between shrink-0 gap-2">
                 <span id="g4-mock-score-live" class="text-[13px] font-black text-[#4f46e5]">현재 획득 0/100점</span>
+                <span id="g4-mock-timer" class="text-[12px] font-bold text-slate-400">⏱ 00:00</span>
                 <button onclick="submitGradeMock()" class="text-[11px] bg-[#4f46e5] text-white px-3 py-1.5 rounded-full font-bold active:scale-95 transition-transform">제출하기</button>
             </div>
             <p id="g4-mock-hint" class="text-[11px] text-slate-400 text-center bg-amber-50 border-b border-amber-100 py-1.5 shrink-0">빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요</p>
@@ -12395,7 +12396,29 @@
         //      정답 보기/정답 확인 버튼이 없고, Enter는 다음 칸으로만 이동하며 제출하기를 눌러야 한 번에 채점됩니다.
         // 3·2·1급: 원본 문제은행(quizDataStore/RICH_CHAPTERS)에서 장 범위 가중치대로 50개를 뽑아 2점씩(100점 만점)
         //      한 문항을 풀고 Enter를 누르면 그 자리에서 바로 채점되고 정답이 보입니다. 제출하기를 누르면 최종 점수/오답노트가 정리됩니다.
-        let g4MockState = { items: [], results: new Map(), submitted: false, gradeKey: 'grade4', pointPer: 4 };
+        let g4MockState = { items: [], results: new Map(), submitted: false, gradeKey: 'grade4', pointPer: 4, studentName: '', startedAt: null, elapsedMs: 0 };
+
+        // 모의고사 응시 경과 시간 타이머 (mm:ss)
+        let g4MockTimerHandle = null;
+        function g4FormatElapsed(ms) {
+            const totalSec = Math.floor(ms / 1000);
+            const m = Math.floor(totalSec / 60), s = totalSec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function startG4MockTimer() {
+            if (g4MockTimerHandle) clearInterval(g4MockTimerHandle);
+            g4MockState.startedAt = Date.now();
+            const el = document.getElementById('g4-mock-timer');
+            if (el) el.textContent = '⏱ 00:00';
+            g4MockTimerHandle = setInterval(() => {
+                const t = document.getElementById('g4-mock-timer');
+                if (t) t.textContent = '⏱ ' + g4FormatElapsed(Date.now() - g4MockState.startedAt);
+            }, 1000);
+        }
+        function stopG4MockTimer() {
+            if (g4MockTimerHandle) { clearInterval(g4MockTimerHandle); g4MockTimerHandle = null; }
+            g4MockState.elapsedMs = g4MockState.startedAt ? Date.now() - g4MockState.startedAt : 0;
+        }
 
         function updateGradeMockHeader(gradeKey) {
             const cfg = GRADE_MOCK_CONFIG[gradeKey];
@@ -12466,6 +12489,7 @@
             const nameError = document.getElementById('g4-mock-name-error');
             if (nameError) nameError.classList.add('hidden');
             if (immediateGrade) updateG4MockLiveScore(); else updateG4MockProgress();
+            startG4MockTimer();
             showScreen('grade4Mock');
         }
 
@@ -12511,6 +12535,7 @@
             const nameError = document.getElementById('g4-mock-name-error');
             if (nameError) nameError.classList.add('hidden');
             g4MockState.studentName = name;
+            stopG4MockTimer();
             g4MockState.items.forEach((_, idx) => checkG4MockAnswer(idx));
             g4MockState.submitted = true;
             const correct = [...g4MockState.results.values()].filter(Boolean).length;
@@ -12528,7 +12553,8 @@
             const resultTitle = document.getElementById('g4-mock-result-title');
             if (resultTitle) resultTitle.textContent = `계시록 통달 ${cfg ? cfg.label : '4급'} 모의고사 결과`;
             const resultDesc = document.getElementById('g4-mock-result-desc');
-            if (resultDesc) resultDesc.textContent = g4MockState.studentName ? `${g4MockState.studentName} · 수고하셨습니다!` : '수고하셨습니다!';
+            const elapsedText = `⏱ 소요 시간: ${g4FormatElapsed(g4MockState.elapsedMs || 0)}`;
+            if (resultDesc) resultDesc.textContent = g4MockState.studentName ? `${g4MockState.studentName} · 수고하셨습니다! (${elapsedText})` : `수고하셨습니다! (${elapsedText})`;
             const resultBackBtn = document.getElementById('g4-mock-result-back-btn');
             if (resultBackBtn) resultBackBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             showScreen('grade4MockResult');

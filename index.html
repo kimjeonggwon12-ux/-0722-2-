@@ -182,7 +182,6 @@
         .memo-inline-input {
             display: inline-block;
             min-width: 60px;
-            width: 8em;
             max-width: 100%;
             background: #fdf4ff;
             border: none;
@@ -503,6 +502,7 @@
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
                         <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep">출제 범위: 계 1~5장 · 1~10번 구절 괄호 넣기 · 11~25번 구절 쓰기</p>
                         <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[11px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+                        <p class="inline-block bg-slate-100 text-slate-600 text-[11px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
                     </div>
                     <div>
                         <label class="field-label">이름</label>
@@ -523,6 +523,7 @@
                     <h1 id="memo-result-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사 결과</h1>
                     <p id="memo-result-name" class="text-slate-500 text-[12px] font-bold mt-1"></p>
                     <p id="memo-result-taken-at" class="text-slate-400 text-[11px] font-bold mt-0.5">📅 응시일시: -</p>
+                    <p id="memo-result-elapsed" class="text-slate-400 text-[11px] font-bold mt-0.5">⏱ 소요 시간: -</p>
                 </div>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 shadow-sm text-center mb-4">
                     <span id="memo-result-score" class="text-5xl font-black tracking-tighter text-fuchsia-600">0</span>
@@ -1315,11 +1316,14 @@
         }
 
         // 채점: 띄어쓰기·기호 무시, "찌"↔"지" 계열 어미는 동일하게 처리 (예: 찌어다=지어다, 찌니라=지니라)
+        // 그 밖에 "세째"="셋째", "네째"="넷째", "앎으로"="알므로"도 동일하게 처리
         // "참예"는 예외 없이 정확히 일치해야 정답 처리됨(별도 치환 규칙을 두지 않음)
         function normalizeMemoText(s) {
             if (!s) return '';
             let t = String(s).replace(/[^가-힣a-zA-Z0-9]/g, '');
             t = t.replace(/찌/g, '지');
+            t = t.replace(/세째/g, '셋째').replace(/네째/g, '넷째');
+            t = t.replace(/앎으로/g, '알므로');
             return t;
         }
 
@@ -1387,7 +1391,7 @@
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        let memoState = { gradeKey: 'grade4', name: '', chapters: [], passage: [], questions: [], answers: [], lastResult: null };
+        let memoState = { gradeKey: 'grade4', name: '', chapters: [], passage: [], questions: [], answers: [], lastResult: null, startedAt: null, elapsedMs: 0 };
 
         function startMemoExamSheet(gradeKey) {
             memoState.gradeKey = gradeKey;
@@ -1437,7 +1441,9 @@
                 if (key in blankIdxByKey) {
                     const idx = blankIdxByKey[key];
                     const q = memoState.questions[idx];
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
+                    // 괄호 폭을 정답 글자수(띄어쓰기 포함)에 비례하게 넓혀 글자가 가리지 않도록 함
+                    const blankWidth = Math.min(Math.max(q.answer.length * 0.95 + 1.4, 4), 32).toFixed(1) + 'em';
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" style="width:${blankWidth}" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
                 } else {
                     html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
                 }
@@ -1474,6 +1480,29 @@
 
             const scrollArea = document.getElementById('view-memo-exam');
             if (scrollArea) scrollArea.scrollTop = 0;
+            startMemoTimer();
+        }
+
+        // 응시 경과 시간 타이머 (mm:ss)
+        let memoTimerHandle = null;
+        function memoFormatElapsed(ms) {
+            const totalSec = Math.floor(ms / 1000);
+            const m = Math.floor(totalSec / 60), s = totalSec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function startMemoTimer() {
+            if (memoTimerHandle) clearInterval(memoTimerHandle);
+            memoState.startedAt = Date.now();
+            const el = document.getElementById('memo-exam-timer');
+            if (el) el.textContent = '00:00';
+            memoTimerHandle = setInterval(() => {
+                const t = document.getElementById('memo-exam-timer');
+                if (t) t.textContent = memoFormatElapsed(Date.now() - memoState.startedAt);
+            }, 1000);
+        }
+        function stopMemoTimer() {
+            if (memoTimerHandle) { clearInterval(memoTimerHandle); memoTimerHandle = null; }
+            memoState.elapsedMs = memoState.startedAt ? Date.now() - memoState.startedAt : 0;
         }
 
         function memoSubmitExam() {
@@ -1486,6 +1515,7 @@
                 return;
             }
             document.getElementById('memo-exam-name-error').classList.add('opacity-0');
+            stopMemoTimer();
             memoState.name = name;
             memoState.answers = memoState.questions.map((q, idx) => {
                 const el = document.getElementById(`memo-ans-${idx}`);
@@ -1521,6 +1551,7 @@
             document.getElementById('memo-result-title').textContent = `계시록 암기 ${cfg.label} 모의고사 결과`;
             document.getElementById('memo-result-name').textContent = `${memoState.name} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')}`;
             document.getElementById('memo-result-taken-at').textContent = `📅 응시일시: ${takenAt}`;
+            document.getElementById('memo-result-elapsed').textContent = `⏱ 소요 시간: ${memoFormatElapsed(memoState.elapsedMs || 0)}`;
             document.getElementById('memo-result-score').textContent = score;
             const msgEl = document.getElementById('memo-result-message');
             if (score >= 90) {
