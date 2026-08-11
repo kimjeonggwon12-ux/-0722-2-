@@ -125,6 +125,42 @@
         .g4-blank:focus { border-color: #4f46e5; background-color: #e0e7ff; }
         .g4-blank.correct { background-color: #d1fae5; border-color: #10b981; color: #047857; }
         .g4-blank.incorrect { background-color: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+        .voice-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            background: #eef2ff;
+            border: 2px solid #c7d2fe;
+            color: #4338ca;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .voice-btn:hover { background: #e0e7ff; }
+        .voice-btn:disabled { opacity: 0.6; cursor: default; }
+        .voice-btn-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #4338ca;
+            border-radius: 999px;
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .voice-btn-inline:hover { background: #e0e7ff; }
+        .voice-btn-inline:disabled { opacity: 0.6; cursor: default; }
         .g4-chapter-divider {
             display: flex;
             align-items: baseline;
@@ -12070,6 +12106,37 @@
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        // 음성으로 입력하기: 입력칸 바로 뒤 버튼에서 호출, 인식된 텍스트를 그 입력칸에 채워줌
+        function startVoiceInput(inputEl, btnEl) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 사파리를 이용해주세요.');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const originalLabel = btnEl.textContent;
+            btnEl.textContent = btnEl.classList.contains('voice-btn-inline') ? '🎙️' : '🎙️ 듣는 중...';
+            btnEl.disabled = true;
+
+            recognition.onresult = function (event) {
+                const text = event.results[0][0].transcript;
+                inputEl.value = text;
+                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+            };
+            recognition.onerror = function (event) {
+                alert('음성 인식에 실패했습니다: ' + event.error);
+            };
+            recognition.onend = function () {
+                btnEl.textContent = originalLabel;
+                btnEl.disabled = false;
+            };
+            recognition.start();
+        }
+
         function extractG4Answers(template) {
             return [...template.matchAll(/\{\{(.*?)\}\}/g)].map(m => m[1]);
         }
@@ -12116,7 +12183,7 @@
             parts.forEach((part, i) => {
                 if (i % 2 === 1) {
                     const w = Math.max(part.length * 1.15 + 1.2, 3.2);
-                    html += `<span class="g4-mark" id="${markPrefix}-${blankIdx}"><input type="text" class="g4-blank" data-ans="${escapeHtml(part)}" style="width:${w}rem" lang="ko" autocomplete="off" spellcheck="false"></span>`;
+                    html += `<span class="g4-mark" id="${markPrefix}-${blankIdx}"><input type="text" class="g4-blank" data-ans="${escapeHtml(part)}" style="width:${w}rem" lang="ko" autocomplete="off" spellcheck="false"><button type="button" class="voice-btn-inline" onclick="startVoiceInput(this.previousElementSibling, this)" title="음성으로 입력">🎤</button></span>`;
                     blankIdx++;
                 } else {
                     html += escapeHtml(part);
