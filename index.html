@@ -1994,6 +1994,34 @@
             document.getElementById('apply-success-id').textContent = app.id;
             document.getElementById('apply-success-detail').textContent = `${app.subject} · ${app.grade} · ${app.name} · ${app.examTime}`;
             document.getElementById('apply-success-sync').textContent = message;
+            clearApplyDraft();
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 신청서 임시저장 (작성 중 새로고침/기기 재시작 등으로 화면이 초기화돼도
+        // 입력하던 내용이 사라지지 않도록 입력할 때마다 이 기기에 임시 저장한다)
+        // ─────────────────────────────────────────────────────────
+        const APPLY_DRAFT_KEY = 'sion_apply_draft';
+        const APPLY_FIELD_IDS = ['apply-tribe', 'apply-church', 'apply-dept', 'apply-position', 'apply-name', 'apply-uid', 'apply-phone', 'apply-subject', 'apply-grade', 'apply-time'];
+
+        function saveApplyDraft() {
+            try {
+                const draft = {};
+                APPLY_FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) draft[id] = el.value; });
+                localStorage.setItem(APPLY_DRAFT_KEY, JSON.stringify(draft));
+            } catch (e) { /* 저장 실패는 무시 (시크릿 모드 등) */ }
+        }
+
+        function clearApplyDraft() {
+            try { localStorage.removeItem(APPLY_DRAFT_KEY); } catch (e) { /* 무시 */ }
+        }
+
+        function bindApplyDraftAutosave() {
+            const form = document.getElementById('apply-form');
+            if (!form || form.dataset.draftBound) return;
+            form.dataset.draftBound = '1';
+            form.addEventListener('input', saveApplyDraft);
+            form.addEventListener('change', saveApplyDraft);
         }
 
         function resetApplyForm() {
@@ -2002,6 +2030,13 @@
             document.getElementById('apply-error-msg').classList.add('opacity-0');
             document.getElementById('apply-form-section').classList.remove('hidden');
             document.getElementById('apply-success-section').classList.add('hidden');
+
+            // 작성 중이던 임시저장 내용이 있으면 비워두지 않고 그대로 복원한다
+            try {
+                const draft = JSON.parse(localStorage.getItem(APPLY_DRAFT_KEY));
+                if (draft) APPLY_FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el && draft[id]) el.value = draft[id]; });
+            } catch (e) { /* 무시 */ }
+            bindApplyDraftAutosave();
         }
 
         const CANCEL_REASONS = ['일정이 맞지 않음', '준비 부족', '급수 변경 희망', '건강상의 이유', '기타'];
