@@ -1239,8 +1239,17 @@
         }
 
         // 범위 내에서 서로 다른 4개 장을 골라 오름차순 정렬
-        function pickMemoChapters(maxCh) {
-            return memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1)).slice(0, 4).sort((a, b) => a - b);
+        // minVerses(=목표 괄호 개수) 이상의 절을 확보할 수 있는 조합이 나올 때까지 재시도
+        // (짧은 장만 뽑혀 괄호 수가 목표에 못 미치는 것을 방지)
+        function pickMemoChapters(maxCh, minVerses) {
+            let best = null, bestSum = -1;
+            for (let attempt = 0; attempt < 200; attempt++) {
+                const chosen = memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1)).slice(0, 4);
+                const sum = chosen.reduce((s, ch) => s + memoChVerseCount(ch), 0);
+                if (sum > bestSum) { bestSum = sum; best = chosen; }
+                if (sum >= minVerses) return chosen.sort((a, b) => a - b);
+            }
+            return best.sort((a, b) => a - b);
         }
 
         // 선택된 4개 장의 모든 절(전문)을 순서대로 나열
@@ -1280,9 +1289,10 @@
         // 총 50문항 = 4개 장 전문 괄호 넣기 + 최상 난이도 절 전체 쓰기(급수별 1~2문항), 문항당 2점
         function generateMemoExam(gradeKey) {
             const cfg = MEMO_GRADES[gradeKey];
-            const chapters = pickMemoChapters(cfg.maxCh);
+            const blankCount = 50 - cfg.topCount;
+            const chapters = pickMemoChapters(cfg.maxCh, blankCount);
             const passage = buildMemoPassage(chapters);
-            const blanks = assignMemoBlanks(passage, 50 - cfg.topCount);
+            const blanks = assignMemoBlanks(passage, blankCount);
 
             const questions = [];
             passage.forEach((vObj, idx) => {
@@ -1295,6 +1305,7 @@
                 questions.push({ type: 'blank', ch: vObj.ch, v: vObj.v, address: `계 ${vObj.ch}:${vObj.v}`, before, after, answer });
             });
 
+            // 최상 난이도 절은 사용자가 지정한 고정 구절 목록에서만 뽑음(의도적으로 위의 4개 장과 무관함)
             const topPicked = memoShuffle(memoTopCandidates(cfg.maxCh)).slice(0, cfg.topCount);
             topPicked.forEach(({ ch, v }) => {
                 questions.push({ type: 'verse', ch, v, address: `계 ${ch}:${v}`, answer: memoVerseText(ch, v), top: true });
