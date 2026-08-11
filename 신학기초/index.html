@@ -261,7 +261,10 @@
                 <p id="grade-exam-range-text" class="text-[11px] text-slate-600 font-bold break-keep leading-relaxed"></p>
                 <div class="mt-2">
                     <label class="field-label-sm text-[11px] font-bold text-slate-500 block mb-1">이름</label>
-                    <input type="text" id="grade-exam-name-input" lang="ko" autocomplete="off" placeholder="이름을 입력하세요" class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-emerald-400 transition-colors">
+                    <div class="flex gap-2 items-start">
+                        <input type="text" id="grade-exam-name-input" lang="ko" autocomplete="off" placeholder="이름을 입력하세요" class="flex-1 min-w-0 bg-slate-50 border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-emerald-400 transition-colors">
+                        <button onclick="app.handleFinishRequest()" class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 h-[42px] text-[13px] font-black transition-colors">제출하기</button>
+                    </div>
                     <p id="grade-exam-name-error" class="hidden text-rose-600 text-[11px] font-bold mt-1 text-center bg-rose-50 rounded-full px-3 py-1.5">이름을 입력해주세요.</p>
                 </div>
             </div>

@@ -484,7 +484,10 @@
                 <p class="text-center text-slate-400 text-[11px] mt-4">범위 내 4개 장 전문 제시 · 총 50문항(괄호 넣기 + 구절 전체 쓰기 1~2문항), 문항당 2점 · 90점 이상 합격</p>
 
                 <div id="memo-history-section" class="hidden mt-5">
-                    <p class="text-[11px] font-black text-slate-400 mb-2">📅 최근 응시 기록 (이 기기 기준)</p>
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[11px] font-black text-slate-400">📅 최근 응시 기록 (이 기기 기준)</p>
+                        <button onclick="clearMemoHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                    </div>
                     <div id="memo-history-list" class="space-y-1.5"></div>
                 </div>
             </div>
@@ -499,14 +502,26 @@
                 </button>
                 <div class="bg-white border-2 border-fuchsia-100 rounded-2xl p-5 shadow-sm mb-4">
                     <div class="text-center mb-4">
+                        <div class="w-14 h-14 rounded-full shadow-md border-2 border-white mb-2 flex items-center justify-center mx-auto" style="background: linear-gradient(135deg, #f0abfc, #a21caf);">
+                            <svg viewBox="0 0 48 48" class="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="새 노래를 부르는 여인">
+                                <circle cx="19" cy="13" r="5.5" fill="#ffffff"/>
+                                <path d="M9 38c0-9 4.5-15.5 10-15.5S29 29 29 38" fill="#ffffff"/>
+                                <path d="M33 34V17l7-2v17" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <ellipse cx="31.3" cy="34.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 31.3 34.3)"/>
+                                <ellipse cx="38.3" cy="32.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 38.3 32.3)"/>
+                            </svg>
+                        </div>
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
                         <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep">출제 범위: 계 1~5장 · 1~10번 구절 괄호 넣기 · 11~25번 구절 쓰기</p>
                         <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[11px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
                         <p class="inline-block bg-slate-100 text-slate-600 text-[11px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
                     </div>
-                    <div>
-                        <label class="field-label">이름</label>
-                        <input type="text" id="memo-exam-name-input" class="field-input" placeholder="이름을 입력하세요" autocomplete="off" lang="ko">
+                    <div class="flex gap-2 items-end">
+                        <div class="flex-1 min-w-0">
+                            <label class="field-label">이름</label>
+                            <input type="text" id="memo-exam-name-input" class="field-input" placeholder="이름을 입력하세요" autocomplete="off" lang="ko">
+                        </div>
+                        <button onclick="memoSubmitExam()" class="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 h-[42px] text-[13px] font-black transition-colors">제출하기</button>
                     </div>
                     <p id="memo-exam-name-error" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mt-2">이름을 입력해주세요.</p>
                     <p class="text-[10px] text-slate-400 font-bold mt-2 text-center break-keep">문항을 쓰고 Enter를 누르면 다음 문항으로 이동합니다 · 띄어쓰기·기호는 채점에서 무시됩니다</p>
@@ -520,6 +535,15 @@
         <div id="view-memo-result" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-md px-2" id="memo-result-pdf-target">
                 <div class="text-center mb-4">
+                    <div class="w-14 h-14 rounded-full shadow-md border-2 border-white mb-2 flex items-center justify-center mx-auto" style="background: linear-gradient(135deg, #f0abfc, #a21caf);">
+                        <svg viewBox="0 0 48 48" class="w-8 h-8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="새 노래를 부르는 여인">
+                            <circle cx="19" cy="13" r="5.5" fill="#ffffff"/>
+                            <path d="M9 38c0-9 4.5-15.5 10-15.5S29 29 29 38" fill="#ffffff"/>
+                            <path d="M33 34V17l7-2v17" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <ellipse cx="31.3" cy="34.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 31.3 34.3)"/>
+                            <ellipse cx="38.3" cy="32.3" rx="3.3" ry="2.6" fill="#ffffff" transform="rotate(-18 38.3 32.3)"/>
+                        </svg>
+                    </div>
                     <h1 id="memo-result-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사 결과</h1>
                     <p id="memo-result-name" class="text-slate-500 text-[12px] font-bold mt-1"></p>
                     <p id="memo-result-taken-at" class="text-slate-400 text-[11px] font-bold mt-0.5">📅 응시일시: -</p>
@@ -1677,13 +1701,26 @@
                 return;
             }
             section.classList.remove('hidden');
-            listEl.innerHTML = list.slice(0, 5).map(h => `
-                <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl px-3 py-2 text-[11px] font-bold">
+            listEl.innerHTML = list.slice(0, 5).map((h, idx) => `
+                <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl px-3 py-2 text-[11px] font-bold gap-2">
                     <span class="text-slate-500">${escapeHtml(h.takenAt || '')}</span>
-                    <span class="text-slate-400">${escapeHtml(h.gradeLabel || '')} · ${escapeHtml(h.name || '')}</span>
+                    <span class="text-slate-400 flex-grow">${escapeHtml(h.gradeLabel || '')} · ${escapeHtml(h.name || '')}</span>
                     <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'}">${h.score}점</span>
+                    <button onclick="deleteMemoHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0" aria-label="이 기록 삭제">✕</button>
                 </div>
             `).join('');
+        }
+
+        function deleteMemoHistoryEntry(idx) {
+            const list = loadMemoHistory();
+            list.splice(idx, 1);
+            localStorage.setItem(MEMO_HISTORY_KEY, JSON.stringify(list));
+            renderMemoHistoryList();
+        }
+
+        function clearMemoHistory() {
+            localStorage.removeItem(MEMO_HISTORY_KEY);
+            renderMemoHistoryList();
         }
 
         function isSpecificOrPatternCode(code) {
