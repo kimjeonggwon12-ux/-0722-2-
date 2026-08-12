@@ -2095,6 +2095,41 @@
             form.addEventListener('change', saveApplyDraft);
         }
 
+        // 부서가 "자문회"이면 과목 select에 자문회 전용 옵션(계시록 통달 자문회 특별 전형 등)이 추가되고,
+        // 그 외 부서면 기존 3개 과목 옵션으로 되돌아간다.
+        const APPLY_SUBJECT_OPTIONS_DEFAULT = [
+            { value: '초중고 신학', label: '초중고 신학' },
+            { value: '계시록 통달', label: '계시록 통달' },
+            { value: '계시록 암기', label: '계시록 암기' }
+        ];
+        const APPLY_SUBJECT_OPTIONS_ADVISORY = [
+            { value: '초중고 신학', label: '초중고 신학(일반)' },
+            { value: '계시록 통달', label: '계시록 통달(일반)' },
+            { value: '계시록 통달 자문회 특별 전형', label: '계시록 통달 자문회 특별 전형' },
+            { value: '계시록 암기', label: '계시록 암기(일반)' }
+        ];
+
+        // 부서 값에 맞는 과목 옵션 목록으로 select를 다시 그린다.
+        // resetValue=true면 무조건 미선택으로 초기화, false면 현재 선택값이 새 목록에도 있을 때만 유지한다.
+        function renderApplySubjectOptions({ resetValue = false } = {}) {
+            const deptEl = document.getElementById('apply-dept');
+            const subjectEl = document.getElementById('apply-subject');
+            if (!deptEl || !subjectEl) return;
+            const prevValue = subjectEl.value;
+            const opts = deptEl.value === '자문회' ? APPLY_SUBJECT_OPTIONS_ADVISORY : APPLY_SUBJECT_OPTIONS_DEFAULT;
+            subjectEl.innerHTML = '<option value="">과목을 선택하세요</option>' +
+                opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            subjectEl.value = (!resetValue && opts.some(o => o.value === prevValue)) ? prevValue : '';
+        }
+
+        function bindApplyDeptSubjectSync() {
+            const deptEl = document.getElementById('apply-dept');
+            if (!deptEl || deptEl.dataset.subjectSyncBound) return;
+            deptEl.dataset.subjectSyncBound = '1';
+            // 부서를 바꿀 때마다(여러 번 왔다갔다 해도) 과목 옵션 목록을 다시 그리고, 과목 선택은 초기화한다.
+            deptEl.addEventListener('change', () => renderApplySubjectOptions({ resetValue: true }));
+        }
+
         function resetApplyForm() {
             document.getElementById('apply-form').reset();
             document.getElementById('apply-tribe').value = '도마';
@@ -2102,11 +2137,22 @@
             document.getElementById('apply-form-section').classList.remove('hidden');
             document.getElementById('apply-success-section').classList.add('hidden');
 
+            // 폼이 초기화된 부서값(미선택) 기준으로 과목 옵션도 기본 목록으로 재정렬
+            renderApplySubjectOptions({ resetValue: true });
+
             // 작성 중이던 임시저장 내용이 있으면 비워두지 않고 그대로 복원한다
             try {
                 const draft = JSON.parse(localStorage.getItem(APPLY_DRAFT_KEY));
-                if (draft) APPLY_FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el && draft[id]) el.value = draft[id]; });
+                if (draft) APPLY_FIELD_IDS.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el || !draft[id]) return;
+                    el.value = draft[id];
+                    // 부서를 복원한 직후 과목 옵션 목록을 그 부서에 맞게 다시 그려둬야
+                    // 바로 다음 순서인 apply-subject 값 복원이 올바른 옵션에 맞게 들어간다.
+                    if (id === 'apply-dept') renderApplySubjectOptions({ resetValue: true });
+                });
             } catch (e) { /* 무시 */ }
+            bindApplyDeptSubjectSync();
             bindApplyDraftAutosave();
         }
 
