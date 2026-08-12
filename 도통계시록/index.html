@@ -341,6 +341,8 @@
                 <p class="text-slate-400 text-[12px] font-bold mt-1">계시록 본문의 참 뜻과 핵심 성구</p>
             </div>
 
+            <div id="tongdal-progress-panel" class="w-full relative z-10 mb-4"></div>
+
             <div class="w-full space-y-4 relative z-10 pb-40">
                 <button onclick="showGrade4Rooms()" class="pulse-glow-red w-full rounded-3xl p-4 flex items-center shadow-lg shadow-rose-300/40 active:scale-95 transition-transform text-left border-4 border-rose-500 relative overflow-hidden" style="background: linear-gradient(135deg, #fff1f2, #ffe4e6);">
                     <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">전장 기본 문제</span>
@@ -12629,8 +12631,67 @@
 
         function submitGrade4Mock() { submitGradeMock(); }
 
+        // ─────────────────────────────────────────────────────────
+        // 학습 진도 저장 (이 기기의 localStorage에만 저장, 서버 연동 없음)
+        // ─────────────────────────────────────────────────────────
+        const TONGDAL_PROGRESS_KEY = 'sion_progress_tongdal';
+        const TONGDAL_TOTAL_CHAPTERS = 22;
+
+        function loadTongdalProgress() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(TONGDAL_PROGRESS_KEY));
+                return { completed: (raw && Array.isArray(raw.completed)) ? raw.completed : [], last: (raw && raw.last) || null };
+            } catch (e) { return { completed: [], last: null }; }
+        }
+
+        function saveTongdalProgress(progress) {
+            try { localStorage.setItem(TONGDAL_PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        // 장을 열 때마다(완료 여부와 무관하게) "마지막으로 보던 위치"를 저장한다.
+        function markTongdalLastChapter(chapterKey) {
+            const progress = loadTongdalProgress();
+            progress.last = chapterKey;
+            saveTongdalProgress(progress);
+        }
+
+        // 채점 결과 화면까지 도달하면 그 장을 "완료"로 기록한다.
+        function markTongdalChapterCompleted(chapterKey) {
+            const progress = loadTongdalProgress();
+            if (!progress.completed.includes(chapterKey)) progress.completed.push(chapterKey);
+            progress.last = chapterKey;
+            saveTongdalProgress(progress);
+        }
+
+        // 방 선택(screen-home) 상단에 진도율 + "이어서 하기" 배너를 그린다.
+        function renderTongdalProgressPanel() {
+            const panel = document.getElementById('tongdal-progress-panel');
+            if (!panel) return;
+            const progress = loadTongdalProgress();
+            const doneCount = progress.completed.length;
+            const percent = Math.round((doneCount / TONGDAL_TOTAL_CHAPTERS) * 100);
+
+            const resumeHtml = progress.last ? `
+                <button onclick="startChapter('${progress.last}')" class="w-full mt-3 bg-[#4f46e5] hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
+                    ▶ 이어서 하기 (계시록 ${progress.last.replace('ch', '')}장부터)
+                </button>` : '';
+
+            panel.innerHTML = `
+                <div class="w-full bg-white rounded-2xl p-4 shadow-sm border border-[#e0e7ff]">
+                    <div class="flex items-center justify-between text-[12px] font-black text-slate-500 mb-2">
+                        <span>학습 진도</span>
+                        <span class="text-[#4f46e5]">${doneCount}/${TONGDAL_TOTAL_CHAPTERS}장 완료</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-[#eef0fb] rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-[#818cf8] to-[#4f46e5] rounded-full transition-all" style="width:${percent}%"></div>
+                    </div>
+                    ${resumeHtml}
+                </div>`;
+        }
+
         window.startChapter = function(chapterKey) {
             state.currentChapterKey = chapterKey;
+            markTongdalLastChapter(chapterKey);
             const titles = chapterTitles[chapterKey];
 
             state.questions = [...quizDataStore[chapterKey]]; 
@@ -12658,6 +12719,7 @@
             });
             els.screens[screenName].classList.remove('hidden');
             els.screens[screenName].classList.add('flex');
+            if (screenName === 'home') renderTongdalProgressPanel();
         }
 
         function updateNavButtons() {
@@ -12827,6 +12889,7 @@
 
         function finishQuiz() {
             showScreen('result');
+            markTongdalChapterCompleted(state.currentChapterKey);
             let correctCount = state.history.filter(h => h && h.answered && h.isCorrect).length;
             els.result.chapterTitle.textContent = `${chapterTitles[state.currentChapterKey].title} 결과`;
             els.result.finalScore.textContent = correctCount;

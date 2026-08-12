@@ -250,6 +250,9 @@
             </a>
         </div>
 
+        <!-- 학습 진도 (이 기기 localStorage 기준) -->
+        <div id="memo-progress-panel" class="mb-6"></div>
+
         <!-- Controls -->
         <div class="space-y-8 mb-10">
             <div class="flex flex-col gap-6 items-center justify-center">
@@ -1012,6 +1015,75 @@ document.addEventListener('DOMContentLoaded', () => {
     let chapterTimerInterval = null;
     let chapterStartTime = null;
 
+    // ─────────────────────────────────────────────────────────
+    // 학습 진도 저장 (이 기기의 localStorage에만 저장, 서버 연동 없음)
+    // ─────────────────────────────────────────────────────────
+    const MEMO_ROOM_PROGRESS_KEY = 'sion_progress_memoroom';
+    const MEMO_ROOM_TOTAL_CHAPTERS = 22;
+
+    function loadMemoRoomProgress() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(MEMO_ROOM_PROGRESS_KEY));
+            return { completed: (raw && Array.isArray(raw.completed)) ? raw.completed : [], last: (raw && raw.last) || null };
+        } catch (e) { return { completed: [], last: null }; }
+    }
+
+    function saveMemoRoomProgress(progress) {
+        try { localStorage.setItem(MEMO_ROOM_PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* 저장 실패는 무시 */ }
+    }
+
+    // 장을 선택할 때마다(완료 여부와 무관하게) "마지막으로 보던 위치"를 저장한다.
+    function markMemoRoomLastChapter(chapterNumber) {
+        const progress = loadMemoRoomProgress();
+        progress.last = chapterNumber;
+        saveMemoRoomProgress(progress);
+        renderMemoRoomProgressPanel();
+    }
+
+    // "장 전체 암송" 채점을 마치면 그 장을 "완료"로 기록한다.
+    function markMemoRoomChapterCompleted(chapterNumber) {
+        const progress = loadMemoRoomProgress();
+        if (!progress.completed.includes(chapterNumber)) progress.completed.push(chapterNumber);
+        progress.last = chapterNumber;
+        saveMemoRoomProgress(progress);
+        renderMemoRoomProgressPanel();
+    }
+
+    // 상단에 진도율 + "이어서 하기" 배너를 그린다.
+    function renderMemoRoomProgressPanel() {
+        const panel = document.getElementById('memo-progress-panel');
+        if (!panel) return;
+        const progress = loadMemoRoomProgress();
+        const doneCount = progress.completed.length;
+        const percent = Math.round((doneCount / MEMO_ROOM_TOTAL_CHAPTERS) * 100);
+
+        const resumeHtml = progress.last ? `
+            <button onclick="resumeMemoRoomProgress()" class="w-full mt-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
+                ▶ 이어서 하기 (${progress.last}장부터)
+            </button>` : '';
+
+        panel.innerHTML = `
+            <div class="w-full bg-white border-2 border-teal-100 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between text-[12px] font-black text-slate-500 mb-2">
+                    <span>학습 진도</span>
+                    <span class="text-teal-600">${doneCount}/${MEMO_ROOM_TOTAL_CHAPTERS}장 완료</span>
+                </div>
+                <div class="w-full h-2.5 bg-teal-50 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all" style="width:${percent}%"></div>
+                </div>
+                ${resumeHtml}
+            </div>`;
+    }
+
+    // "이어서 하기" 버튼: 저장된 장으로 select 값을 옮기고 그 지점부터 시작한다.
+    function resumeMemoRoomProgress() {
+        const progress = loadMemoRoomProgress();
+        if (!progress.last) return;
+        chapterSelect.value = String(progress.last);
+        handleChapterChange();
+        memorizeSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
     // Initialize
     function initialize() {
         // Populate chapter select options
@@ -1043,6 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setMode('verse'); // 초기 모드를 '절별 암송'으로 설정
         updateChapterNavigationButtons();
+        renderMemoRoomProgressPanel();
     }
 
     // ... existing code (timer functions, handleChapterChange, populateVerseSelectionGrid, setMode, updateModeButtons) ...
@@ -1078,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateChapterNavigationButtons();
             return;
         }
+        markMemoRoomLastChapter(chapterNumber);
         currentChapter = revelationData.find(c => c.chapter === chapterNumber);
         currentVerseIndex = 0;
         populateVerseSelectionGrid(currentChapter);
@@ -1404,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultContainer.scrollIntoView({ behavior: 'smooth' });
         } else { // Chapter mode
             stopChapterTimer();
+            markMemoRoomChapterCompleted(currentChapter.chapter);
             resultContainer.classList.add('hidden');
             const verseInputs = chapterInputContainer.querySelectorAll('.chapter-verse-input');
 

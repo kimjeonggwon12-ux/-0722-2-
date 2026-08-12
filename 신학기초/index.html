@@ -157,6 +157,8 @@
                 <div class="h-1 w-12 bg-indigo-500 mx-auto mt-6 rounded-full"></div>
             </div>
 
+            <div id="theology-progress-panel" class="w-full px-2 max-w-md mb-4"></div>
+
             <div class="w-full space-y-3 px-2 max-w-md">
                 <button onclick="app.selectSubject('parable')" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
                     <div class="flex items-center gap-4">
@@ -1055,6 +1057,71 @@
             },
         };
 
+        // ─────────────────────────────────────────────────────────
+        // 학습 진도 저장 (이 기기의 localStorage에만 저장, 서버 연동 없음)
+        // 8개 과목 중 들어가 본 과목을 "완료"로, 가장 최근 들어간 과목을 "마지막 위치"로 저장한다.
+        // ─────────────────────────────────────────────────────────
+        const THEOLOGY_PROGRESS_KEY = 'sion_progress_theology';
+        const THEOLOGY_SUBJECTS = ['parable', 'elem', 'elemFinal', 'mid', 'midFinal', 'high', 'highFinal', 'totalFinal'];
+        const THEOLOGY_SUBJECT_LABELS = {
+            parable: '초등 비유의 의미와 핵심 성구',
+            elem: '초등 제목 암기',
+            elemFinal: '초등 종강 시험',
+            mid: '중등 제목과 본문 암기',
+            midFinal: '중등 종강 시험',
+            high: '고등 장별 제목 암기',
+            highFinal: '고등 종강 시험',
+            totalFinal: '수료 종합 시험',
+        };
+
+        function loadTheologyProgress() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(THEOLOGY_PROGRESS_KEY));
+                return { completed: (raw && Array.isArray(raw.completed)) ? raw.completed : [], last: (raw && raw.last) || null };
+            } catch (e) { return { completed: [], last: null }; }
+        }
+
+        function saveTheologyProgress(progress) {
+            try { localStorage.setItem(THEOLOGY_PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        // 과목에 들어갈 때마다 "마지막 위치"와 "완료(방문)한 과목" 목록을 함께 저장한다.
+        function markTheologySubjectProgress(subject) {
+            if (!THEOLOGY_SUBJECTS.includes(subject)) return;
+            const progress = loadTheologyProgress();
+            if (!progress.completed.includes(subject)) progress.completed.push(subject);
+            progress.last = subject;
+            saveTheologyProgress(progress);
+        }
+
+        // 과목 선택(view-home) 화면 상단에 진도율 + "이어서 하기" 배너를 그린다.
+        function renderTheologyProgressPanel() {
+            const panel = document.getElementById('theology-progress-panel');
+            if (!panel) return;
+            const progress = loadTheologyProgress();
+            const doneCount = progress.completed.length;
+            const total = THEOLOGY_SUBJECTS.length;
+            const percent = Math.round((doneCount / total) * 100);
+            const lastLabel = progress.last ? THEOLOGY_SUBJECT_LABELS[progress.last] : '';
+
+            const resumeHtml = progress.last ? `
+                <button onclick="app.selectSubject('${progress.last}')" class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
+                    ▶ 이어서 하기 (${lastLabel})
+                </button>` : '';
+
+            panel.innerHTML = `
+                <div class="w-full bg-white rounded-2xl p-4 shadow-sm border border-indigo-100">
+                    <div class="flex items-center justify-between text-[12px] font-black text-slate-500 mb-2">
+                        <span>학습 진도</span>
+                        <span class="text-indigo-600">${doneCount}/${total}과목 완료</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-indigo-50 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all" style="width:${percent}%"></div>
+                    </div>
+                    ${resumeHtml}
+                </div>`;
+        }
+
         const BIBLE_BOOK_MAP = {
             '창': '창세기', '출': '출애굽기', '레': '레위기', '민': '민수기', '신': '신명기',
             '수': '여호수아', '삿': '사사기', '룻': '룻기', '삼상': '사무엘상', '삼하': '사무엘하',
@@ -1460,6 +1527,7 @@
             showHome() {
                 appState.currentSubject = null; appState.currentMode = null;
                 this.showView('home');
+                renderTheologyProgressPanel();
             },
             showGradeSelect() {
                 appState.currentSubject = null; appState.currentMode = null;
@@ -1495,6 +1563,7 @@
 
             selectSubject(subject) {
                 appState.currentSubject = subject;
+                markTheologySubjectProgress(subject);
                 let title = '', color = '';
                 switch(subject) {
                     case 'parable': title = '초등 비유의 의미와 핵심 성구'; color = 'text-rose-700 bg-rose-100'; break;
