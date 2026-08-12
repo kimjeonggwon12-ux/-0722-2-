@@ -136,7 +136,7 @@
             display: flex; align-items: center; justify-content: center;
             color: #4f46e5; font-weight: 900; font-size: 12px;
         }
-        .visitor-badge, .suggest-badge {
+        .suggest-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -151,7 +151,7 @@
             transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
         }
         .suggest-badge { cursor: pointer; border: none; color: #b45309; }
-        .suggest-badge:active, .visitor-badge:active { transform: scale(0.95); }
+        .suggest-badge:active { transform: scale(0.95); }
         @media (hover: hover) {
             .suggest-badge:hover { box-shadow: 0 5px 12px rgba(180, 83, 9, 0.18); }
         }
@@ -163,7 +163,6 @@
             font-size: 12px;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
         }
-        .visitor-badge .badge-icon { background: linear-gradient(160deg, #c4b5fd, #7c3aed); }
         .suggest-badge .badge-icon { background: linear-gradient(160deg, #fde68a, #f59e0b); }
         .field-label {
             display: block;
@@ -275,11 +274,6 @@
                 <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:76%; width:29%; height:19%;" aria-label="모의고사"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
-                <span class="visitor-badge">
-                    <span class="badge-icon">👀</span>
-                    오늘 방문자 <span id="visitor-badge-count" class="text-violet-600">-</span>명
-                    <span id="visitor-badge-note" class="text-slate-300 font-bold"></span>
-                </span>
                 <button onclick="showSuggest()" class="suggest-badge">
                     <span class="badge-icon">💡</span>
                     개선 건의하기
@@ -1823,7 +1817,7 @@
             el.classList.add('flex');
         }
 
-        function showRooms() { showView('view-rooms'); logTodayVisitOnce(); }
+        function showRooms() { showView('view-rooms'); }
         function showExamInfo() { showView('view-examinfo'); }
         function showCert() { showView('view-cert'); }
         function showMemorizeGrade() { showView('view-memorize-grade'); renderMemoHistoryList(); }
@@ -1938,40 +1932,6 @@
         function nowDateStr() {
             const d = new Date();
             return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-        }
-
-        // ─────────────────────────────────────────────────────────
-        // 오늘 방문자 수 기록 (탭 세션당 1회만 집계, 시트 연동 시 전체 방문자 합산)
-        // ─────────────────────────────────────────────────────────
-        const VISIT_SESSION_KEY = 'sion_visit_logged_session';
-
-        function renderVisitorBadge(count, online) {
-            const countEl = document.getElementById('visitor-badge-count');
-            const noteEl = document.getElementById('visitor-badge-note');
-            if (countEl) countEl.textContent = (count == null ? '-' : count);
-            if (noteEl) noteEl.textContent = online ? '' : '(이 기기 기준)';
-        }
-
-        async function logTodayVisitOnce() {
-            if (sessionStorage.getItem(VISIT_SESSION_KEY)) return;
-            sessionStorage.setItem(VISIT_SESSION_KEY, '1');
-            const today = nowDateStr();
-            const localKey = 'sion_visits_' + today;
-
-            if (!GAS_URL) {
-                const n = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
-                localStorage.setItem(localKey, String(n));
-                renderVisitorBadge(n, false);
-                return;
-            }
-            const res = await gasCall({ action: 'visit', date: today, visitedAt: nowStr() });
-            if (res && res.success && typeof res.count === 'number') {
-                renderVisitorBadge(res.count, true);
-            } else {
-                const n = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
-                localStorage.setItem(localKey, String(n));
-                renderVisitorBadge(n, false);
-            }
         }
 
         // ─────────────────────────────────────────────────────────
@@ -2358,6 +2318,22 @@
                 showRooms();
             }
         }
+
+        // 자동입력 감지(oninput/onchange/:-webkit-autofill 애니메이션)가 전부 놓치는 극히 드문 경우까지 대비해,
+        // 로그인 화면이 떠 있는 동안(최대 6초, 0.4초 간격) 입력값을 직접 몇 번 더 확인한다.
+        // 이벤트가 하나도 안 걸려도 결국은 로그인되게 만드는 최종 안전망이다.
+        (function pollEntryAutofill() {
+            let tries = 0;
+            const timer = setInterval(() => {
+                tries++;
+                const loginView = document.getElementById('view-login');
+                if (!loginView || loginView.classList.contains('hidden') || tries > 15) {
+                    clearInterval(timer);
+                    return;
+                }
+                checkAutoLogin();
+            }, 400);
+        })();
     </script>
 </body>
 </html>
