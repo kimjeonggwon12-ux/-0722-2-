@@ -44,6 +44,15 @@
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 크롬 등이 저장된 비밀번호를 자동 입력할 때는 input 이벤트가 안 터지는 경우가 있어,
+           자동입력 시 브라우저가 붙이는 :-webkit-autofill/:autofill 상태를 애니메이션으로 감지해
+           JS(handleEntryAutofillDetected)가 반드시 값을 다시 확인하도록 한다. */
+        @keyframes onEntryAutoFillStart { from {} to {} }
+        @keyframes onEntryAutoFillCancel { from {} to {} }
+        #entry-code-input:-webkit-autofill { animation-name: onEntryAutoFillStart; }
+        #entry-code-input:not(:-webkit-autofill) { animation-name: onEntryAutoFillCancel; }
+        #entry-code-input:autofill { animation-name: onEntryAutoFillStart; }
+
         .login-photo {
             position: relative;
             aspect-ratio: 770 / 1250;
@@ -248,7 +257,7 @@
                         <svg class="w-5 h-5 text-slate-500 flex-shrink-0 ml-2.5" fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
                         </svg>
-                        <input type="password" id="entry-code-input" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold tracking-[0.2em] placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal" placeholder="암호 입력" oninput="checkAutoLogin()" onkeydown="if(event.key==='Enter') checkLogin()">
+                        <input type="password" id="entry-code-input" autocomplete="current-password" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold tracking-[0.2em] placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal" placeholder="암호 입력" oninput="checkAutoLogin()" onchange="checkAutoLogin()" onkeydown="if(event.key==='Enter') checkLogin()" onanimationstart="handleEntryAutofillDetected(event)">
                         <button onclick="checkLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-black transition-colors flex-shrink-0">입장</button>
                     </div>
                 </div>
@@ -349,7 +358,7 @@
                             <div class="min-w-0">
                                 <p class="text-[11px] font-black text-slate-400">신청 과목</p>
                                 <p class="text-sm font-extrabold text-slate-800 break-keep">세 과목 중 하나만 선택 (중복 신청 불가)</p>
-                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">전 과목·전 급수 소문항 25개 출제</p>
+                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">전 과목·전 급수 소문항 50개 출제</p>
                             </div>
                         </div>
                     </div>
@@ -1853,6 +1862,14 @@
                 localStorage.setItem(AUTH_KEY, '1');
                 showRooms();
             }
+        }
+
+        // 크롬 등이 저장된 비밀번호를 자동 입력할 때는 input 이벤트가 안 터지는 경우가 있어
+        // (그러면 코드가 맞게 채워져도 checkAutoLogin이 한 번도 호출되지 않아 로그인 화면에 멈춰있게 됨),
+        // :-webkit-autofill/:autofill 상태로 전환되는 CSS 애니메이션(onEntryAutoFillStart)을 대신 감지해
+        // 그 시점에도 값을 한 번 더 확인한다.
+        function handleEntryAutofillDetected(event) {
+            if (event.animationName === 'onEntryAutoFillStart') checkAutoLogin();
         }
 
         function checkLogin() {
