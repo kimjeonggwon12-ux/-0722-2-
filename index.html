@@ -717,6 +717,7 @@
                                 <option value="2급">2급</option>
                                 <option value="1급">1급</option>
                             </select>
+                            <p id="apply-grade-advisory-note" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 자문회 특별 전형은 급수를 직접 선택하지 않고, 시험 점수로 급수가 자동 결정됩니다.<br>1급 - 90점 이상<br>2급 - 80점 이상<br>3급 - 70점 이상<br>4급 - 60점 이상</p>
                         </div>
                         <div>
                             <label class="field-label">시험 시간</label>
@@ -2006,8 +2007,10 @@
             const grade = document.getElementById('apply-grade').value;
             const examTime = document.getElementById('apply-time').value;
             const errEl = document.getElementById('apply-error-msg');
+            // 자문회 특별 전형은 급수를 직접 선택하지 않고 점수로 자동 결정되므로 급수 입력을 필수에서 제외한다.
+            const isSpecialSubject = subject === APPLY_SPECIAL_SUBJECT_VALUE;
 
-            if (!church || !department || !name || !memberId || !phone || !subject || !grade || !examTime) {
+            if (!church || !department || !name || !memberId || !phone || !subject || (!isSpecialSubject && !grade) || !examTime) {
                 errEl.textContent = '모든 항목을 입력(선택)해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
@@ -2063,7 +2066,8 @@
             document.getElementById('apply-form-section').classList.add('hidden');
             document.getElementById('apply-success-section').classList.remove('hidden');
             document.getElementById('apply-success-id').textContent = app.id;
-            document.getElementById('apply-success-detail').textContent = `${app.subject} · ${app.grade} · ${app.name} · ${app.examTime}`;
+            const gradeLabel = app.grade || '급수 자동 결정(점수제)';
+            document.getElementById('apply-success-detail').textContent = `${app.subject} · ${gradeLabel} · ${app.name} · ${app.examTime}`;
             document.getElementById('apply-success-sync').textContent = message;
             clearApplyDraft();
         }
@@ -2095,7 +2099,7 @@
             form.addEventListener('change', saveApplyDraft);
         }
 
-        // 부서가 "자문회"이면 과목 select에 자문회 전용 옵션(계시록 통달 자문회 특별 전형 등)이 추가되고,
+        // 부서가 "자문회"이면 과목 select에 자문회 전용 옵션("자문회 특별 전형(계시록 통달)")이 4번째로 추가되고,
         // 그 외 부서면 기존 3개 과목 옵션으로 되돌아간다.
         const APPLY_SUBJECT_OPTIONS_DEFAULT = [
             { value: '초중고 신학', label: '초중고 신학' },
@@ -2103,11 +2107,13 @@
             { value: '계시록 암기', label: '계시록 암기' }
         ];
         const APPLY_SUBJECT_OPTIONS_ADVISORY = [
-            { value: '초중고 신학', label: '초중고 신학(일반)' },
-            { value: '계시록 통달', label: '계시록 통달(일반)' },
-            { value: '계시록 통달 자문회 특별 전형', label: '계시록 통달 자문회 특별 전형' },
-            { value: '계시록 암기', label: '계시록 암기(일반)' }
+            { value: '초중고 신학', label: '초중고 신학' },
+            { value: '계시록 통달', label: '계시록 통달' },
+            { value: '계시록 암기', label: '계시록 암기' },
+            { value: '자문회 특별 전형(계시록 통달)', label: '자문회 특별 전형(계시록 통달)' }
         ];
+        // 이 과목을 선택하면 급수는 직접 고르지 않고 시험 점수로 자동 결정되므로 급수 select를 비활성화한다.
+        const APPLY_SPECIAL_SUBJECT_VALUE = '자문회 특별 전형(계시록 통달)';
 
         // 부서 값에 맞는 과목 옵션 목록으로 select를 다시 그린다.
         // resetValue=true면 무조건 미선택으로 초기화, false면 현재 선택값이 새 목록에도 있을 때만 유지한다.
@@ -2120,14 +2126,35 @@
             subjectEl.innerHTML = '<option value="">과목을 선택하세요</option>' +
                 opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
             subjectEl.value = (!resetValue && opts.some(o => o.value === prevValue)) ? prevValue : '';
+            syncApplyGradeToSubject();
+        }
+
+        // 과목이 "자문회 특별 전형(계시록 통달)"이면 급수 select를 비활성화·초기화하고 자동 결정 안내문을 보여준다.
+        // 다른 과목이면 급수 select를 다시 활성화하고 안내문을 숨긴다.
+        function syncApplyGradeToSubject() {
+            const subjectEl = document.getElementById('apply-subject');
+            const gradeEl = document.getElementById('apply-grade');
+            const noteEl = document.getElementById('apply-grade-advisory-note');
+            if (!subjectEl || !gradeEl || !noteEl) return;
+            const isSpecial = subjectEl.value === APPLY_SPECIAL_SUBJECT_VALUE;
+            gradeEl.disabled = isSpecial;
+            if (isSpecial) gradeEl.value = '';
+            noteEl.classList.toggle('hidden', !isSpecial);
         }
 
         function bindApplyDeptSubjectSync() {
             const deptEl = document.getElementById('apply-dept');
-            if (!deptEl || deptEl.dataset.subjectSyncBound) return;
-            deptEl.dataset.subjectSyncBound = '1';
-            // 부서를 바꿀 때마다(여러 번 왔다갔다 해도) 과목 옵션 목록을 다시 그리고, 과목 선택은 초기화한다.
-            deptEl.addEventListener('change', () => renderApplySubjectOptions({ resetValue: true }));
+            if (deptEl && !deptEl.dataset.subjectSyncBound) {
+                deptEl.dataset.subjectSyncBound = '1';
+                // 부서를 바꿀 때마다(여러 번 왔다갔다 해도) 과목 옵션 목록을 다시 그리고, 과목 선택은 초기화한다.
+                deptEl.addEventListener('change', () => renderApplySubjectOptions({ resetValue: true }));
+            }
+            const subjectEl = document.getElementById('apply-subject');
+            if (subjectEl && !subjectEl.dataset.gradeSyncBound) {
+                subjectEl.dataset.gradeSyncBound = '1';
+                // 과목을 바꿀 때마다 급수 select 활성화 상태와 안내문을 과목에 맞게 갱신한다.
+                subjectEl.addEventListener('change', syncApplyGradeToSubject);
+            }
         }
 
         function resetApplyForm() {
@@ -2152,6 +2179,8 @@
                     if (id === 'apply-dept') renderApplySubjectOptions({ resetValue: true });
                 });
             } catch (e) { /* 무시 */ }
+            // 임시저장에서 apply-subject 값이 직접 대입돼 위 렌더링 시점 이후에 바뀌었을 수 있으니 마지막에 한 번 더 동기화한다.
+            syncApplyGradeToSubject();
             bindApplyDeptSubjectSync();
             bindApplyDraftAutosave();
         }
