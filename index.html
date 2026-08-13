@@ -249,6 +249,19 @@
             <video controls playsinline style="width:100%;max-width:600px;border-radius:12px;display:block;margin:0 auto 16px;" poster="assets/promo-thumb.jpg">
                 <source src="assets/promo.mp4" type="video/mp4">
             </video>
+
+            <!-- 시험 일정 + 이벤트 배너 -->
+            <div class="w-full max-w-[600px] mx-auto mb-4 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg text-white text-center">
+                <p class="text-[12px] font-bold text-violet-200 tracking-wide mb-1.5">📅 계시록 통달 자격증 시험일정</p>
+                <p class="text-xl font-black leading-snug break-keep">신 43년 11월 15일(일)<br>15:00 (교회별 대면 시험)</p>
+
+                <div class="mt-4 pt-4 border-t border-white/25">
+                    <p id="event-banner-title" class="text-base font-black break-keep"></p>
+                    <p id="event-banner-period" class="text-[13px] font-bold text-violet-100 mt-1"></p>
+                    <p id="event-banner-desc" class="text-sm font-bold mt-2 leading-snug break-keep"></p>
+                </div>
+            </div>
+
             <div class="login-photo">
                 <div class="login-input-zone">
                     <p id="login-error-msg" class="absolute bottom-full left-0 right-0 mb-2 text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-white/90 rounded-full px-3 py-1.5 shadow-sm">코드가 올바르지 않거나 조건에 맞지 않습니다.</p>
@@ -265,25 +278,6 @@
 
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
-            <!-- 통달이 캐릭터 배너 -->
-            <div class="w-full max-w-md px-1 mb-4">
-                <div class="bg-gradient-to-br from-violet-50 to-purple-50 border-2 border-violet-100 rounded-2xl p-3 flex items-center gap-2 shadow-sm">
-                    <img src="assets/tongdari.png" alt="통달이" class="w-16 h-16 flex-shrink-0 object-contain">
-                    <div class="relative flex-grow min-w-0 bg-white border-2 border-violet-100 rounded-2xl rounded-bl-sm px-3 py-2 shadow-sm">
-                        <p class="text-[12px] font-bold text-violet-900 break-keep leading-snug">계시록 통달, 통달이와 함께 준비해요!</p>
-                        <p class="text-[11px] font-black text-violet-600 mt-1 break-keep">📅 다음 시험일: 신 43년 11월 15일(일)</p>
-                    </div>
-                </div>
-
-                <!-- 이벤트 배너 (currentEvent 객체로 내용 관리, script 하단 참고) -->
-                <div class="mt-2 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl p-3.5 shadow-sm text-white">
-                    <p id="event-banner-title" class="text-[13px] font-black break-keep"></p>
-                    <p id="event-banner-period" class="text-[10px] font-bold text-violet-100 mt-0.5"></p>
-                    <p id="event-banner-desc" class="text-[11px] font-bold mt-1.5 break-keep leading-snug"></p>
-                    <button id="event-banner-cta" onclick="goToEventCta()" class="mt-2.5 w-full bg-white text-violet-700 rounded-xl py-2 text-[12px] font-black hover:bg-violet-50 transition-colors"></button>
-                </div>
-            </div>
-
             <div class="rooms-photo">
                 <a href="신학기초/index.html" class="rooms-hotspot" style="left:7%; top:34.5%; width:29%; height:33%;" aria-label="초중고 신학 공부방"></a>
                 <a href="도통계시록/index.html" class="rooms-hotspot" style="left:38%; top:34.5%; width:29%; height:33%;" aria-label="계시록 통달 공부방"></a>
@@ -836,31 +830,18 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
 
         // ─────────────────────────────────────────────────────────
-        // 방 선택 화면 상단 이벤트 배너 (내용만 바꿔서 다른 이벤트로 교체 가능)
-        // ctaLink: '#apply'/'#examinfo'/'#cert' 같은 앱 내부 해시는 goToEventCta()가 해당 화면으로 이동시키고,
-        // 그 외 값(외부 URL 등)은 새 탭으로 연다.
+        // 로그인 화면(영상 아래) 이벤트 배너 — title/period/desc만 바꾸면 다른 이벤트로 교체 가능
         // ─────────────────────────────────────────────────────────
         const currentEvent = {
-            title: '🎉 계시록 통달 자격증 시험 신청 이벤트',
+            title: '🎉 시험 신청 이벤트',
             period: '2026.8.12 ~ 2026.8.31',
-            desc: '이 기간 중 시험에 신청하신 분들 중 추첨을 통해 커피 쿠폰을 드려요!',
-            ctaText: '지금 신청하기',
-            ctaLink: '#apply'
+            desc: '이 기간 중 시험에 신청하신 분들 중 추첨을 통해 커피 쿠폰을 드려요!'
         };
 
         function renderEventBanner() {
             document.getElementById('event-banner-title').textContent = currentEvent.title;
             document.getElementById('event-banner-period').textContent = currentEvent.period;
             document.getElementById('event-banner-desc').textContent = currentEvent.desc;
-            document.getElementById('event-banner-cta').textContent = currentEvent.ctaText;
-        }
-
-        function goToEventCta() {
-            const link = currentEvent.ctaLink;
-            if (link === '#apply') { showApplyMenu(); }
-            else if (link === '#examinfo') { showExamInfo(); }
-            else if (link === '#cert') { showCert(); }
-            else if (link) { window.open(link, '_blank'); }
         }
 
         renderEventBanner();
