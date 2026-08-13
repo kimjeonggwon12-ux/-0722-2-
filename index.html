@@ -300,6 +300,35 @@
                             <input type="text" id="suggest-name" class="field-input" placeholder="이름을 입력하세요 (선택)">
                         </div>
                         <div>
+                            <label class="field-label">교회</label>
+                            <select id="suggest-church" class="field-input">
+                                <option value="">교회를 선택하세요</option>
+                                <option value="전주">전주</option>
+                                <option value="익산">익산</option>
+                                <option value="군산">군산</option>
+                                <option value="정읍">정읍</option>
+                                <option value="남원">남원</option>
+                                <option value="김제">김제</option>
+                                <option value="완주">완주</option>
+                                <option value="고창">고창</option>
+                                <option value="부안">부안</option>
+                                <option value="형제지파">형제지파</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="field-label">부서</label>
+                            <select id="suggest-dept" class="field-input">
+                                <option value="">부서를 선택하세요</option>
+                                <option value="교역자">교역자</option>
+                                <option value="장로회">장로회</option>
+                                <option value="자문회">자문회</option>
+                                <option value="장년회">장년회</option>
+                                <option value="부녀회">부녀회</option>
+                                <option value="청년회">청년회</option>
+                                <option value="학생회">학생회</option>
+                            </select>
+                        </div>
+                        <div>
                             <input type="text" id="suggest-phone" inputmode="numeric" class="field-input" placeholder="연락 필요 시 휴대폰 번호 기록하세요." oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                         </div>
                         <div>
@@ -1832,6 +1861,8 @@
             document.getElementById('suggest-form-section').classList.remove('hidden');
             document.getElementById('suggest-success-section').classList.add('hidden');
             document.getElementById('suggest-name').value = '';
+            document.getElementById('suggest-church').value = '';
+            document.getElementById('suggest-dept').value = '';
             document.getElementById('suggest-phone').value = '';
             document.getElementById('suggest-content').value = '';
             document.getElementById('suggest-error-msg').classList.add('opacity-0');
@@ -1952,10 +1983,18 @@
             if (isSubmittingSuggestion) return; // 전송 중 중복 클릭 방지
 
             const name = document.getElementById('suggest-name').value.trim();
+            const church = document.getElementById('suggest-church').value;
+            const department = document.getElementById('suggest-dept').value;
             const phone = document.getElementById('suggest-phone').value.trim();
             const content = document.getElementById('suggest-content').value.trim();
             const errEl = document.getElementById('suggest-error-msg');
+            if (!church || !department) {
+                errEl.textContent = '교회와 부서를 선택해주세요.';
+                errEl.classList.remove('opacity-0');
+                return;
+            }
             if (!content) {
+                errEl.textContent = '건의 내용을 입력해주세요.';
                 errEl.classList.remove('opacity-0');
                 return;
             }
@@ -1966,7 +2005,7 @@
             btn.disabled = true;
             btn.textContent = '제출 중...';
 
-            const payload = { action: 'suggest', name: name || '익명', phone, content, submittedAt: nowStr() };
+            const payload = { action: 'suggest', name: name || '익명', church, department, phone, content, submittedAt: nowStr() };
             try {
                 const list = JSON.parse(localStorage.getItem(SUGGEST_KEY) || '[]');
                 list.push(payload);
