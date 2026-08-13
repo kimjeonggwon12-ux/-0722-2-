@@ -767,8 +767,11 @@
                 </div>
                 <div class="w-10 flex-shrink-0"></div>
             </div>
-            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center justify-between shrink-0 no-print">
-                <span id="g4-exam-tally" class="text-[13px] font-black text-[#4f46e5]">0/144 작성</span>
+            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center justify-between shrink-0 no-print gap-1.5 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <span id="g4-exam-tally" class="text-[13px] font-black text-[#4f46e5]">0/144 작성</span>
+                    <button id="g4-exam-resume-btn" onclick="jumpToG4ExamUnanswered()" class="hidden text-[11px] bg-amber-400 hover:bg-amber-500 text-white px-3 py-1.5 rounded-full font-black active:scale-95 transition-transform">▶ 이어서 풀기</button>
+                </div>
                 <div class="flex gap-1.5">
                     <button id="g4-exam-print-btn" onclick="window.print()" class="hidden text-[11px] bg-white border border-[#c7d2fe] text-[#4f46e5] px-3 py-1.5 rounded-full font-bold active:scale-95 transition-transform">인쇄</button>
                     <button onclick="finishGrade4Exam()" class="text-[11px] bg-[#4f46e5] text-white px-3 py-1.5 rounded-full font-bold active:scale-95 transition-transform">제출하기</button>
@@ -12321,6 +12324,11 @@
             return normStr;
         }
 
+        // 숫자 뒤에 붙는 단위(명)는 있어도 없어도 정답으로 인정 (예: 144000 = 144000명, 콤마는 normalizeG4Answer에서 이미 제거됨)
+        function g4StripNumberUnit(normStr) {
+            return normStr.replace(/(\d)명$/, '$1');
+        }
+
         function g4AnswerMatches(userRaw, ansRaw) {
             const userNorm = normalizeG4Answer(userRaw);
             const ansNorm = normalizeG4Answer(ansRaw);
@@ -12328,6 +12336,8 @@
             const userNoParticle = g4StripTrailingParticle(userNorm);
             if (userNoParticle === ansNorm) return true;
             if (g4CanonicalizeSynonyms(userNoParticle) === g4CanonicalizeSynonyms(ansNorm)) return true;
+            if (g4StripNumberUnit(userNorm) === g4StripNumberUnit(ansNorm)) return true;
+            if (g4StripNumberUnit(userNoParticle) === g4StripNumberUnit(ansNorm)) return true;
             return false;
         }
 
@@ -12399,6 +12409,54 @@
         // 144개 중 몇 개를 맞았는지 집계되고 틀린 문항만 다시 풀어볼 수 있습니다.
         let g4ExamState = { items: GRADE4_ALL_ITEMS, grouped: true, results: new Map() };
 
+        // ─────────────────────────────────────────────────────────
+        // 4급 전체 시험(144문항) 이어서 하기 — 이 기기의 localStorage에만 저장.
+        // 전체 144문항(grouped) 모드에서만 저장/복원되고, "틀린 문항만 다시 풀기" 같은
+        // 부분 세트에는 적용하지 않는다(과목/모드별로 독립적으로 동작).
+        // ─────────────────────────────────────────────────────────
+        const G4_EXAM_PROGRESS_KEY = 'sion_g4exam_progress';
+
+        function saveG4ExamProgress() {
+            if (!g4ExamState.grouped) return;
+            try {
+                const values = Array.from(document.querySelectorAll('#grade4-exam-container .g4-blank')).map(inp => inp.value);
+                localStorage.setItem(G4_EXAM_PROGRESS_KEY, JSON.stringify({ values, savedAt: Date.now() }));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        function loadG4ExamProgress() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(G4_EXAM_PROGRESS_KEY));
+                return (raw && Array.isArray(raw.values)) ? raw.values : null;
+            } catch (e) { return null; }
+        }
+
+        function clearG4ExamProgress() {
+            try { localStorage.removeItem(G4_EXAM_PROGRESS_KEY); } catch (e) { /* 무시 */ }
+        }
+
+        // 저장된 답안을 새로 그려진 입력칸에 순서대로 채워 넣고, 미완료 문항이 있으면 "이어서 풀기" 버튼을 보여준다.
+        function restoreG4ExamProgress() {
+            const resumeBtn = document.getElementById('g4-exam-resume-btn');
+            const saved = loadG4ExamProgress();
+            if (!saved) { if (resumeBtn) resumeBtn.classList.add('hidden'); return; }
+            const inputs = document.querySelectorAll('#grade4-exam-container .g4-blank');
+            let answeredCount = 0;
+            inputs.forEach((inp, i) => { if (saved[i]) { inp.value = saved[i]; answeredCount++; } });
+            updateG4ExamProgress();
+            if (resumeBtn) resumeBtn.classList.toggle('hidden', !(answeredCount > 0 && answeredCount < inputs.length));
+        }
+
+        // "이어서 풀기": 저장된 답안 중 아직 채우지 않은 첫 문항으로 스크롤 + 포커스
+        function jumpToG4ExamUnanswered() {
+            const inputs = Array.from(document.querySelectorAll('#grade4-exam-container .g4-blank'));
+            const target = inputs.find(inp => inp.value.trim() === '');
+            if (!target) return;
+            const card = target.closest('[id^="g4-card-exam-"]');
+            (card || target).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => target.focus(), 400);
+        }
+
         function startGrade4Exam(customItems) {
             const items = customItems || GRADE4_ALL_ITEMS;
             const grouped = !customItems;
@@ -12422,11 +12480,13 @@
             for (let i = 0; i < items.length; i++) {
                 bindG4Enter('exam', i, items.length, checkG4ExamAnswer, false);
                 const card = document.getElementById(`g4-card-exam-${i}`);
-                card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', updateG4ExamProgress));
+                card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', () => { updateG4ExamProgress(); saveG4ExamProgress(); }));
             }
             document.getElementById('grade4-exam-wronglist').classList.add('hidden');
             document.getElementById('g4-exam-print-btn').classList.add('hidden');
             updateG4ExamProgress();
+            if (grouped) restoreG4ExamProgress();
+            else { const btn = document.getElementById('g4-exam-resume-btn'); if (btn) btn.classList.add('hidden'); }
             showScreen('grade4Exam');
         }
 
@@ -12459,6 +12519,10 @@
             wrongBox.classList.remove('hidden');
             g4ExamState.lastWrongItems = wrongIdxs.map(i => g4ExamState.items[i]);
             document.getElementById('g4-exam-print-btn').classList.remove('hidden');
+            // 제출(채점)까지 마쳤으니 "이어서 하기" 저장은 정리한다 — 다음 진입은 새 시험으로 시작
+            if (g4ExamState.grouped) clearG4ExamProgress();
+            const resumeBtn = document.getElementById('g4-exam-resume-btn');
+            if (resumeBtn) resumeBtn.classList.add('hidden');
         }
 
         function retryGrade4ExamWrong() {
@@ -12468,6 +12532,7 @@
         }
 
         function resetGrade4Exam() {
+            clearG4ExamProgress(); // 초기화는 저장된 이어서 하기 답안도 함께 비운다
             startGrade4Exam();
         }
 

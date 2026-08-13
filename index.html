@@ -1938,6 +1938,11 @@
             const el = document.getElementById(id);
             el.classList.remove('hidden');
             el.classList.add('flex');
+            // 뒤로가기 동작이 있는(=최상위가 아닌) 화면으로 들어올 때만 히스토리를 하나 쌓아,
+            // 기기 뒤로가기를 눌렀을 때 그 화면의 뒤로가기 동작을 대신 수행할 수 있게 한다.
+            if (typeof VIEW_BACK_ACTIONS !== 'undefined' && VIEW_BACK_ACTIONS[id]) {
+                try { history.pushState({ sionGuard: true }, ''); } catch (e) { /* 무시 */ }
+            }
         }
 
         function showRooms() { showView('view-rooms'); logVisit(); }
@@ -1972,6 +1977,38 @@
             window.location.hash = '#cert';
             showCert();
         }
+
+        // ─────────────────────────────────────────────────────────
+        // 기기(브라우저)의 "뒤로가기"를 실수로 눌러도 앱을 벗어나지 않고, 화면 안에서
+        // 딱 한 단계만 뒤로 가도록 만든다. 각 화면 자체의 "뒤로가기" 버튼과 같은 동작을 그대로 재사용.
+        // ─────────────────────────────────────────────────────────
+        const VIEW_BACK_ACTIONS = {
+            'view-suggest': backToRooms,
+            'view-examinfo': backToRooms,
+            'view-cert': showRooms,
+            'view-memorize-grade': backToCert,
+            'view-memo-exam': showMemorizeGrade,
+            'view-memo-result': showMemorizeGrade,
+            'view-apply-menu': backToRooms,
+            'view-apply': showApplyMenu,
+            'view-applycancel': showApplyMenu
+            // view-login, view-rooms, view-admin-suggest는 최상위 화면이라 정해진 뒤로가기 동작이 없다.
+            // 이 화면들에서 기기 뒤로가기를 누르면 평소처럼(페이지 이탈 등) 동작한다.
+        };
+
+        function getCurrentViewId() {
+            return ALL_VIEWS.find(id => {
+                const el = document.getElementById(id);
+                return el && !el.classList.contains('hidden');
+            });
+        }
+
+        window.addEventListener('popstate', function () {
+            const currentId = getCurrentViewId();
+            const backAction = currentId && VIEW_BACK_ACTIONS[currentId];
+            if (backAction) backAction(); // 내부에서 showView()가 다시 호출되며 필요하면 히스토리를 다시 쌓는다
+            // backAction이 없는 최상위 화면이면 아무 것도 하지 않아 실제 뒤로가기가 그대로 진행된다
+        });
 
         function notifyComingSoonRoot() {
             alert('문제를 준비 중입니다. 곧 만나요!');
