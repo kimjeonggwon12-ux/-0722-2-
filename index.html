@@ -250,16 +250,13 @@
                 <source src="assets/promo.mp4" type="video/mp4">
             </video>
 
-            <!-- 시험 일정 + 이벤트 배너 -->
+            <!-- 시험 일정 배너 -->
             <div class="w-full max-w-[600px] mx-auto mb-4 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg text-white text-center">
-                <p class="text-[12px] font-bold text-violet-200 tracking-wide mb-1.5">📅 계시록 통달 자격증 시험일정</p>
-                <p class="text-xl font-black leading-snug break-keep">신 43년 11월 15일(일)<br>15:00 (교회별 대면 시험)</p>
-
-                <div class="mt-4 pt-4 border-t border-white/25">
-                    <p id="event-banner-title" class="text-base font-black break-keep"></p>
-                    <p id="event-banner-period" class="text-[13px] font-bold text-violet-100 mt-1"></p>
-                    <p id="event-banner-desc" class="text-sm font-bold mt-2 leading-snug break-keep"></p>
+                <div class="flex items-center justify-center gap-2 mb-1.5">
+                    <img src="assets/신천지보좌마크.jpg" alt="" class="w-5 h-5 rounded-full ring-2 ring-white/70 object-cover flex-shrink-0">
+                    <p class="text-[12px] font-bold text-violet-200 tracking-wide">계시록 통달 자격증 시험일정</p>
                 </div>
+                <p class="text-xl font-black leading-snug break-keep">신 43년 11월 15일(일)<br>15:00 (교회별 대면 시험)</p>
             </div>
 
             <div class="login-photo">
@@ -828,23 +825,6 @@
         // 시험 신청 → Google 스프레드시트 연동 (Apps Script 웹앱)
         // ─────────────────────────────────────────────────────────
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
-
-        // ─────────────────────────────────────────────────────────
-        // 로그인 화면(영상 아래) 이벤트 배너 — title/period/desc만 바꾸면 다른 이벤트로 교체 가능
-        // ─────────────────────────────────────────────────────────
-        const currentEvent = {
-            title: '🎉 시험 신청 이벤트',
-            period: '2026.8.12 ~ 2026.8.31',
-            desc: '이 기간 중 시험에 신청하신 분들 중 추첨을 통해 커피 쿠폰을 드려요!'
-        };
-
-        function renderEventBanner() {
-            document.getElementById('event-banner-title').textContent = currentEvent.title;
-            document.getElementById('event-banner-period').textContent = currentEvent.period;
-            document.getElementById('event-banner-desc').textContent = currentEvent.desc;
-        }
-
-        renderEventBanner();
 
         const AUTH_KEY = 'sion_auth';
         const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel'];
