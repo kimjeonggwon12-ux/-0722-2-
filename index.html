@@ -44,6 +44,13 @@
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 시험 일정 배너를 강조하는 펄스 테두리 */
+        .exam-banner-pulse { border: 2px solid rgba(255,255,255,0.4); animation: examBannerPulse 2.2s ease-out infinite; }
+        @keyframes examBannerPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(216, 180, 254, 0.55); }
+            50% { box-shadow: 0 0 0 10px rgba(216, 180, 254, 0); }
+        }
+
         /* 크롬 등이 저장된 비밀번호를 자동 입력할 때는 input 이벤트가 안 터지는 경우가 있어,
            자동입력 시 브라우저가 붙이는 :-webkit-autofill/:autofill 상태를 애니메이션으로 감지해
            JS(handleEntryAutofillDetected)가 반드시 값을 다시 확인하도록 한다. */
@@ -251,12 +258,14 @@
             </video>
 
             <!-- 시험 일정 배너 -->
-            <div class="w-full max-w-[600px] mx-auto mb-4 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg text-white text-center">
-                <div class="flex items-center justify-center gap-2 mb-1.5">
-                    <img src="assets/신천지보좌마크.jpg" alt="" class="w-5 h-5 rounded-full ring-2 ring-white/70 object-cover flex-shrink-0">
-                    <p class="text-[12px] font-bold text-violet-200 tracking-wide">계시록 통달 자격증 시험일정</p>
+            <div class="exam-banner-pulse w-full max-w-[600px] mx-auto mb-4 bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg text-white text-center">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <img src="assets/신천지보좌마크.jpg" alt="" class="w-10 h-10 rounded-full ring-2 ring-white/70 object-cover flex-shrink-0">
+                    <p class="text-2xl font-black break-keep">계시록 통달 자격증 시험일정</p>
                 </div>
-                <p class="text-xl font-black leading-snug break-keep">신 43년 11월 15일(일)<br>15:00 (교회별 대면 시험)</p>
+                <p class="text-xl font-black leading-snug break-keep">신 43년 11월 15일(일), 15:00</p>
+                <p class="text-sm font-bold text-violet-100 mt-1 break-keep">교회별 대면 시험</p>
+                <p class="text-sm font-bold text-violet-100 break-keep">전 과목, 전 급수 시행</p>
             </div>
 
             <div class="login-photo">
