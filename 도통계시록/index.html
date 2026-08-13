@@ -12796,7 +12796,38 @@
             els.screens[screenName].classList.remove('hidden');
             els.screens[screenName].classList.add('flex');
             if (screenName === 'home') renderTongdalProgressPanel();
+            // 뒤로가기 동작이 있는(=최상위가 아닌) 화면으로 들어올 때만 히스토리를 하나 쌓아,
+            // 기기 뒤로가기를 눌렀을 때 그 화면의 뒤로가기 동작을 대신 수행할 수 있게 한다.
+            if (typeof SCREEN_BACK_ACTIONS !== 'undefined' && SCREEN_BACK_ACTIONS[screenName]) {
+                try { history.pushState({ sionGuard: true }, ''); } catch (e) { /* 무시 */ }
+            }
         }
+
+        // ─────────────────────────────────────────────────────────
+        // 기기(폰) 뒤로가기를 실수로 눌러도 앱을 벗어나지 않고, 화면 안에서 딱 한 단계만
+        // 뒤로 가도록 만든다. 각 화면 자체의 "뒤로가기" 버튼과 같은 동작을 그대로 재사용.
+        // home/gradeSelect는 최상위 화면이라 대상에서 뺀다(그중 gradeSelect는 자체 뒤로가기
+        // 버튼도 ../index.html#cert로 실제 페이지 이동이라, 기기 뒤로가기도 그대로 두는 게 맞음).
+        // ─────────────────────────────────────────────────────────
+        const SCREEN_BACK_ACTIONS = {
+            grade4Rooms: () => showScreen('home'),
+            grade4Study: () => showScreen('grade4Rooms'),
+            grade4Exam: () => showScreen('grade4Rooms'),
+            grade4Mock: () => showScreen('grade4Rooms'),
+            grade4MockResult: () => showScreen('grade4Rooms'),
+            quiz: () => quitQuiz(),
+            result: () => quitQuiz()
+        };
+
+        function getCurrentScreenKey() {
+            return Object.keys(els.screens).find(k => els.screens[k] && !els.screens[k].classList.contains('hidden'));
+        }
+
+        window.addEventListener('popstate', function () {
+            const currentKey = getCurrentScreenKey();
+            const backAction = currentKey && SCREEN_BACK_ACTIONS[currentKey];
+            if (backAction) backAction(); // 내부에서 showScreen()이 다시 호출되며 필요하면 히스토리를 다시 쌓는다
+        });
 
         function updateNavButtons() {
             const isFirst = state.currentIndex === 0;
