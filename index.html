@@ -51,6 +51,27 @@
             50% { box-shadow: 0 0 0 10px rgba(216, 180, 254, 0); }
         }
 
+        /* 뒤로가기/홈 버튼: 옅은 회색 글자만 있던 걸 항상 눈에 띄는 알약 배지 + 은은한 펄스 발광으로 강조 */
+        .nav-back-glow {
+            display: inline-flex;
+            background: #fff;
+            border-radius: 9999px;
+            padding: 7px 16px 7px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            animation: navBackGlowPulse 2.2s ease-out infinite;
+        }
+        @keyframes navBackGlowPulse {
+            0%, 100% { box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 0 rgba(99,102,241,0.5); }
+            50% { box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 7px rgba(99,102,241,0); }
+        }
+
+        /* 방 선택 화면의 "시험 안내"/"시험 신청" 핫스팟을 은은한 금빛 펄스로 유도 */
+        .rooms-hotspot-pulse { animation: roomsHotspotPulse 2s ease-out infinite; }
+        @keyframes roomsHotspotPulse {
+            0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.75), 0 0 0 0 rgba(250, 204, 21, 0.65); }
+            50% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 10px rgba(250, 204, 21, 0); }
+        }
+
         /* 크롬 등이 저장된 비밀번호를 자동 입력할 때는 input 이벤트가 안 터지는 경우가 있어,
            자동입력 시 브라우저가 붙이는 :-webkit-autofill/:autofill 상태를 애니메이션으로 감지해
            JS(handleEntryAutofillDetected)가 반드시 값을 다시 확인하도록 한다. */
@@ -288,8 +309,8 @@
                 <a href="신학기초/index.html" class="rooms-hotspot" style="left:7%; top:34.5%; width:29%; height:33%;" aria-label="초중고 신학 공부방"></a>
                 <a href="도통계시록/index.html" class="rooms-hotspot" style="left:38%; top:34.5%; width:29%; height:33%;" aria-label="계시록 통달 공부방"></a>
                 <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:34.5%; width:27%; height:33%;" aria-label="계시록 암기 공부방"></a>
-                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:76%; width:29%; height:19%;" aria-label="시험 안내"></a>
-                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:37%; top:76%; width:27%; height:19%;" aria-label="시험 신청"></a>
+                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot rooms-hotspot-pulse" style="left:7%; top:76%; width:29%; height:19%;" aria-label="시험 안내"></a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot rooms-hotspot-pulse" style="left:37%; top:76%; width:27%; height:19%;" aria-label="시험 신청"></a>
                 <a href="#cert" onclick="showCert()" class="rooms-hotspot" style="left:65%; top:76%; width:29%; height:19%;" aria-label="모의고사"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
@@ -303,7 +324,7 @@
         <!-- 개선 사항 건의하기 -->
         <div id="view-suggest" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-amber-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-amber-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -369,7 +390,7 @@
         <!-- 시험 안내 화면 -->
         <div id="view-examinfo" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -522,7 +543,7 @@
         <!-- 계시록 암기 급수 선택 -->
         <div id="view-memorize-grade" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToCert()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="backToCert()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -583,7 +604,7 @@
         <!-- 계시록 암기 모의고사: 시험지 (한 페이지에 25문항 전체) -->
         <div id="view-memo-exam" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-2xl px-3">
-                <button onclick="showMemorizeGrade()" class="flex items-center gap-1 text-slate-400 hover:text-fuchsia-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     급수 다시 선택
                 </button>
@@ -615,7 +636,7 @@
         <!-- 계시록 암기 모의고사: 채점 결과 -->
         <div id="view-memo-result" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-md px-2">
-                <button onclick="showMemorizeGrade()" class="flex items-center gap-1 text-slate-400 hover:text-fuchsia-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -652,7 +673,7 @@
         <!-- 시험 신청 진입 선택 화면 -->
         <div id="view-apply-menu" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -684,7 +705,7 @@
         <!-- 시험 신청 화면 -->
         <div id="view-apply" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="showApplyMenu()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showApplyMenu()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -809,7 +830,7 @@
         <!-- 시험 신청 취소 / 조회 화면 -->
         <div id="view-applycancel" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="showApplyMenu()" class="flex items-center gap-1 text-slate-400 hover:text-violet-600 text-[12px] font-bold transition-colors mb-4">
+                <button onclick="showApplyMenu()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
@@ -1055,7 +1076,7 @@
   "10": "또 전갈과 같은 꼬리와 쏘는 살이 있어 그 꼬리에는 다섯달 동안 사람들을 해하는 권세가 있더라",
   "11": "저희에게 임금이 있으니 무저갱의 사자라 히브리 음으로 이름은 아바돈이요 헬라 음으로 이름은 아볼루온이더라",
   "12": "첫째 화는 지나갔으나 보라 아직도 이 후에 화 둘이 이르리로다",
-  "13": "여섯째 천사가 나팔을 부매 내가 들으니 하나님 앞 금단 네 뿔에서 한 음성이 나서",
+  "13": "여섯째 천사가 나팔을 불매 내가 들으니 하나님 앞 금단 네 뿔에서 한 음성이 나서",
   "14": "나팔 가진 여섯째 천사에게 말하기를 큰 강 유브라데에 결박한 네 천사를 놓아 주라 하매",
   "15": "네 천사가 놓였으니 그들은 그 년 월 일 시에 이르러 사람 삼분의 일을 죽이기로 예비한 자들이더라",
   "16": "마병대의 수는 이만만이니 내가 그들의 수를 들었노라",
@@ -1461,7 +1482,7 @@
         }
 
         // 채점: 띄어쓰기·기호 무시, "찌"↔"지" 계열 어미는 동일하게 처리 (예: 찌어다=지어다, 찌니라=지니라)
-        // 그 밖에 "세째"="셋째", "네째"="넷째", "앎으로"="알므로"도 동일하게 처리
+        // 그 밖에 "세째"="셋째", "네째"="넷째", "앎으로"="알므로", "자주빛"="자줏빛", "잠간"="잠깐"도 동일하게 처리
         // "참예"는 예외 없이 정확히 일치해야 정답 처리됨(별도 치환 규칙을 두지 않음)
         function normalizeMemoText(s) {
             if (!s) return '';
@@ -1469,6 +1490,8 @@
             t = t.replace(/찌/g, '지');
             t = t.replace(/세째/g, '셋째').replace(/네째/g, '넷째');
             t = t.replace(/앎으로/g, '알므로');
+            t = t.replace(/자주빛/g, '자줏빛');
+            t = t.replace(/잠간/g, '잠깐');
             return t;
         }
 
