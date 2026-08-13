@@ -306,7 +306,7 @@
                             <label class="field-label">건의 내용</label>
                             <textarea id="suggest-content" class="field-input" rows="5" placeholder="불편한 점이나 개선 아이디어를 자유롭게 적어주세요"></textarea>
                         </div>
-                        <button onclick="submitSuggestion()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-3 text-sm font-black transition-colors">건의하기</button>
+                        <button id="suggest-submit-btn" onclick="submitSuggestion()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-3 text-sm font-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed">건의하기</button>
                     </div>
                 </div>
                 <div id="suggest-success-section" class="hidden bg-white border-2 border-emerald-200 rounded-2xl p-6 shadow-sm text-center space-y-3">
@@ -1835,6 +1835,9 @@
             document.getElementById('suggest-phone').value = '';
             document.getElementById('suggest-content').value = '';
             document.getElementById('suggest-error-msg').classList.add('opacity-0');
+            const btn = document.getElementById('suggest-submit-btn');
+            btn.disabled = false;
+            btn.textContent = '건의하기';
             showView('view-suggest');
         }
 
@@ -1943,7 +1946,11 @@
         // ─────────────────────────────────────────────────────────
         const SUGGEST_KEY = 'sion_suggestions';
 
+        let isSubmittingSuggestion = false;
+
         async function submitSuggestion() {
+            if (isSubmittingSuggestion) return; // 전송 중 중복 클릭 방지
+
             const name = document.getElementById('suggest-name').value.trim();
             const phone = document.getElementById('suggest-phone').value.trim();
             const content = document.getElementById('suggest-content').value.trim();
@@ -1954,6 +1961,11 @@
             }
             errEl.classList.add('opacity-0');
 
+            const btn = document.getElementById('suggest-submit-btn');
+            isSubmittingSuggestion = true;
+            btn.disabled = true;
+            btn.textContent = '제출 중...';
+
             const payload = { action: 'suggest', name: name || '익명', phone, content, submittedAt: nowStr() };
             try {
                 const list = JSON.parse(localStorage.getItem(SUGGEST_KEY) || '[]');
@@ -1961,10 +1973,15 @@
                 localStorage.setItem(SUGGEST_KEY, JSON.stringify(list));
             } catch (e) { /* 로컬 백업 실패는 무시 */ }
 
-            if (GAS_URL) await gasCall(payload);
-
-            document.getElementById('suggest-form-section').classList.add('hidden');
-            document.getElementById('suggest-success-section').classList.remove('hidden');
+            try {
+                if (GAS_URL) await gasCall(payload);
+                document.getElementById('suggest-form-section').classList.add('hidden');
+                document.getElementById('suggest-success-section').classList.remove('hidden');
+            } finally {
+                isSubmittingSuggestion = false;
+                btn.disabled = false;
+                btn.textContent = '건의하기';
+            }
         }
 
         // 접수번호 형식: YYMM-00001 (해당 연월 안에서 5자리 일련번호)
