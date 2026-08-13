@@ -1917,7 +1917,7 @@
             el.classList.add('flex');
         }
 
-        function showRooms() { showView('view-rooms'); }
+        function showRooms() { showView('view-rooms'); logVisit(); }
         function showExamInfo() { showView('view-examinfo'); }
         function showCert() { showView('view-cert'); }
         function showMemorizeGrade() { showView('view-memorize-grade'); renderMemoHistoryList(); }
@@ -2038,6 +2038,13 @@
         function nowDateStr() {
             const d = new Date();
             return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        }
+
+        // 홈(방 선택) 화면에 들어올 때마다 방문 기록을 구글시트로 비동기 전송한다.
+        // 응답을 기다리지 않고(await 없이) 화면 동작과 무관하게 흘려보내며, gasCall이 네트워크 실패를
+        // 이미 내부에서 잡아 콘솔에 로그만 남기므로 여기서 별도 .catch()가 없어도 안전하다.
+        function logVisit() {
+            gasCall({ action: 'visit', date: nowDateStr(), visitedAt: nowStr() });
         }
 
         // ─────────────────────────────────────────────────────────
