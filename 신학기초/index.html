@@ -160,12 +160,6 @@
             <div id="theology-progress-panel" class="w-full px-2 max-w-md mb-4"></div>
 
             <div class="w-full space-y-3 px-2 max-w-md">
-                <button onclick="app.selectSubject('parable')" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-rose-100 text-rose-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">비유</div>
-                        <div><h3 class="font-extrabold text-slate-800 text-base">초등 비유의 의미와 핵심 성구</h3><p class="text-slate-500 text-[11px] mt-0.5">65개 비유 단어의 의미와 성구 암기</p></div>
-                    </div>
-                </button>
                 <button onclick="app.selectSubject('elem')" class="w-full bg-white hover:bg-emerald-50 border-2 border-slate-100 hover:border-emerald-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
                     <div class="flex items-center gap-4">
                         <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">초</div>
@@ -176,6 +170,12 @@
                     <div class="flex items-center gap-4">
                         <div class="bg-teal-100 text-teal-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">종강</div>
                         <div><h3 class="font-extrabold text-slate-800 text-base">초등 종강 시험</h3><p class="text-slate-500 text-[11px] mt-0.5">초등 과정 총정리 20문항 암기</p></div>
+                    </div>
+                </button>
+                <button onclick="app.selectSubject('parable')" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-rose-100 text-rose-600 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">비유</div>
+                        <div><h3 class="font-extrabold text-slate-800 text-base">초등 비유의 의미와 핵심 성구</h3><p class="text-slate-500 text-[11px] mt-0.5">65개 비유 단어의 의미와 성구 암기</p></div>
                     </div>
                 </button>
                 <button onclick="app.selectSubject('mid')" class="w-full bg-white hover:bg-sky-50 border-2 border-slate-100 hover:border-sky-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center justify-between group">
@@ -2767,10 +2767,11 @@
                                 });
                                 inputAreaHtml += `</div>`;
                             } else {
-                                inputAreaHtml = `<div class="relative w-full h-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full h-full min-h-[160px] md:min-h-[240px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
+                                inputAreaHtml = `<div class="relative w-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[96px] md:min-h-[130px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
                             }
                         } else {
-                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full h-full min-h-[160px] md:min-h-[240px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>`;
+                            // 제목/비유처럼 한두 줄이면 충분한 짧은 답만 필요한 과목은 연습 모드 입력칸도 작게(약 2줄 분량)
+                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[64px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>`;
                         }
 
                         html += `
