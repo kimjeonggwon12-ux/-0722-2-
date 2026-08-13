@@ -614,6 +614,12 @@
 
         <!-- 계시록 암기 모의고사: 채점 결과 -->
         <div id="view-memo-result" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
+            <div class="w-full max-w-md px-2">
+                <button onclick="showMemorizeGrade()" class="flex items-center gap-1 text-slate-400 hover:text-fuchsia-600 text-[12px] font-bold transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+            </div>
             <div class="w-full max-w-md px-2" id="memo-result-pdf-target">
                 <div class="text-center mb-4">
                     <div class="w-14 h-14 rounded-full shadow-md border-2 border-white mb-2 mx-auto overflow-hidden">
@@ -827,6 +833,45 @@
                 <div id="cancel-results" class="space-y-3"></div>
             </div>
         </div>
+
+        <!-- 건의사항 관리자 대시보드 (앱 UI 어디에도 링크 없음, index.html#admin-suggest 로만 접근) -->
+        <div id="view-admin-suggest" class="hidden flex-col flex-grow py-6 fade-in w-full">
+            <div class="w-full max-w-3xl mx-auto px-3">
+                <div id="admin-suggest-login" class="max-w-sm mx-auto mt-10">
+                    <h1 class="text-xl font-black text-slate-800 text-center mb-4">🔐 건의사항 관리자</h1>
+                    <p id="admin-suggest-login-err" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">비밀번호가 올바르지 않습니다.</p>
+                    <div class="flex items-center bg-white border-2 border-slate-200 rounded-full p-2 shadow-sm">
+                        <input type="password" id="admin-suggest-key-input" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter') adminSuggestLogin()">
+                        <button onclick="adminSuggestLogin()" class="bg-slate-800 hover:bg-black text-white rounded-full px-4 py-2 text-sm font-black transition-colors flex-shrink-0">확인</button>
+                    </div>
+                </div>
+
+                <div id="admin-suggest-body" class="hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h1 class="text-xl font-black text-slate-800">💡 건의사항 대시보드</h1>
+                        <button onclick="loadAdminSuggestions()" class="text-[12px] font-bold text-slate-500 hover:text-slate-800 transition-colors">🔄 새로고침</button>
+                    </div>
+                    <p id="admin-suggest-status" class="text-[12px] text-slate-400 font-bold mb-3"></p>
+                    <div class="overflow-x-auto bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                        <table class="w-full text-left border-collapse text-[12px] min-w-[720px]">
+                            <thead>
+                                <tr class="border-b-2 border-slate-100 text-slate-400">
+                                    <th class="py-2.5 pl-4 pr-3 font-black whitespace-nowrap">접수일시</th>
+                                    <th class="py-2.5 pr-3 font-black whitespace-nowrap">이름</th>
+                                    <th class="py-2.5 pr-3 font-black whitespace-nowrap">교회</th>
+                                    <th class="py-2.5 pr-3 font-black whitespace-nowrap">부서</th>
+                                    <th class="py-2.5 pr-3 font-black whitespace-nowrap">전화번호</th>
+                                    <th class="py-2.5 pr-3 font-black">건의 내용</th>
+                                    <th class="py-2.5 px-2 font-black text-center whitespace-nowrap">조치 완료</th>
+                                    <th class="py-2.5 pr-4 pl-2 font-black text-center whitespace-nowrap">답변 완료</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-suggest-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -836,7 +881,7 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
 
         const AUTH_KEY = 'sion_auth';
-        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel'];
+        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-cert', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel', 'view-admin-suggest'];
         const MEMO_VERSES = {
  "ch1": {
   "1": "예수 그리스도의 계시라 이는 하나님이 그에게 주사 반드시 속히 될 일을 그 종들에게 보이시려고 그 천사를 그 종 요한에게 보내어 지시하신 것이라",
@@ -2042,6 +2087,97 @@
             }
         }
 
+        // ─────────────────────────────────────────────────────────
+        // 건의사항 관리자 대시보드 (index.html#admin-suggest 로만 접근, 앱 UI에는 링크 없음)
+        // ─────────────────────────────────────────────────────────
+        const ADMIN_SUGGEST_KEY_STORAGE = 'sion_admin_suggest_key';
+
+        function adminSuggestLogin() {
+            const key = document.getElementById('admin-suggest-key-input').value.trim();
+            const errEl = document.getElementById('admin-suggest-login-err');
+            if (!key) {
+                errEl.textContent = '비밀번호를 입력해주세요.';
+                errEl.classList.remove('opacity-0');
+                return;
+            }
+            errEl.classList.add('opacity-0');
+            sessionStorage.setItem(ADMIN_SUGGEST_KEY_STORAGE, key);
+            loadAdminSuggestions();
+        }
+
+        async function loadAdminSuggestions() {
+            const key = sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE) || '';
+            const statusEl = document.getElementById('admin-suggest-status');
+            const loginEl = document.getElementById('admin-suggest-login');
+            const bodyEl = document.getElementById('admin-suggest-body');
+            const errEl = document.getElementById('admin-suggest-login-err');
+
+            if (!GAS_URL) {
+                loginEl.classList.add('hidden');
+                bodyEl.classList.remove('hidden');
+                statusEl.textContent = '구글시트 연동(GAS_URL)이 설정되어 있지 않아 목록을 불러올 수 없습니다.';
+                return;
+            }
+
+            bodyEl.classList.remove('hidden');
+            statusEl.textContent = '불러오는 중...';
+
+            const result = await gasCall({ action: 'listSuggestions', adminKey: key });
+
+            if (!result || !result.success) {
+                if (result && result.message === '권한이 없습니다.') {
+                    sessionStorage.removeItem(ADMIN_SUGGEST_KEY_STORAGE);
+                    bodyEl.classList.add('hidden');
+                    loginEl.classList.remove('hidden');
+                    errEl.textContent = '비밀번호가 올바르지 않습니다.';
+                    errEl.classList.remove('opacity-0');
+                    return;
+                }
+                loginEl.classList.add('hidden');
+                statusEl.textContent = (result && result.message) || '목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.';
+                return;
+            }
+
+            loginEl.classList.add('hidden');
+            errEl.classList.add('opacity-0');
+            statusEl.textContent = `총 ${result.rows.length}건 (최신순)`;
+            renderAdminSuggestions(result.rows);
+        }
+
+        function renderAdminSuggestions(rows) {
+            const tbody = document.getElementById('admin-suggest-tbody');
+            tbody.innerHTML = '';
+            const sorted = rows.slice().reverse(); // 최신 접수 건이 위로 오도록
+            sorted.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-50 align-top';
+                tr.innerHTML = `
+                    <td class="py-2.5 pl-4 pr-3 whitespace-nowrap text-slate-500">${escapeHtml(r.submittedAt)}</td>
+                    <td class="py-2.5 pr-3 font-bold whitespace-nowrap">${escapeHtml(r.name)}</td>
+                    <td class="py-2.5 pr-3 whitespace-nowrap">${escapeHtml(r.church)}</td>
+                    <td class="py-2.5 pr-3 whitespace-nowrap">${escapeHtml(r.department)}</td>
+                    <td class="py-2.5 pr-3 whitespace-nowrap">${escapeHtml(r.phone)}</td>
+                    <td class="py-2.5 pr-3 break-keep max-w-xs">${escapeHtml(r.content)}</td>
+                    <td class="py-2.5 px-2 text-center"><input type="checkbox" class="w-4 h-4 accent-emerald-600 cursor-pointer" ${r.resolved ? 'checked' : ''} onchange="toggleAdminSuggestion(${r.row}, 'resolved', this)"></td>
+                    <td class="py-2.5 pr-4 pl-2 text-center"><input type="checkbox" class="w-4 h-4 accent-blue-600 cursor-pointer" ${r.answered ? 'checked' : ''} onchange="toggleAdminSuggestion(${r.row}, 'answered', this)"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function toggleAdminSuggestion(row, field, checkboxEl) {
+            const value = checkboxEl.checked;
+            checkboxEl.disabled = true;
+            const key = sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE) || '';
+            const result = await gasCall({ action: 'updateSuggestionStatus', adminKey: key, row, field, value });
+            checkboxEl.disabled = false;
+            if (!result || !result.success) {
+                checkboxEl.checked = !value; // 저장 실패 시 체크 상태 되돌리기
+                const statusEl = document.getElementById('admin-suggest-status');
+                statusEl.textContent = '저장에 실패했습니다: ' + ((result && result.message) || '네트워크 오류');
+            }
+        }
+
         // 접수번호 형식: YYMM-00001 (해당 연월 안에서 5자리 일련번호)
         function genApplyId() {
             const d = new Date();
@@ -2379,10 +2515,16 @@
             lookupApplications();
         }
 
-        // 방에서 "방 선택"(#rooms), "시험 안내"(#examinfo), "모의고사"(#cert),
-        // "시험 신청"(#apply)으로 돌아온 경우에만 로그인을 건너뛴다.
-        // 앱을 새로 열 때(직접 접속)는 항상 로그인 화면부터 보여준다.
-        if (localStorage.getItem(AUTH_KEY) === '1') {
+        // 건의사항 관리자 대시보드는 앱 UI에 노출되지 않고, 이 해시로 직접 들어왔을 때만 뜬다.
+        // 일반 입장 암호(AUTH_KEY)와는 무관하게 동작하고, 자체 비밀번호(ADMIN_KEY)로 별도 보호된다.
+        if (window.location.hash === '#admin-suggest') {
+            showView('view-admin-suggest');
+            const savedKey = sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE);
+            if (savedKey) loadAdminSuggestions();
+        } else if (localStorage.getItem(AUTH_KEY) === '1') {
+            // 방에서 "방 선택"(#rooms), "시험 안내"(#examinfo), "모의고사"(#cert),
+            // "시험 신청"(#apply)으로 돌아온 경우에만 로그인을 건너뛴다.
+            // 앱을 새로 열 때(직접 접속)는 항상 로그인 화면부터 보여준다.
             const hash = window.location.hash;
             if (hash === '#cert') {
                 showRooms(); showCert();
