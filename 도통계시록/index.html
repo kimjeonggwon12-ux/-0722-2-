@@ -804,17 +804,18 @@
         <!-- View 2: Quiz Screen -->
         <div id="screen-quiz" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <!-- Header -->
-            <div class="bg-white px-4 py-3 flex items-center justify-between z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <button id="btn-quit" class="text-slate-400 hover:text-slate-600 p-1 transition-colors">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
+            <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
+                <div class="w-[74px] flex-shrink-0"></div>
                 <div class="flex flex-col items-center justify-center text-center">
-                    <div id="ui-chapter-title" class="text-[13px] font-bold text-[#4f46e5] mb-0.5">계 1장</div>
+                    <div id="ui-chapter-title" class="text-[13px] font-bold text-[#4f46e5] mb-0.5">계시록 1장</div>
                     <div class="text-[16px] font-black text-slate-700 tracking-wide">
                         <span id="ui-current-q" class="text-[#4f46e5]">1</span> <span class="text-slate-300 font-medium mx-0.5">/</span> <span id="ui-total-q" class="text-slate-400">0</span>
                     </div>
                 </div>
-                <div class="w-6 h-6"></div> <!-- Spacer for centering -->
+                <button id="btn-quit" class="nav-back-glow-ring bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-1 shadow-sm flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    뒤로가기
+                </button>
             </div>
 
             <!-- Score Area -->
@@ -828,20 +829,16 @@
             <!-- Question Area -->
             <div class="flex-grow flex flex-col px-4 py-4 overflow-y-auto pb-28 relative">
                 <!-- Verse Container -->
-                <div class="bg-[#f8faff] rounded-xl p-4 mb-4 border border-[#e0e7ff] flex flex-col gap-2 shadow-sm shrink-0">
-                    <div class="flex items-center gap-1.5 text-[#4f46e5]">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                        <span id="verse-num" class="text-[13px] font-bold">계 1:1</span>
-                    </div>
-                    <p id="verse-text" class="text-[15px] text-slate-700 font-medium leading-relaxed break-keep">
-                        <!-- Verse text -->
+                <div class="bg-[#f8faff] rounded-xl p-4 mb-4 border border-[#e0e7ff] shadow-sm shrink-0">
+                    <p class="text-[15px] text-slate-700 font-medium leading-relaxed break-keep">
+                        <span id="verse-num" class="inline-block align-middle bg-[#4f46e5] text-white text-[12px] font-bold rounded-full px-2.5 py-1 mr-2 whitespace-nowrap">계 1:1</span><span id="verse-text"><!-- Verse text --></span>
                     </p>
                 </div>
 
                 <!-- Question Text -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-5 min-h-[100px] flex flex-col items-center justify-center relative shrink-0">
-                    <span class="absolute top-3 left-4 text-[11px] font-bold text-slate-400">문제</span>
-                    <h2 id="question-text" class="text-[20px] font-black text-black leading-snug mt-4 mb-2 break-keep text-center">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-5 min-h-[100px] flex items-center gap-3 shrink-0">
+                    <span id="question-num-badge" class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">1</span>
+                    <h2 id="question-text" class="text-[20px] font-black text-black leading-snug break-keep">
                         <!-- Question text goes here -->
                     </h2>
                 </div>
@@ -12845,7 +12842,6 @@
         window.startChapter = function(chapterKey) {
             state.currentChapterKey = chapterKey;
             markTongdalLastChapter(chapterKey);
-            const titles = chapterTitles[chapterKey];
 
             state.questions = [...quizDataStore[chapterKey]];
             ROUND_SIZE = state.questions.length;
@@ -12867,7 +12863,7 @@
                 state.history = new Array(ROUND_SIZE).fill(null);
             }
 
-            els.quiz.chapterTitle.textContent = titles.title;
+            els.quiz.chapterTitle.textContent = `계시록 ${chapterKey.replace('ch', '')}장`;
             els.quiz.totalQ.textContent = ROUND_SIZE;
             els.quiz.totalQScore.textContent = ROUND_SIZE;
             els.quiz.score.textContent = state.score;
@@ -12914,7 +12910,9 @@
         function loadQuestion() {
             const currentItem = state.questions[state.currentIndex];
             els.quiz.currentQ.textContent = state.currentIndex + 1;
-            
+            const questionNumBadge = document.getElementById('question-num-badge');
+            if (questionNumBadge) questionNumBadge.textContent = state.currentIndex + 1;
+
             if (!state.history[state.currentIndex]) {
                 const options = [{ text: currentItem.a, isCorrect: true, ref: currentItem.ref }];
                 const pool = state.questions.filter(item => item.q !== currentItem.q && item.a !== currentItem.a);
