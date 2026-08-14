@@ -253,6 +253,15 @@
         <!-- 학습 진도 (이 기기 localStorage 기준) -->
         <div id="memo-progress-panel" class="mb-6"></div>
 
+        <!-- 장 전체 암송 채점 기록 (이 기기 localStorage 기준) -->
+        <div id="memo-room-history-section" class="hidden mb-6 bg-white border-2 border-teal-100 rounded-2xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-[11px] font-black text-slate-400">📅 최근 장 전체 암송 기록 (이 기기 기준)</p>
+                <button onclick="clearMemoRoomChapterHistory()" class="text-[10px] text-slate-300 hover:text-rose-500 font-bold transition-colors">전체 삭제</button>
+            </div>
+            <div id="memo-room-history-list" class="space-y-1.5"></div>
+        </div>
+
         <!-- Controls -->
         <div class="space-y-8 mb-10">
             <div class="flex flex-col gap-6 items-center justify-center">
@@ -1079,6 +1088,111 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     }
 
+    // ─────────────────────────────────────────────────────────
+    // "장 전체 암송" 채점 기록 (이 기기 localStorage에만 저장, 최근 30건)
+    // 요약 정보뿐 아니라 절별 채점 상세(원문/내가 쓴 답/정오답)까지 저장해두어
+    // 나중에 "불러오기"로 그 회차의 채점 화면을 다시 재현할 수 있게 한다.
+    // ─────────────────────────────────────────────────────────
+    const MEMO_ROOM_HISTORY_KEY = 'sion_memoroom_chapter_history';
+
+    function nowStrMemoRoom() {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function loadMemoRoomChapterHistory() {
+        try { return JSON.parse(localStorage.getItem(MEMO_ROOM_HISTORY_KEY)) || []; } catch (e) { return []; }
+    }
+
+    function saveMemoRoomChapterHistoryEntry(entry) {
+        try {
+            const list = loadMemoRoomChapterHistory();
+            list.unshift(entry);
+            localStorage.setItem(MEMO_ROOM_HISTORY_KEY, JSON.stringify(list.slice(0, 30)));
+        } catch (e) { /* 저장 실패는 무시 (시크릿 모드 등) */ }
+        renderMemoRoomChapterHistoryList();
+    }
+
+    function renderMemoRoomChapterHistoryList() {
+        const section = document.getElementById('memo-room-history-section');
+        const listEl = document.getElementById('memo-room-history-list');
+        if (!section || !listEl) return;
+        const list = loadMemoRoomChapterHistory();
+        if (!list.length) { section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+        listEl.innerHTML = list.slice(0, 8).map((h, idx) => `
+            <div class="flex items-center bg-slate-50 border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                <button onclick="loadMemoRoomChapterHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                    <span class="text-slate-500 flex-shrink-0">${h.takenAt || ''}</span>
+                    <span class="text-slate-400 flex-grow truncate">계 ${h.chapter}장 전체 암송</span>
+                    <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-shrink-0">${h.score}점</span>
+                    <span class="text-teal-500 flex-shrink-0">📂 불러오기</span>
+                </button>
+                <button onclick="deleteMemoRoomChapterHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function deleteMemoRoomChapterHistoryEntry(idx) {
+        const list = loadMemoRoomChapterHistory();
+        list.splice(idx, 1);
+        localStorage.setItem(MEMO_ROOM_HISTORY_KEY, JSON.stringify(list));
+        renderMemoRoomChapterHistoryList();
+    }
+
+    function clearMemoRoomChapterHistory() {
+        localStorage.removeItem(MEMO_ROOM_HISTORY_KEY);
+        renderMemoRoomChapterHistoryList();
+    }
+
+    // "불러오기": 저장된 채점 기록으로 그 장의 입력칸을 다시 채우고(읽기 전용),
+    // 절별 정오답 표시 + 채점 결과 요약까지 그대로 재현한다. 다운로드 없이 다시 열람 가능.
+    function loadMemoRoomChapterHistoryEntry(idx) {
+        const list = loadMemoRoomChapterHistory();
+        const entry = list[idx];
+        if (!entry || !entry.verses) return;
+
+        chapterSelect.value = String(entry.chapter);
+        setMode('chapter');
+        handleChapterChange();
+
+        // handleChapterChange가 다시 그린 빈 입력칸에, 저장된 절별 답과 채점 결과를 채운다.
+        entry.verses.forEach((v, index) => {
+            const input = chapterInputContainer.querySelector(`.chapter-verse-input[data-verse-index="${index}"]`);
+            if (input) {
+                input.value = v.userText || '';
+                input.readOnly = true;
+                input.classList.add('bg-slate-50');
+                input.style.height = 'auto';
+                input.style.height = `${input.scrollHeight}px`;
+            }
+            const marker = chapterInputContainer.querySelector(`.verse-number-marker[data-verse-index="${index}"]`);
+            if (marker) {
+                marker.classList.remove('correct', 'incorrect');
+                if ((v.userText || '').trim() !== '') marker.classList.add(v.correct ? 'correct' : 'incorrect');
+            }
+            const resultDisplay = chapterInputContainer.querySelector(`.chapter-result-display[data-verse-index="${index}"]`);
+            if (resultDisplay) {
+                const html = getDiffHTML(v.originalText, v.userText || '');
+                resultDisplay.innerHTML = html || '<em>입력 없음</em>';
+            }
+        });
+
+        scoreValue.textContent = entry.score;
+        correctCount.textContent = entry.numCorrect;
+        totalCount.textContent = entry.totalVerses;
+        scoreDisplay.classList.remove('hidden');
+        chapterMessageArea.classList.remove('hidden');
+        chapterInstruction.classList.add('hidden');
+        chapterEncouragement.textContent = `불러온 기록 (${entry.takenAt || ''})`;
+        chapterEncouragement.classList.remove('hidden');
+        pdfDownloadContainer.classList.remove('hidden');
+        if (timerValue) timerValue.textContent = entry.elapsedText || '0:00';
+
+        memorizeSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
     // "이어서 하기" 버튼: 저장된 장으로 select 값을 옮기고 그 지점부터 시작한다.
     function resumeMemoRoomProgress() {
         const progress = loadMemoRoomProgress();
@@ -1120,6 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setMode('verse'); // 초기 모드를 '절별 암송'으로 설정
         updateChapterNavigationButtons();
         renderMemoRoomProgressPanel();
+        renderMemoRoomChapterHistoryList();
     }
 
     // ... existing code (timer functions, handleChapterChange, populateVerseSelectionGrid, setMode, updateModeButtons) ...
@@ -1491,16 +1606,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let numCorrect = 0;
             const incorrectVersesData = [];
-            
+            const allVersesData = [];
+
             verseInputs.forEach((input, index) => {
                 const userVerseText = input.value;
                 const verseData = dataVerses[index];
                 const originalVerseText = verseData.text;
-                
+
                 const normalizedOriginal = normalizeTextForComparison(originalVerseText);
                 const normalizedUser = normalizeTextForComparison(userVerseText);
                 const isCorrect = (normalizedOriginal === normalizedUser) && (userVerseText.trim() !== '');
-                
+
                 const verseNumberMarker = chapterInputContainer.querySelector(`.verse-number-marker[data-verse-index="${index}"]`);
                 if (verseNumberMarker) {
                     verseNumberMarker.classList.remove('correct', 'incorrect');
@@ -1508,7 +1624,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         verseNumberMarker.classList.add(isCorrect ? 'correct' : 'incorrect');
                     }
                 }
-                
+
                 if(isCorrect) {
                     numCorrect++;
                 } else {
@@ -1521,14 +1637,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         originalText: originalVerseText
                     });
                 }
-                
+                allVersesData.push({ verse: verseData.verse, userText: userVerseText, originalText: originalVerseText, correct: isCorrect });
+
                 const resultHTML = getDiffHTML(originalVerseText, userVerseText);
                 const resultDisplay = chapterInputContainer.querySelector(`.chapter-result-display[data-verse-index="${index}"]`);
                 if (resultDisplay) {
                     resultDisplay.innerHTML = resultHTML || '<em>입력 없음</em>';
                 }
             });
-            
+
             const scorePercentage = totalVerses > 0 ? Math.ceil((numCorrect / totalVerses) * 100) : 0;
             scoreValue.textContent = scorePercentage;
             correctCount.textContent = numCorrect;
@@ -1540,6 +1657,18 @@ document.addEventListener('DOMContentLoaded', () => {
             chapterEncouragement.classList.remove('hidden');
             pdfDownloadContainer.classList.remove('hidden');
             showResultModal(scorePercentage, incorrectVersesData);
+
+            // 다시 볼 때 필요한 절별 상세(원문/내가 쓴 답/정오답)까지 함께 저장해
+            // "최근 암송 기록"에서 "불러오기"로 이 채점 화면을 다시 열어볼 수 있게 한다.
+            saveMemoRoomChapterHistoryEntry({
+                chapter: currentChapter.chapter,
+                score: scorePercentage,
+                numCorrect,
+                totalVerses,
+                takenAt: nowStrMemoRoom(),
+                elapsedText: timerValue ? timerValue.textContent : '',
+                verses: allVersesData
+            });
         }
     }
 
