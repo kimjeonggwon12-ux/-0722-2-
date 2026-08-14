@@ -383,11 +383,15 @@
                 </div>
             </div>
 
+            <div id="controls-container-top" class="text-center mb-4">
+                 <button id="check-chapter-btn-top" class="hidden px-6 py-3 sm:px-10 sm:py-4 text-base sm:text-lg bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-200 transform hover:-translate-y-0.5">장 전체 채점하기</button>
+            </div>
+
             <!-- Chapter Mode Input Area -->
             <div id="chapter-input-container" class="hidden space-y-1 p-1">
                 <!-- Verse inputs and result displays will be dynamically generated here -->
             </div>
-            
+
             <div id="controls-container" class="text-center mt-6">
                  <button id="check-chapter-btn" class="hidden px-6 py-3 sm:px-10 sm:py-4 text-base sm:text-lg bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-200 transform hover:-translate-y-0.5">장 전체 채점하기</button>
             </div>
@@ -1010,6 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const chapterInputContainer = document.getElementById('chapter-input-container');
     const checkChapterBtn = document.getElementById('check-chapter-btn');
+    const checkChapterBtnTop = document.getElementById('check-chapter-btn-top');
     const chapterSelectionArea = document.getElementById('chapter-selection-area');
     
     // Modal Elements
@@ -1246,6 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nextVerseBtn.addEventListener('click', () => navigateVerse(1));
         toggleOriginalBtn.addEventListener('click', toggleOriginalText);
         checkChapterBtn.addEventListener('click', compareText);
+        if (checkChapterBtnTop) checkChapterBtnTop.addEventListener('click', compareText);
         downloadPdfBtn.addEventListener('click', generateResultPdf);
         modalCloseBtn.addEventListener('click', () => resultModal.classList.add('hidden'));
         modalCloseBtnX.addEventListener('click', () => resultModal.classList.add('hidden'));
@@ -1372,6 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chapterInputContainer.classList.add('hidden');
         verseNavigation.classList.add('hidden');
         checkChapterBtn.classList.add('hidden');
+        if (checkChapterBtnTop) checkChapterBtnTop.classList.add('hidden');
         
         // Hide blank practice when changing task
         blankPracticeArea.classList.add('hidden');
@@ -1390,6 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startChapterTimer();
             chapterInputContainer.classList.remove('hidden');
             checkChapterBtn.classList.remove('hidden');
+            if (checkChapterBtnTop) checkChapterBtnTop.classList.remove('hidden');
             verseTitle.textContent = `계 ${currentChapter.chapter}장 전체 암송`;
             const fullChapterText = currentChapter.verses.map(v => `${v.verse} ${v.text}`).join('\n');
             originalText.textContent = fullChapterText;
