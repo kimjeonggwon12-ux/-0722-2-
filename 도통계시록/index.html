@@ -749,6 +749,10 @@
                 </div>
                 <div class="w-10 flex-shrink-0"></div>
             </div>
+            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center gap-2 shrink-0">
+                <span id="g4-study-tally" class="text-[13px] font-black text-[#4f46e5]">0/144 작성</span>
+                <button id="g4-study-resume-btn" onclick="jumpToG4StudyUnanswered()" class="hidden text-[11px] bg-amber-400 hover:bg-amber-500 text-white px-3 py-1.5 rounded-full font-black active:scale-95 transition-transform">▶ 이어서 풀기</button>
+            </div>
             <div class="flex-grow overflow-y-auto p-4">
                 <div id="grade4-study-container" class="space-y-4 pb-10"></div>
             </div>
@@ -12293,6 +12297,8 @@
             const preview = document.getElementById(`g4-preview-${ns}-${idx}`);
             if (preview) preview.classList.add('hidden');
             if (inputs[0]) inputs[0].focus();
+            if (ns === 'study') { updateG4StudyProgress(); saveG4StudyProgress(); }
+            else if (ns === 'exam') { updateG4ExamProgress(); saveG4ExamProgress(); }
         }
 
         function normalizeG4Answer(s) {
@@ -12399,7 +12405,10 @@
             document.getElementById('grade4-study-container').innerHTML = html;
             for (let i = 0; i < GRADE4_ALL_ITEMS.length; i++) {
                 bindG4Enter('study', i, GRADE4_ALL_ITEMS.length, (n) => checkG4Answer('study', n));
+                const card = document.getElementById(`g4-card-study-${i}`);
+                if (card) card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', () => { updateG4StudyProgress(); saveG4StudyProgress(); }));
             }
+            restoreG4StudyProgress();
             showScreen('grade4Study');
         }
 
@@ -12453,6 +12462,58 @@
             const target = inputs.find(inp => inp.value.trim() === '');
             if (!target) return;
             const card = target.closest('[id^="g4-card-exam-"]');
+            (card || target).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => target.focus(), 400);
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 4급 시험 범위 공부(144문항 학습방) "이어서 하기" — 위 시험 모드와 같은 방식으로
+        // 이 기기의 localStorage에만 저장/복원한다.
+        // ─────────────────────────────────────────────────────────
+        const G4_STUDY_PROGRESS_KEY = 'sion_g4study_progress';
+
+        function saveG4StudyProgress() {
+            try {
+                const values = Array.from(document.querySelectorAll('#grade4-study-container .g4-blank')).map(inp => inp.value);
+                localStorage.setItem(G4_STUDY_PROGRESS_KEY, JSON.stringify({ values, savedAt: Date.now() }));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        function loadG4StudyProgress() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(G4_STUDY_PROGRESS_KEY));
+                return (raw && Array.isArray(raw.values)) ? raw.values : null;
+            } catch (e) { return null; }
+        }
+
+        function updateG4StudyProgress() {
+            const total = GRADE4_ALL_ITEMS.length;
+            let filled = 0;
+            for (let i = 0; i < total; i++) {
+                const card = document.getElementById(`g4-card-study-${i}`);
+                if (card && [...card.querySelectorAll('.g4-blank')].every(inp => inp.value.trim() !== '')) filled++;
+            }
+            const tally = document.getElementById('g4-study-tally');
+            if (tally) tally.textContent = `${filled}/${total} 작성`;
+        }
+
+        function restoreG4StudyProgress() {
+            const resumeBtn = document.getElementById('g4-study-resume-btn');
+            const saved = loadG4StudyProgress();
+            if (!saved) { if (resumeBtn) resumeBtn.classList.add('hidden'); updateG4StudyProgress(); return; }
+            const inputs = document.querySelectorAll('#grade4-study-container .g4-blank');
+            let answeredCount = 0;
+            inputs.forEach((inp, i) => { if (saved[i]) { inp.value = saved[i]; answeredCount++; } });
+            updateG4StudyProgress();
+            if (resumeBtn) resumeBtn.classList.toggle('hidden', !(answeredCount > 0 && answeredCount < inputs.length));
+        }
+
+        // "이어서 풀기": 저장된 답안 중 아직 채우지 않은 첫 문항으로 스크롤 + 포커스
+        function jumpToG4StudyUnanswered() {
+            const inputs = Array.from(document.querySelectorAll('#grade4-study-container .g4-blank'));
+            const target = inputs.find(inp => inp.value.trim() === '');
+            if (!target) return;
+            const card = target.closest('[id^="g4-card-study-"]');
             (card || target).scrollIntoView({ behavior: 'smooth', block: 'center' });
             setTimeout(() => target.focus(), 400);
         }
@@ -12731,6 +12792,34 @@
             saveTongdalProgress(progress);
         }
 
+        // ─────────────────────────────────────────────────────────
+        // 장별 퀴즈 "이어서 하기" — 풀던 도중 나가도 정확히 그 문항으로 복귀.
+        // 한 기기에 한 번에 하나의 진행 중 장만 저장(가장 최근 것). 채점(finishQuiz)까지
+        // 마치면 지워지므로, 완료된 장을 다시 열 때는 항상 새 시험으로 시작한다.
+        // ─────────────────────────────────────────────────────────
+        const TONGDAL_QUIZ_STATE_KEY = 'sion_tongdal_quizstate';
+
+        function saveTongdalQuizState() {
+            try {
+                localStorage.setItem(TONGDAL_QUIZ_STATE_KEY, JSON.stringify({
+                    chapterKey: state.currentChapterKey,
+                    currentIndex: state.currentIndex,
+                    history: state.history,
+                    score: state.score,
+                    total: ROUND_SIZE,
+                    savedAt: Date.now()
+                }));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        function loadTongdalQuizState() {
+            try { return JSON.parse(localStorage.getItem(TONGDAL_QUIZ_STATE_KEY)); } catch (e) { return null; }
+        }
+
+        function clearTongdalQuizState() {
+            try { localStorage.removeItem(TONGDAL_QUIZ_STATE_KEY); } catch (e) { /* 무시 */ }
+        }
+
         // 채점 결과 화면까지 도달하면 그 장을 "완료"로 기록한다.
         function markTongdalChapterCompleted(chapterKey) {
             const progress = loadTongdalProgress();
@@ -12770,12 +12859,25 @@
             markTongdalLastChapter(chapterKey);
             const titles = chapterTitles[chapterKey];
 
-            state.questions = [...quizDataStore[chapterKey]]; 
+            state.questions = [...quizDataStore[chapterKey]];
             ROUND_SIZE = state.questions.length;
-            
-            state.currentIndex = 0;
-            state.score = 0;
-            state.history = new Array(ROUND_SIZE).fill(null);
+
+            // 같은 장에서 풀다 만 저장 기록이 있으면(문항 수가 일치할 때만) 그 위치부터 이어서 시작한다.
+            const savedQuiz = loadTongdalQuizState();
+            const canResumeQuiz = savedQuiz && savedQuiz.chapterKey === chapterKey
+                && savedQuiz.total === ROUND_SIZE && Array.isArray(savedQuiz.history)
+                && savedQuiz.history.length === ROUND_SIZE
+                && Number.isInteger(savedQuiz.currentIndex) && savedQuiz.currentIndex >= 0 && savedQuiz.currentIndex < ROUND_SIZE;
+
+            if (canResumeQuiz) {
+                state.currentIndex = savedQuiz.currentIndex;
+                state.score = savedQuiz.score || 0;
+                state.history = savedQuiz.history;
+            } else {
+                state.currentIndex = 0;
+                state.score = 0;
+                state.history = new Array(ROUND_SIZE).fill(null);
+            }
 
             els.quiz.chapterTitle.textContent = titles.title;
             els.quiz.totalQ.textContent = ROUND_SIZE;
@@ -12894,8 +12996,9 @@
 
             if (hist.answered) showFeedback(hist.isCorrect, currentItem, true);
             else hideFeedback();
-            
+
             updateNavButtons();
+            saveTongdalQuizState();
         }
 
         function handleAnswer(selectedIndex, selectedBtn) {
@@ -12928,6 +13031,7 @@
             
             showFeedback(hist.isCorrect, hist.item, false);
             updateNavButtons();
+            saveTongdalQuizState();
         }
 
         function hideFeedback() { els.feedback.panel.classList.add('translate-y-full'); setTimeout(() => { els.feedback.panel.classList.add('hidden'); }, 300); }
@@ -12966,6 +13070,7 @@
         function finishQuiz() {
             showScreen('result');
             markTongdalChapterCompleted(state.currentChapterKey);
+            clearTongdalQuizState(); // 채점까지 마쳤으니 "이어서 하기" 저장은 정리한다 — 다음 진입은 새 시험으로 시작
             let correctCount = state.history.filter(h => h && h.answered && h.isCorrect).length;
             els.result.chapterTitle.textContent = `${chapterTitles[state.currentChapterKey].title} 결과`;
             els.result.finalScore.textContent = correctCount;

@@ -1127,6 +1127,76 @@
                 </div>`;
         }
 
+        // ─────────────────────────────────────────────────────────
+        // 연습/시험 모드 "이어서 하기" — 풀던 도중 나가도 입력하던 답이 그대로 남아있게 저장.
+        // 과목+모드 조합별로 문항 id → 입력값을 저장하고(이 기기 localStorage에만), 문항 수가
+        // 일치할 때만 복원한다. 채점(제출)까지 마치면 그 조합의 저장은 지운다.
+        // ─────────────────────────────────────────────────────────
+        const THEOLOGY_FORM_PROGRESS_KEY = 'sion_theology_formprogress';
+
+        function theologyFormProgressKeyFor(subject, mode) { return `${subject}|${mode}`; }
+
+        function saveTheologyFormAnswers() {
+            if (!appState.currentSubject || !appState.currentMode || appState.currentMode === 'quiz') return;
+            try {
+                const values = {};
+                document.querySelectorAll('#questions-container textarea[id^="input-"]').forEach(el => {
+                    if (el.value) values[el.id] = el.value;
+                });
+                const store = JSON.parse(localStorage.getItem(THEOLOGY_FORM_PROGRESS_KEY) || '{}');
+                const key = theologyFormProgressKeyFor(appState.currentSubject, appState.currentMode);
+                if (Object.keys(values).length === 0) { delete store[key]; }
+                else store[key] = { questionCount: appState.questions.length, values, savedAt: Date.now() };
+                localStorage.setItem(THEOLOGY_FORM_PROGRESS_KEY, JSON.stringify(store));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        // 렌더링 직후 호출: 같은 과목+모드로 저장된 답이 있고(문항 수 일치) 아직 채점 전이면 입력칸에 채워 넣는다.
+        function restoreTheologyFormAnswers() {
+            if (!appState.currentSubject || !appState.currentMode || appState.currentMode === 'quiz') return;
+            try {
+                const store = JSON.parse(localStorage.getItem(THEOLOGY_FORM_PROGRESS_KEY) || '{}');
+                const saved = store[theologyFormProgressKeyFor(appState.currentSubject, appState.currentMode)];
+                if (!saved || saved.questionCount !== appState.questions.length) return;
+                Object.keys(saved.values).forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = saved.values[id];
+                });
+            } catch (e) { /* 무시 */ }
+        }
+
+        function clearTheologyFormAnswers(subject, mode) {
+            try {
+                const store = JSON.parse(localStorage.getItem(THEOLOGY_FORM_PROGRESS_KEY) || '{}');
+                delete store[theologyFormProgressKeyFor(subject, mode)];
+                localStorage.setItem(THEOLOGY_FORM_PROGRESS_KEY, JSON.stringify(store));
+            } catch (e) { /* 무시 */ }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 초등 비유 퀴즈(순차 객관식) "이어서 하기" — 이 기기에 하나만 저장(가장 최근 진행분).
+        // ─────────────────────────────────────────────────────────
+        const THEOLOGY_QUIZ_STATE_KEY = 'sion_theology_quizstate';
+
+        function saveTheologyQuizState() {
+            try {
+                localStorage.setItem(THEOLOGY_QUIZ_STATE_KEY, JSON.stringify({
+                    currentQuizIndex: appState.currentQuizIndex,
+                    results: appState.results,
+                    total: appState.quizQuestions.length,
+                    savedAt: Date.now()
+                }));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        function loadTheologyQuizState() {
+            try { return JSON.parse(localStorage.getItem(THEOLOGY_QUIZ_STATE_KEY)); } catch (e) { return null; }
+        }
+
+        function clearTheologyQuizState() {
+            try { localStorage.removeItem(THEOLOGY_QUIZ_STATE_KEY); } catch (e) { /* 무시 */ }
+        }
+
         const BIBLE_BOOK_MAP = {
             '창': '창세기', '출': '출애굽기', '레': '레위기', '민': '민수기', '신': '신명기',
             '수': '여호수아', '삿': '사사기', '룻': '룻기', '삼상': '사무엘상', '삼하': '사무엘하',
@@ -1451,6 +1521,15 @@
             },
             bindEvents() {
                 els.finishBtn.addEventListener('click', () => this.handleFinishRequest());
+
+                // 연습/시험 입력칸에 타이핑할 때마다 "이어서 하기"용으로 답을 저장(디바운스)
+                let formSaveTimer = null;
+                els.questionsContainer.addEventListener('input', (e) => {
+                    if (e.target && e.target.tagName.toLowerCase() === 'textarea') {
+                        clearTimeout(formSaveTimer);
+                        formSaveTimer = setTimeout(saveTheologyFormAnswers, 400);
+                    }
+                });
 
                 els.questionsContainer.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1905,12 +1984,23 @@
                         inputs.forEach(el => el.addEventListener('input', () => this.updateProgress()));
                     });
                 }
+                restoreTheologyFormAnswers();
                 this.updateProgress();
                 this.showView('test');
             },
 
             initQuizMode() {
                 appState.currentMode = 'quiz'; appState.currentQuizIndex = 0; appState.results = []; appState.quizQuestions = [...dataParable];
+
+                // 풀다 만 저장 기록이 있으면(문항 수가 일치할 때만) 그 위치부터 이어서 시작한다.
+                const savedQuiz = loadTheologyQuizState();
+                if (savedQuiz && savedQuiz.total === appState.quizQuestions.length && Array.isArray(savedQuiz.results)
+                    && Number.isInteger(savedQuiz.currentQuizIndex) && savedQuiz.currentQuizIndex === savedQuiz.results.length
+                    && savedQuiz.currentQuizIndex > 0 && savedQuiz.currentQuizIndex < appState.quizQuestions.length) {
+                    appState.currentQuizIndex = savedQuiz.currentQuizIndex;
+                    appState.results = savedQuiz.results;
+                }
+
                 els.totalCount.textContent = appState.quizQuestions.length;
                 els.testModeBadge.textContent = '객관식 퀴즈 (순차 출제)'; els.testModeBadge.className = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
                 els.questionsContainer.classList.add('hidden'); els.finishBtnContainer.classList.add('hidden');
@@ -2160,8 +2250,9 @@
                 }
                 feedbackEl.classList.remove('hidden'); feedbackEl.classList.add('flex'); appState.quizSelectedMeaning = undefined;
             },
-            nextQuizQuestion() { appState.currentQuizIndex++; this.renderQuizQuestion(); this.updateProgress(); window.scrollTo(0, 0); },
+            nextQuizQuestion() { appState.currentQuizIndex++; saveTheologyQuizState(); this.renderQuizQuestion(); this.updateProgress(); window.scrollTo(0, 0); },
             showQuizResults() {
+                clearTheologyQuizState(); // 채점까지 마쳤으니 "이어서 하기" 저장은 정리한다
                 els.progressBar.style.width = '100%';
                 let correctCount = 0; appState.results.forEach(r => { if (r && r.status === 'correct') correctCount++; });
                 const total = appState.quizQuestions.length; const pctScore = Math.round((correctCount / total) * 100);
@@ -3053,7 +3144,8 @@
                 if (stampBox) stampBox.innerHTML = '';
 
                 this.updateProgress();
-                
+                saveTheologyFormAnswers();
+
                 const firstSubInput = document.getElementById(`input-${index}-0-0`);
                 if (firstSubInput) {
                     firstSubInput.focus();
@@ -3199,6 +3291,7 @@
                 else this.finishTest();
             },
             finishTest() {
+                clearTheologyFormAnswers(appState.currentSubject, appState.currentMode); // 채점까지 마쳤으니 "이어서 하기" 저장은 정리한다
                 if (appState.currentMode === 'exam') this.stopExamTimer();
                 const isFinalExam = this.isLongFormSubject(appState.currentSubject);
                 appState.questions.forEach((q, idx) => {
