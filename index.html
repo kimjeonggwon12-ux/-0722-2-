@@ -657,10 +657,6 @@
                     <p id="memo-result-message" class="text-sm font-black mt-2 break-keep"></p>
                 </div>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm mb-4">
-                    <p class="text-[11px] font-black text-slate-400 mb-2">문항별 채점 결과 (O/X)</p>
-                    <div id="memo-result-grid" class="grid grid-cols-5 gap-2"></div>
-                </div>
-                <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm mb-4">
                     <p class="text-[11px] font-black text-slate-400 mb-2">본문 채점 결과 (괄호 안 = 내가 쓴 답, 틀린 경우 밑에 정답 표시)</p>
                     <div id="memo-result-passage"></div>
                 </div>
@@ -1803,9 +1799,10 @@
                 if (p) {
                     const { q, idx, correct, userInput } = p;
                     const ansCls = correct ? 'text-emerald-700 font-black' : 'text-rose-600 font-black underline decoration-rose-400 decoration-2';
+                    const mark = correct ? '<span class="text-emerald-600 font-black">◯</span>' : '<span class="text-rose-500 font-black">／</span>';
                     const shown = userInput ? escapeHtml(userInput) : '(빈칸)';
                     const hint = correct ? '' : `<br><span class="text-[10px] text-rose-400 font-bold">↳ 정답: ${escapeHtml(q.answer)}</span>`;
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <span class="${ansCls}">${shown}</span><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}${hint}</p>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <span class="${ansCls}">${shown}</span><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${mark} ${escapeHtml(q.after)}${hint}</p>`;
                 } else {
                     html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
                 }
@@ -1829,14 +1826,6 @@
                 msgEl.textContent = '수고하셨습니다.';
                 msgEl.className = 'text-sm font-black mt-2 break-keep text-slate-500';
             }
-
-            const gridEl = document.getElementById('memo-result-grid');
-            gridEl.innerHTML = perQ.map(({ idx, correct }) => `
-                <div class="aspect-square rounded-xl flex flex-col items-center justify-center border-2 border-rose-200 bg-rose-50/40">
-                    <span class="text-xl font-black text-rose-500">${correct ? '◯' : '／'}</span>
-                    <span class="text-[9px] text-slate-400 font-bold">${idx + 1}</span>
-                </div>
-            `).join('');
 
             const passageEl = document.getElementById('memo-result-passage');
             if (passageEl) passageEl.innerHTML = buildMemoResultPassageHtml(passage, perQ);
