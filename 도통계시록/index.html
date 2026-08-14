@@ -749,9 +749,12 @@
                 </div>
                 <div class="w-10 flex-shrink-0"></div>
             </div>
-            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center gap-2 shrink-0">
-                <span id="g4-study-tally" class="text-[13px] font-black text-[#4f46e5]">0/144 작성</span>
-                <button id="g4-study-resume-btn" onclick="jumpToG4StudyUnanswered()" class="hidden text-[11px] bg-amber-400 hover:bg-amber-500 text-white px-3 py-1.5 rounded-full font-black active:scale-95 transition-transform">▶ 이어서 풀기</button>
+            <div class="bg-[#f0f4ff] border-b border-[#e0e7ff] px-4 py-2.5 z-10 shadow-sm flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-2">
+                    <span id="g4-study-tally" class="text-[13px] font-black text-[#4f46e5]">0/144 작성</span>
+                    <button id="g4-study-resume-btn" onclick="jumpToG4StudyUnanswered()" class="hidden text-[11px] bg-amber-400 hover:bg-amber-500 text-white px-3 py-1.5 rounded-full font-black active:scale-95 transition-transform">▶ 이어서 풀기</button>
+                </div>
+                <button onclick="resetGrade4StudyAll()" class="text-[11px] bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 px-3 py-1.5 rounded-full font-black active:scale-95 transition-transform">공부 초기화</button>
             </div>
             <div class="flex-grow overflow-y-auto p-4">
                 <div id="grade4-study-container" class="space-y-4 pb-10"></div>
@@ -12266,7 +12269,14 @@
                         else if (idx === totalCount - 1) inp.blur();
                         return;
                     }
+                    // 채점 전 Enter: 채점. 이미 채점된 상태에서 한 번 더 Enter: 다음 문제로 이동.
+                    if (card.dataset.g4Graded === '1') {
+                        if (nextInput) { nextInput.focus(); nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                        else if (idx === totalCount - 1) inp.blur();
+                        return;
+                    }
                     checkFn(idx);
+                    card.dataset.g4Graded = '1';
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 });
             });
@@ -12290,6 +12300,7 @@
             if (fb) { fb.classList.add('hidden'); fb.textContent = ''; }
             const preview = document.getElementById(`g4-preview-${ns}-${idx}`);
             if (preview) preview.classList.add('hidden');
+            delete card.dataset.g4Graded;
             if (inputs[0]) inputs[0].focus();
             if (ns === 'study') { updateG4StudyProgress(); saveG4StudyProgress(); }
             else if (ns === 'exam') { updateG4ExamProgress(); saveG4ExamProgress(); }
@@ -12404,6 +12415,13 @@
             }
             restoreG4StudyProgress();
             showScreen('grade4Study');
+        }
+
+        // "공부 초기화": 작성한 답과 저장된 이어서-하기 이력을 모두 지우고 새로 시작한다.
+        function resetGrade4StudyAll() {
+            if (!confirm('작성한 내용과 학습 이력을 모두 초기화할까요?')) return;
+            localStorage.removeItem(G4_STUDY_PROGRESS_KEY);
+            startGrade4Study();
         }
 
         // ===== 방2: 4급 전체 시험 (144문항, 완전 시험 모드) =====
@@ -12634,9 +12652,7 @@
             const backBtn = document.getElementById('g4-mock-back-btn');
             if (backBtn) backBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             const hint = document.getElementById('g4-mock-hint');
-            if (hint) hint.textContent = gradeKey === 'grade4'
-                ? '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요'
-                : '빈칸에 답을 쓰고 Enter를 누르면 바로 채점돼요. 다 풀면 제출하기를 눌러 최종 점수를 확인하세요';
+            if (hint) hint.textContent = '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요';
             const rangeText = document.getElementById('g4-mock-range-text');
             if (rangeText) {
                 if (gradeKey === 'grade4') {
@@ -12660,7 +12676,6 @@
                 items = pickWeightedMockItems(GRADE_MOCK_CONFIG[gradeKey]);
                 pointPer = 2;
             }
-            const immediateGrade = gradeKey !== 'grade4';
             const keepName = g4MockState.studentName || '';
             g4MockState = { items, results: new Map(), submitted: false, gradeKey, pointPer, studentName: keepName };
             let html = '';
@@ -12675,11 +12690,9 @@
             });
             document.getElementById('grade4-mock-container').innerHTML = html;
             items.forEach((_, idx) => {
-                bindG4Enter('mock', idx, items.length, checkG4MockAnswer, immediateGrade);
-                if (!immediateGrade) {
-                    const card = document.getElementById(`g4-card-mock-${idx}`);
-                    card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', updateG4MockProgress));
-                }
+                bindG4Enter('mock', idx, items.length, checkG4MockAnswer, false);
+                const card = document.getElementById(`g4-card-mock-${idx}`);
+                card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', updateG4MockProgress));
             });
             document.getElementById('grade4-mock-wronglist').classList.add('hidden');
             document.getElementById('g4-mock-print-btn').classList.add('hidden');
@@ -12688,7 +12701,7 @@
             if (nameInput) nameInput.value = keepName;
             const nameError = document.getElementById('g4-mock-name-error');
             if (nameError) nameError.classList.add('hidden');
-            if (immediateGrade) updateG4MockLiveScore(); else updateG4MockProgress();
+            updateG4MockProgress();
             startG4MockTimer();
             showScreen('grade4Mock');
         }
@@ -12698,7 +12711,6 @@
         function checkG4MockAnswer(idx) {
             const ok = checkG4Answer('mock', idx);
             g4MockState.results.set(idx, ok);
-            if (g4MockState.gradeKey !== 'grade4') updateG4MockLiveScore();
             return ok;
         }
 

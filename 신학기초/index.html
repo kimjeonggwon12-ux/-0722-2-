@@ -36,7 +36,7 @@
         
         textarea { transition: all 0.2s; resize: none; }
         textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
-        textarea:disabled { background-color: #f1f5f9; cursor: not-allowed; }
+        textarea:disabled, textarea:read-only { background-color: #f1f5f9; cursor: not-allowed; }
         .correct { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46;}
         .incorrect { border-color: #f43f5e !important; background-color: #fff1f2 !important; color: #9f1239;}
         ::-webkit-scrollbar { width: 6px; }
@@ -287,7 +287,10 @@
                     뒤로가기
                 </button>
                 <div class="flex justify-between items-end px-1 text-xs font-extrabold">
-                    <span id="test-mode-badge" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">진행중</span>
+                    <div class="flex items-center gap-1.5">
+                        <span id="test-mode-badge" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">진행중</span>
+                        <button id="practice-reset-btn" onclick="app.resetPracticeAll()" class="hidden text-rose-500 bg-white border border-rose-200 hover:bg-rose-50 px-2 py-0.5 rounded-md font-black text-[11px] transition">공부 초기화</button>
+                    </div>
                     <span id="test-timer" class="hidden text-slate-400">⏱ 00:00</span>
                     <div class="text-slate-500">진행률: <span id="progress-text" class="text-indigo-600 text-sm">0</span> / <span id="total-count">0</span></div>
                 </div>
@@ -1569,6 +1572,14 @@
                                     }
                                 }
                             } else if (appState.currentMode === 'practice') {
+                                // 채점 전 Enter: 채점. 이미 채점된 상태에서 한 번 더 Enter: 다음 문제로 이동.
+                                const goToNextQuestion = () => {
+                                    const nextInput = document.getElementById(`input-${idx + 1}-0-0`) || document.getElementById(`input-${idx + 1}-0`) || document.getElementById(`input-${idx + 1}`);
+                                    if (nextInput) {
+                                        nextInput.focus();
+                                        nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                };
                                 if (subIdx !== undefined && lineIdx !== undefined) {
                                     const nextLineInput = document.getElementById(`input-${idx}-${subIdx}-${parseInt(lineIdx) + 1}`);
                                     if (nextLineInput) {
@@ -1577,10 +1588,14 @@
                                         const nextSubInput = document.getElementById(`input-${idx}-${parseInt(subIdx) + 1}-0`);
                                         if (nextSubInput) {
                                             nextSubInput.focus();
+                                        } else if (appState.results[idx]) {
+                                            goToNextQuestion();
                                         } else {
                                             this.checkAnswer(idx);
                                         }
                                     }
+                                } else if (appState.results[idx]) {
+                                    goToNextQuestion();
                                 } else {
                                     this.checkAnswer(idx);
                                 }
@@ -1965,14 +1980,17 @@
                 els.quizContainer.classList.add('hidden'); els.quizContainer.classList.remove('flex');
                 els.questionsContainer.classList.remove('hidden'); els.finishBtnContainer.classList.remove('hidden');
 
+                const resetBtn = document.getElementById('practice-reset-btn');
                 if(appState.currentMode === 'practice') {
                     els.testModeBadge.textContent = '문항별 암기 연습'; els.testModeBadge.className = 'text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md';
                     if (appState.timerHandle) { clearInterval(appState.timerHandle); appState.timerHandle = null; }
                     const timerEl = document.getElementById('test-timer');
                     if (timerEl) timerEl.classList.add('hidden');
+                    if (resetBtn) resetBtn.classList.remove('hidden');
                 } else {
                     els.testModeBadge.textContent = '시험지 모드'; els.testModeBadge.className = 'text-sky-600 bg-sky-100 px-2 py-0.5 rounded-md';
                     this.startExamTimer();
+                    if (resetBtn) resetBtn.classList.add('hidden');
                 }
 
                 this.renderGradeExamSummary();
@@ -1989,6 +2007,14 @@
                 this.showView('test');
             },
 
+            // "공부 초기화": 연습 모드에서 작성한 답과 저장된 이어서-하기 이력을 모두 지우고 새로 시작한다.
+            resetPracticeAll() {
+                if (appState.currentMode !== 'practice') return;
+                if (!confirm('작성한 내용과 학습 이력을 모두 초기화할까요?')) return;
+                clearTheologyFormAnswers(appState.currentSubject, appState.currentMode);
+                this.restartCurrentMode();
+            },
+
             initQuizMode() {
                 appState.currentMode = 'quiz'; appState.currentQuizIndex = 0; appState.results = []; appState.quizQuestions = [...dataParable];
 
@@ -2003,6 +2029,7 @@
 
                 els.totalCount.textContent = appState.quizQuestions.length;
                 els.testModeBadge.textContent = '객관식 퀴즈 (순차 출제)'; els.testModeBadge.className = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
+                { const resetBtn = document.getElementById('practice-reset-btn'); if (resetBtn) resetBtn.classList.add('hidden'); }
                 els.questionsContainer.classList.add('hidden'); els.finishBtnContainer.classList.add('hidden');
                 els.quizContainer.classList.remove('hidden'); els.quizContainer.classList.add('flex');
                 if (appState.timerHandle) { clearInterval(appState.timerHandle); appState.timerHandle = null; }
@@ -3121,7 +3148,7 @@
                         const el = document.getElementById(`input-${index}-${subIdx}-${lineIdx}`);
                         const subStamp = document.getElementById(`sub-stamp-box-${index}-${subIdx}-${lineIdx}`);
                         if (el) {
-                            el.disabled = false;
+                            el.readOnly = false;
                             el.value = '';
                             el.classList.remove('correct', 'incorrect');
                             if (subStamp) subStamp.innerHTML = '';
@@ -3136,7 +3163,7 @@
                 const submitBtn = document.getElementById(`submit-${index}`); const cardEl = document.getElementById(`card-${index}`);
                 const stampBox = document.getElementById(`stamp-box-${index}`); const previewBox = document.getElementById(`preview-box-${index}`);
 
-                if (inputEl) { inputEl.disabled = false; inputEl.value = ''; inputEl.classList.remove('correct', 'incorrect'); }
+                if (inputEl) { inputEl.readOnly = false; inputEl.value = ''; inputEl.classList.remove('correct', 'incorrect'); }
                 if (feedbackArea) feedbackArea.classList.add('hidden');
                 if (submitBtn) submitBtn.classList.remove('hidden');
                 if (previewBox) { previewBox.classList.add('hidden'); previewBox.classList.remove('fade-in'); }
@@ -3177,7 +3204,7 @@
                 if (subResults) {
                     subResults.forEach(sub => {
                         if (sub.el) {
-                            sub.el.disabled = true;
+                            sub.el.readOnly = true;
                             if (sub.isCorrect) sub.el.classList.add('correct');
                             else sub.el.classList.add('incorrect');
                             
@@ -3193,7 +3220,7 @@
                     });
                     if (submitBtn) submitBtn.classList.add('hidden');
                 } else {
-                    if (inputEl) inputEl.disabled = true;
+                    if (inputEl) inputEl.readOnly = true;
                     if (submitBtn) submitBtn.classList.add('hidden');
                     if (feedbackArea && !isElemFinalPractice) { feedbackArea.classList.remove('hidden'); feedbackArea.classList.add('flex'); diffViewEl.innerHTML = this.generateDiffHtml(diff); }
                 }
