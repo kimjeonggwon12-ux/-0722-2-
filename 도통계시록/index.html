@@ -12234,17 +12234,13 @@
                     </div>
                     <div class="flex flex-col gap-2">
                         ${verseHtml}
-                        ${showButtons ? `<div class="flex justify-end items-center">
+                        ${showButtons ? `<div class="flex justify-end items-center gap-1.5">
                             <button type="button" onclick="toggleG4Preview('${ns}', ${idx})" class="g4-preview-btn text-[11px] bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded font-bold transition">정답 보기</button>
+                            <button type="button" onclick="resetG4Card('${ns}', ${idx})" class="text-[11px] bg-white text-slate-500 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition">다시 쓰기</button>
                         </div>` : ''}
                         <div id="g4-preview-${ns}-${idx}" class="hidden text-[11px] bg-indigo-50/80 border border-indigo-100 p-2 rounded-lg text-indigo-800 break-keep font-bold">정답: ${answerOnly}</div>
                         <p class="text-[14px] leading-8 text-slate-700 font-medium break-keep">${parseG4Template(item.template, `g4-mark-${ns}-${idx}`)}</p>
                         <div id="g4-feedback-${ns}-${idx}" class="hidden text-[11px] font-bold rounded-lg px-3 py-2"></div>
-                        ${showButtons ? `<div class="flex gap-1.5 mt-1">
-                            <button type="button" onclick="toggleG4Preview('${ns}', ${idx})" class="flex-grow py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition">정답 확인</button>
-                            <button type="button" onclick="resetG4Card('${ns}', ${idx})" class="py-2 px-3 bg-white text-slate-500 border border-slate-200 text-xs font-bold rounded-xl hover:bg-slate-100 transition">다시 쓰기</button>
-                        </div>
-                        <p class="text-[10px] text-slate-400 text-center">빈칸에 답을 쓰고 Enter를 누르면 채점됩니다</p>` : `<p class="text-[10px] text-slate-400 text-center mt-1">빈칸에 답을 쓰고 Enter를 누르면 채점됩니다</p>`}
                     </div>
                 </div>
             </div>`;
@@ -12272,8 +12268,6 @@
                     }
                     checkFn(idx);
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    if (nextInput) setTimeout(() => nextInput.focus(), 900);
-                    else if (idx === totalCount - 1) setTimeout(() => inp.blur(), 900);
                 });
             });
         }
@@ -12360,13 +12354,13 @@
             });
             const fb = document.getElementById(`g4-feedback-${ns}-${idx}`);
             if (fb) {
-                fb.classList.remove('hidden');
                 if (allCorrect) {
+                    fb.classList.remove('hidden');
                     fb.className = 'text-[11px] font-bold rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200';
                     fb.textContent = '정답입니다! 👏';
                 } else {
-                    fb.className = 'text-[11px] font-bold rounded-lg px-3 py-2 bg-rose-50 text-rose-600 border border-rose-200';
-                    fb.textContent = '다시 확인해보세요. 빨간 칸의 토씨를 다시 살펴보세요.';
+                    fb.classList.add('hidden');
+                    fb.textContent = '';
                 }
             }
             if (allCorrect) {
@@ -12601,7 +12595,7 @@
         // 4급: 공식 144문항(GRADE4_ALL_ITEMS)에서 50개를 무작위로 뽑아 2점씩(100점 만점)
         //      정답 보기/정답 확인 버튼이 없고, Enter는 다음 칸으로만 이동하며 제출하기를 눌러야 한 번에 채점됩니다.
         // 3·2·1급: 원본 문제은행(quizDataStore/RICH_CHAPTERS)에서 장 범위 가중치대로 50개를 뽑아 2점씩(100점 만점)
-        //      한 문항을 풀고 Enter를 누르면 그 자리에서 바로 채점되고 정답이 보입니다. 제출하기를 누르면 최종 점수/오답노트가 정리됩니다.
+        //      한 문항을 풀고 Enter를 누르면 그 자리에서 바로 채점됩니다(정답은 보여주지 않음). 제출하기를 누르면 최종 점수/오답노트가 정리됩니다.
         let g4MockState = { items: [], results: new Map(), submitted: false, gradeKey: 'grade4', pointPer: 4, studentName: '', startedAt: null, elapsedMs: 0 };
 
         // 모의고사 응시 경과 시간 타이머 (mm:ss)
@@ -12642,7 +12636,7 @@
             const hint = document.getElementById('g4-mock-hint');
             if (hint) hint.textContent = gradeKey === 'grade4'
                 ? '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요'
-                : '빈칸에 답을 쓰고 Enter를 누르면 바로 채점되고 정답이 보여요. 다 풀면 제출하기를 눌러 최종 점수를 확인하세요';
+                : '빈칸에 답을 쓰고 Enter를 누르면 바로 채점돼요. 다 풀면 제출하기를 눌러 최종 점수를 확인하세요';
             const rangeText = document.getElementById('g4-mock-range-text');
             if (rangeText) {
                 if (gradeKey === 'grade4') {
@@ -12704,10 +12698,6 @@
         function checkG4MockAnswer(idx) {
             const ok = checkG4Answer('mock', idx);
             g4MockState.results.set(idx, ok);
-            if (!ok) {
-                const preview = document.getElementById(`g4-preview-mock-${idx}`);
-                if (preview) preview.classList.remove('hidden');
-            }
             if (g4MockState.gradeKey !== 'grade4') updateG4MockLiveScore();
             return ok;
         }
