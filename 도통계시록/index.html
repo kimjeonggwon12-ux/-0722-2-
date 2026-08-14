@@ -555,7 +555,7 @@
         <div id="screen-chapter-study" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <div class="bg-white px-3 py-2 flex items-center gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <div class="w-[100px] flex-shrink-0"></div>
-                <span id="chapter-study-title" class="flex-grow min-w-0 text-left text-[15px] font-black text-[#1e1b4b] truncate">계 1장</span>
+                <span id="chapter-study-title" class="flex-grow min-w-0 text-left text-black font-black leading-tight">계 1장</span>
                 <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
@@ -801,14 +801,9 @@
         <!-- View 2: Quiz Screen -->
         <div id="screen-quiz" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <!-- Header -->
-            <div class="bg-white px-3 py-2 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <div class="w-[120px] flex-shrink-0"></div>
-                <div class="flex flex-col items-center justify-center text-center">
-                    <div id="ui-chapter-title" class="text-[13px] font-bold text-[#4f46e5] mb-0.5">계시록 1장</div>
-                    <div class="text-[16px] font-black text-slate-700 tracking-wide">
-                        <span id="ui-current-q" class="text-[#4f46e5]">1</span> <span class="text-slate-300 font-medium mx-0.5">/</span> <span id="ui-total-q" class="text-slate-400">0</span>
-                    </div>
-                </div>
+            <div class="bg-white px-3 py-2 flex items-center gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
+                <div class="w-[100px] flex-shrink-0"></div>
+                <span id="ui-chapter-title" class="flex-grow min-w-0 text-left text-black font-black leading-tight">계 1장</span>
                 <button id="btn-quit" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
@@ -10333,7 +10328,7 @@
         const els = {
             screens: { home: document.getElementById('screen-home'), chapterStudy: document.getElementById('screen-chapter-study'), gradeSelect: document.getElementById('screen-grade-select'), grade4Rooms: document.getElementById('screen-grade4-rooms'), grade4Study: document.getElementById('screen-grade4-study'), grade4Exam: document.getElementById('screen-grade4-exam'), grade4Mock: document.getElementById('screen-grade4-mock'), grade4MockResult: document.getElementById('screen-grade4-mock-result'), quiz: document.getElementById('screen-quiz'), result: document.getElementById('screen-result') },
             btns: { quit: document.getElementById('btn-quit'), mainPrev: document.getElementById('btn-main-prev'), mainNext: document.getElementById('btn-main-next'), restart: document.getElementById('btn-restart'), home: document.getElementById('btn-home') },
-            quiz: { chapterTitle: document.getElementById('ui-chapter-title'), score: document.getElementById('ui-score'), totalQScore: document.getElementById('ui-total-q-score'), currentQ: document.getElementById('ui-current-q'), totalQ: document.getElementById('ui-total-q'), verseNum: document.getElementById('verse-num'), verseText: document.getElementById('verse-text'), questionText: document.getElementById('question-text'), optionsContainer: document.getElementById('options-container') },
+            quiz: { chapterTitle: document.getElementById('ui-chapter-title'), score: document.getElementById('ui-score'), totalQScore: document.getElementById('ui-total-q-score'), verseNum: document.getElementById('verse-num'), verseText: document.getElementById('verse-text'), questionText: document.getElementById('question-text'), optionsContainer: document.getElementById('options-container') },
             feedback: { panel: document.getElementById('feedback-panel'), iconBox: document.getElementById('fb-icon-container'), title: document.getElementById('fb-title'), subtitle: document.getElementById('fb-subtitle'), explanation: document.getElementById('fb-explanation') },
             result: { chapterTitle: document.getElementById('result-chapter-title'), finalScore: document.getElementById('final-score'), finalTotal: document.getElementById('final-total'), message: document.getElementById('result-message'), wrongContainer: document.getElementById('wrong-answers-container'), wrongList: document.getElementById('wrong-answers-list'), wrongCount: document.getElementById('wrong-count') }
         };
@@ -12802,6 +12797,22 @@
                 </div>`;
         }
 
+        // 장별 화면 헤더 제목("계 N장 부제")을 좌/우 버튼과 겹치지 않는 좁은 폭 안에서
+        // 잘리지 않고 최대한 한 줄로 들어가도록, 글자 수에 따라 글자 크기를 자동으로 줄인다.
+        // 그래도 안 들어갈 만큼 긴 부제(예: 1장)는 줄바꿈을 허용해 내용이 잘리지 않게 한다.
+        function fitHeaderTitle(el, text) {
+            if (!el) return;
+            el.textContent = text;
+            const len = text.length;
+            let size = 15;
+            if (len > 12) size = 14;
+            if (len > 16) size = 13;
+            if (len > 20) size = 12;
+            if (len > 26) size = 11;
+            el.style.fontSize = size + 'px';
+            el.style.whiteSpace = len > 34 ? 'normal' : 'nowrap';
+        }
+
         // "공부하기": 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답을 1번부터 번호 순으로
         // 나열하고, 각 문항 아래에 관련 성구 주소(ref)와 근거 성구 본문(verses)도 함께 보여주는 화면.
         // 어르신도 보기 편하도록 글씨를 크게, 항목 사이 간격을 넉넉하게 잡는다.
@@ -12811,7 +12822,7 @@
             const chapterNum = chapterKey.replace('ch', '');
             const titles = chapterTitles[chapterKey];
             const titleEl = document.getElementById('chapter-study-title');
-            if (titleEl) titleEl.textContent = titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterNum}장`;
+            fitHeaderTitle(titleEl, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterNum}장`);
             const container = document.getElementById('chapter-study-container');
             if (container) {
                 if (!items || items.length === 0) {
@@ -12861,8 +12872,7 @@
                 state.history = new Array(ROUND_SIZE).fill(null);
             }
 
-            els.quiz.chapterTitle.textContent = titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`;
-            els.quiz.totalQ.textContent = ROUND_SIZE;
+            fitHeaderTitle(els.quiz.chapterTitle, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`);
             els.quiz.totalQScore.textContent = ROUND_SIZE;
             els.quiz.score.textContent = state.score;
             
@@ -12907,7 +12917,6 @@
 
         function loadQuestion() {
             const currentItem = state.questions[state.currentIndex];
-            els.quiz.currentQ.textContent = state.currentIndex + 1;
             const questionNumBadge = document.getElementById('question-num-badge');
             if (questionNumBadge) questionNumBadge.textContent = state.currentIndex + 1;
 
