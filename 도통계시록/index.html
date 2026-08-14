@@ -12838,7 +12838,7 @@
                             </div>
                             <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">${escapeHtml(item.a)}</p>
                             ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
-                            ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${escapeHtml(verseText)}</p>` : ''}
+                            ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
                         </div>`;
                     }).join('');
                 }
@@ -12915,6 +12915,36 @@
             }
         }
 
+        // 성구 본문(vText) 안에서 그 문항의 핵심어(item.hl/item.q, 문맥 h가 있으면 그 구간 안에서)를
+        // 찾아 하이라이트 span으로 감싼다. 장별 퀴즈와 문제은행 화면이 공통으로 사용한다.
+        function highlightVerseKeyword(vText, item) {
+            if (!vText) return vText;
+            const hlSource = item.hl || item.q;
+            const keywords = (Array.isArray(hlSource) ? hlSource : [hlSource])
+                .map(k => k.replace(/\s*\(.*?\)\s*/g, '').trim());
+            const keyword = keywords[0];
+            let result = vText;
+
+            if (item.h && result.includes(item.h)) {
+                const index = item.h.indexOf(keyword);
+                if (index !== -1) {
+                    const highlightedH = item.h.substring(0, index) +
+                                       `<span class="font-bold text-[#4f46e5] bg-[#e0e7ff] px-1 rounded">${keyword}</span>` +
+                                       item.h.substring(index + keyword.length);
+                    result = result.replace(item.h, highlightedH);
+                }
+            } else {
+                keywords.forEach(kw => {
+                    if (kw && result.includes(kw)) {
+                        const escapedKeyword = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(${escapedKeyword})`, 'g');
+                        result = result.replace(regex, `<span class="font-bold text-[#4f46e5] bg-[#e0e7ff] px-1 rounded">$1</span>`);
+                    }
+                });
+            }
+            return result;
+        }
+
         function loadQuestion() {
             const currentItem = state.questions[state.currentIndex];
             const questionNumBadge = document.getElementById('question-num-badge');
@@ -12934,29 +12964,7 @@
             let chapterNum = state.currentChapterKey.replace('ch', '');
             els.quiz.verseNum.textContent = `계 ${chapterNum}:${currentItem.v}`;
             let vText = verses[state.currentChapterKey][currentItem.v] || "";
-            
-            let hlSource = currentItem.hl || currentItem.q;
-            const keywords = (Array.isArray(hlSource) ? hlSource : [hlSource])
-                .map(k => k.replace(/\s*\(.*?\)\s*/g, '').trim());
-            const keyword = keywords[0];
-
-            if (currentItem.h && vText.includes(currentItem.h)) {
-                const index = currentItem.h.indexOf(keyword);
-                if (index !== -1) {
-                    const highlightedH = currentItem.h.substring(0, index) +
-                                       `<span class="font-bold text-[#4f46e5] bg-[#e0e7ff] px-1 rounded">${keyword}</span>` +
-                                       currentItem.h.substring(index + keyword.length);
-                    vText = vText.replace(currentItem.h, highlightedH);
-                }
-            } else {
-                keywords.forEach(kw => {
-                    if (vText.includes(kw) && kw.length > 0) {
-                        const escapedKeyword = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        const regex = new RegExp(`(${escapedKeyword})`, 'g');
-                        vText = vText.replace(regex, `<span class="font-bold text-[#4f46e5] bg-[#e0e7ff] px-1 rounded">$1</span>`);
-                    }
-                });
-            }
+            vText = highlightVerseKeyword(vText, currentItem);
             els.quiz.verseText.innerHTML = vText;
             els.quiz.questionText.textContent = currentItem.q;
 
