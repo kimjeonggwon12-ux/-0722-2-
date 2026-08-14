@@ -553,14 +553,14 @@
 
         <!-- View 1a-2: 장별 공부하기 (전체 절 스크롤 보기) -->
         <div id="screen-chapter-study" class="hidden flex-col h-full bg-slate-50 z-10 relative">
-            <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <div class="w-[74px] flex-shrink-0"></div>
+            <div class="bg-white px-3 py-2 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
+                <div class="w-[120px] flex-shrink-0"></div>
                 <div class="flex flex-col items-center justify-center text-center min-w-0">
                     <span class="text-[10px] text-slate-400 font-bold">계시록 통달 · 공부하기</span>
                     <span id="chapter-study-title" class="text-sm font-black text-[#1e1b4b] truncate">계시록 1장</span>
                 </div>
-                <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-1 shadow-sm flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
                 </button>
             </div>
@@ -804,16 +804,16 @@
         <!-- View 2: Quiz Screen -->
         <div id="screen-quiz" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <!-- Header -->
-            <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <div class="w-[74px] flex-shrink-0"></div>
+            <div class="bg-white px-3 py-2 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
+                <div class="w-[120px] flex-shrink-0"></div>
                 <div class="flex flex-col items-center justify-center text-center">
                     <div id="ui-chapter-title" class="text-[13px] font-bold text-[#4f46e5] mb-0.5">계시록 1장</div>
                     <div class="text-[16px] font-black text-slate-700 tracking-wide">
                         <span id="ui-current-q" class="text-[#4f46e5]">1</span> <span class="text-slate-300 font-medium mx-0.5">/</span> <span id="ui-total-q" class="text-slate-400">0</span>
                     </div>
                 </div>
-                <button id="btn-quit" class="nav-back-glow-ring bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-1 shadow-sm flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <button id="btn-quit" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
                 </button>
             </div>
@@ -12812,8 +12812,9 @@
             const items = quizDataStore[chapterKey];
             const chapterVerses = verses[chapterKey] || {};
             const chapterNum = chapterKey.replace('ch', '');
+            const titles = chapterTitles[chapterKey];
             const titleEl = document.getElementById('chapter-study-title');
-            if (titleEl) titleEl.textContent = `계시록 ${chapterNum}장`;
+            if (titleEl) titleEl.textContent = titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterNum}장`;
             const container = document.getElementById('chapter-study-container');
             if (container) {
                 if (!items || items.length === 0) {
@@ -12823,14 +12824,13 @@
                         const verseText = chapterVerses[String(item.v)] || '';
                         return `
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-2 mb-2.5">
+                            <div class="flex items-center gap-3">
                                 <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
-                                <span class="bg-[#5c6bc0] text-white px-3 py-1.5 rounded-full text-[14px] font-black">계 ${chapterNum}:${item.v}</span>
+                                <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
                             </div>
-                            <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
                             <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">정답: ${escapeHtml(item.a)}</p>
                             ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
-                            ${verseText ? `<p class="text-[19px] leading-7 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100">${escapeHtml(verseText)}</p>` : ''}
+                            ${verseText ? `<p class="text-[19px] leading-7 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${escapeHtml(verseText)}</p>` : ''}
                         </div>`;
                     }).join('');
                 }
@@ -12842,6 +12842,7 @@
         window.startChapter = function(chapterKey) {
             state.currentChapterKey = chapterKey;
             markTongdalLastChapter(chapterKey);
+            const titles = chapterTitles[chapterKey];
 
             state.questions = [...quizDataStore[chapterKey]];
             ROUND_SIZE = state.questions.length;
@@ -12863,7 +12864,7 @@
                 state.history = new Array(ROUND_SIZE).fill(null);
             }
 
-            els.quiz.chapterTitle.textContent = `계시록 ${chapterKey.replace('ch', '')}장`;
+            els.quiz.chapterTitle.textContent = titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`;
             els.quiz.totalQ.textContent = ROUND_SIZE;
             els.quiz.totalQScore.textContent = ROUND_SIZE;
             els.quiz.score.textContent = state.score;
