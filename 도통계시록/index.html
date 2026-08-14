@@ -565,7 +565,7 @@
                 <div class="w-10 flex-shrink-0"></div>
             </div>
             <div class="flex-grow overflow-y-auto p-5">
-                <div id="chapter-study-container" class="max-w-xl mx-auto space-y-3 pb-10"></div>
+                <div id="chapter-study-container" class="max-w-xl mx-auto space-y-4 pb-10"></div>
             </div>
         </div>
 
@@ -12809,7 +12809,8 @@
         }
 
         // "공부하기": 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답을 1번부터 번호 순으로
-        // 나열하고, 각 문항 아래에 근거가 되는 성구 본문(verses)도 함께 보여주는 화면.
+        // 나열하고, 각 문항 아래에 관련 성구 주소(ref)와 근거 성구 본문(verses)도 함께 보여주는 화면.
+        // 어르신도 보기 편하도록 글씨를 크게, 항목 사이 간격을 넉넉하게 잡는다.
         window.openChapterStudy = function(chapterKey) {
             const items = quizDataStore[chapterKey];
             const chapterVerses = verses[chapterKey] || {};
@@ -12820,19 +12821,20 @@
             const container = document.getElementById('chapter-study-container');
             if (container) {
                 if (!items || items.length === 0) {
-                    container.innerHTML = '<p class="text-center text-slate-400 text-sm font-bold py-10">이 장의 문제 자료가 아직 없습니다.</p>';
+                    container.innerHTML = '<p class="text-center text-slate-400 text-base font-bold py-10">이 장의 문제 자료가 아직 없습니다.</p>';
                 } else {
                     container.innerHTML = items.map((item, idx) => {
                         const verseText = chapterVerses[String(item.v)] || '';
                         return `
-                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-3 items-start relative">
-                            <span class="shrink-0 w-7 h-7 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-xs mt-0.5">${idx + 1}</span>
-                            <div class="flex-grow pr-14">
-                                <p class="text-[14px] leading-6 text-slate-700 font-bold break-keep">${escapeHtml(item.q)}</p>
-                                <p class="text-[13px] leading-6 text-[#4f46e5] font-black break-keep mt-1">정답: ${escapeHtml(item.a)}</p>
-                                ${verseText ? `<p class="text-[12px] leading-6 text-slate-400 font-medium break-keep mt-1.5 border-t border-slate-100 pt-1.5">${escapeHtml(verseText)}</p>` : ''}
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
+                                <span class="bg-[#5c6bc0] text-white px-3 py-1.5 rounded-full text-[14px] font-black">계 ${chapterNum}:${item.v}</span>
                             </div>
-                            <span class="absolute top-3 right-3 bg-[#5c6bc0] text-white px-2 py-0.5 rounded-full text-[10px] font-black">계 ${chapterNum}:${item.v}</span>
+                            <p class="text-[19px] leading-8 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
+                            <p class="text-[19px] leading-8 text-[#4f46e5] font-black break-keep mt-2">정답: ${escapeHtml(item.a)}</p>
+                            ${item.ref ? `<p class="text-[16px] leading-8 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
+                            ${verseText ? `<p class="text-[17px] leading-9 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100">${escapeHtml(verseText)}</p>` : ''}
                         </div>`;
                     }).join('');
                 }
