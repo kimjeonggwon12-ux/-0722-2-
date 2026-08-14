@@ -12808,10 +12808,11 @@
                 </div>`;
         }
 
-        // "공부하기": 성구 본문 없이, 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답만
-        // 1번부터 번호 순으로 쭉 나열해서 보여주는 화면.
+        // "공부하기": 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답을 1번부터 번호 순으로
+        // 나열하고, 각 문항 아래에 근거가 되는 성구 본문(verses)도 함께 보여주는 화면.
         window.openChapterStudy = function(chapterKey) {
             const items = quizDataStore[chapterKey];
+            const chapterVerses = verses[chapterKey] || {};
             const titles = chapterTitles[chapterKey];
             const chapterNum = chapterKey.replace('ch', '');
             const titleEl = document.getElementById('chapter-study-title');
@@ -12821,15 +12822,19 @@
                 if (!items || items.length === 0) {
                     container.innerHTML = '<p class="text-center text-slate-400 text-sm font-bold py-10">이 장의 문제 자료가 아직 없습니다.</p>';
                 } else {
-                    container.innerHTML = items.map((item, idx) => `
+                    container.innerHTML = items.map((item, idx) => {
+                        const verseText = chapterVerses[String(item.v)] || '';
+                        return `
                         <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-3 items-start relative">
                             <span class="shrink-0 w-7 h-7 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-xs mt-0.5">${idx + 1}</span>
                             <div class="flex-grow pr-14">
                                 <p class="text-[14px] leading-6 text-slate-700 font-bold break-keep">${escapeHtml(item.q)}</p>
                                 <p class="text-[13px] leading-6 text-[#4f46e5] font-black break-keep mt-1">정답: ${escapeHtml(item.a)}</p>
+                                ${verseText ? `<p class="text-[12px] leading-6 text-slate-400 font-medium break-keep mt-1.5 border-t border-slate-100 pt-1.5">${escapeHtml(verseText)}</p>` : ''}
                             </div>
                             <span class="absolute top-3 right-3 bg-[#5c6bc0] text-white px-2 py-0.5 rounded-full text-[10px] font-black">계 ${chapterNum}:${item.v}</span>
-                        </div>`).join('');
+                        </div>`;
+                    }).join('');
                 }
             }
             showScreen('chapterStudy');
