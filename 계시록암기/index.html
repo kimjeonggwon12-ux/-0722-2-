@@ -1114,6 +1114,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMemoRoomChapterHistoryList();
     }
 
+    // 장이 뒤섞여 보이지 않도록, 전체 목록(최신순)을 장 번호별로 묶어서 보여준다.
+    // 항목의 idx는 loadMemoRoomChapterHistory()가 돌려주는 원래 배열의 위치를 그대로 가리켜야
+    // 불러오기/삭제가 정확한 기록을 찾으므로, 묶을 때도 그 원래 idx를 같이 들고 다닌다.
     function renderMemoRoomChapterHistoryList() {
         const section = document.getElementById('memo-room-history-section');
         const listEl = document.getElementById('memo-room-history-list');
@@ -1121,17 +1124,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const list = loadMemoRoomChapterHistory();
         if (!list.length) { section.classList.add('hidden'); return; }
         section.classList.remove('hidden');
-        listEl.innerHTML = list.slice(0, 8).map((h, idx) => `
-            <div class="flex items-center bg-slate-50 border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
-                <button onclick="loadMemoRoomChapterHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
-                    <span class="text-slate-500 flex-shrink-0">${h.takenAt || ''}</span>
-                    <span class="text-slate-400 flex-grow truncate">계 ${h.chapter}장 전체 암송</span>
-                    <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-shrink-0">${h.score}점</span>
-                    <span class="text-teal-500 flex-shrink-0">📂 불러오기</span>
-                </button>
-                <button onclick="deleteMemoRoomChapterHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
-            </div>
-        `).join('');
+
+        const byChapter = {};
+        list.forEach((h, idx) => {
+            if (!byChapter[h.chapter]) byChapter[h.chapter] = [];
+            byChapter[h.chapter].push({ h, idx });
+        });
+        const chapters = Object.keys(byChapter).map(Number).sort((a, b) => a - b);
+
+        listEl.innerHTML = chapters.map(ch => {
+            const entries = byChapter[ch];
+            const rows = entries.map(({ h, idx }) => `
+                <div class="flex items-center bg-slate-50 border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                    <button onclick="loadMemoRoomChapterHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                        <span class="text-slate-500 flex-shrink-0">${h.takenAt || ''}</span>
+                        <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-grow">${h.score}점</span>
+                        <span class="text-teal-500 flex-shrink-0">📂 불러오기</span>
+                    </button>
+                    <button onclick="deleteMemoRoomChapterHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+                </div>
+            `).join('');
+            return `
+                <div class="mb-3 last:mb-0">
+                    <p class="text-[11px] font-black text-teal-600 mb-1">계 ${ch}장 <span class="text-slate-300 font-bold">(${entries.length}회)</span></p>
+                    <div class="space-y-1.5">${rows}</div>
+                </div>`;
+        }).join('');
     }
 
     function deleteMemoRoomChapterHistoryEntry(idx) {
