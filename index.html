@@ -800,9 +800,6 @@
                                 <option value="1급">1급</option>
                             </select>
                             <p id="apply-grade-advisory-note" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 자문회 특별 전형은 급수를 직접 선택하지 않고, 시험 점수로 급수가 자동 결정됩니다.<br>1급 - 90점 이상<br>2급 - 80점 이상<br>3급 - 70점 이상<br>4급 - 60점 이상</p>
-                            <p id="apply-grade-4geup-note" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 대신 자문회 경우 4급과 특별 전형과 동일합니다.
-                                <button type="button" onclick="switchApplySubjectToAdvisorySpecial()" class="block mt-1.5 w-full bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black rounded-lg py-1.5 transition-colors">자문회 특별 전형(계시록 통달)으로 변경</button>
-                            </p>
                         </div>
                         <div>
                             <label class="field-label">시험 시간</label>
@@ -2427,7 +2424,8 @@
             syncApplyGradeToSubject();
         }
 
-        // 급수 선택지 전체 목록. 자문회 부서 + 계시록 통달 과목 조합에서는 4급을 뺀다(자문회 4급 = 자문회 특별 전형이므로).
+        // 급수 선택지 전체 목록. 자문회 부서 + 계시록 통달 과목 조합에서는 4급을 그대로 보여주되
+        // 선택은 못 하게 비활성화하고 라벨을 "자문회 특별 전형과 동일"로 바꾼다(자문회 4급 = 자문회 특별 전형이므로).
         const APPLY_GRADE_OPTIONS_ALL = [
             { value: '4급', label: '4급' },
             { value: '3급', label: '3급' },
@@ -2438,44 +2436,31 @@
         // 과목이 "자문회 특별 전형(계시록 통달)"이면 급수 select를 비활성화·초기화하고 자동 결정 안내문을 보여준다.
         // 다른 과목이면 급수 select를 다시 활성화하고 안내문을 숨긴다.
         // 부서가 "자문회"이고 과목이 "계시록 통달"이면, 자문회 4급은 자문회 특별 전형과 동일하므로
-        // 급수 선택지에서 4급을 빼고(3급부터만 선택 가능) 특별 전형으로 바로 전환할 수 있는 안내문을 보여준다.
+        // 급수 선택지에서 4급 옵션은 보여주되 disabled 처리하고 라벨을 바꿔 선택하지 못하게 한다.
         function syncApplyGradeToSubject() {
             const deptEl = document.getElementById('apply-dept');
             const subjectEl = document.getElementById('apply-subject');
             const gradeEl = document.getElementById('apply-grade');
             const noteEl = document.getElementById('apply-grade-advisory-note');
-            const note4El = document.getElementById('apply-grade-4geup-note');
-            if (!deptEl || !subjectEl || !gradeEl || !noteEl || !note4El) return;
+            if (!deptEl || !subjectEl || !gradeEl || !noteEl) return;
 
             const isSpecial = subjectEl.value === APPLY_SPECIAL_SUBJECT_VALUE;
             const isAdvisoryRevelation = deptEl.value === '자문회' && subjectEl.value === '계시록 통달';
 
-            // 급수 선택지를 조합에 맞게 다시 그린다 (선택값이 새 목록에도 있으면 유지).
+            // 급수 선택지를 조합에 맞게 다시 그린다 (선택값이 새 목록에도 있고 비활성화 대상이 아니면 유지).
             const prevGrade = gradeEl.value;
-            const gradeOptions = isAdvisoryRevelation
-                ? APPLY_GRADE_OPTIONS_ALL.filter(o => o.value !== '4급')
-                : APPLY_GRADE_OPTIONS_ALL;
             gradeEl.innerHTML = '<option value="">급수를 선택하세요</option>' +
-                gradeOptions.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-            gradeEl.value = gradeOptions.some(o => o.value === prevGrade) ? prevGrade : '';
+                APPLY_GRADE_OPTIONS_ALL.map(o => {
+                    const isDisabled4geup = isAdvisoryRevelation && o.value === '4급';
+                    const label = isDisabled4geup ? '4급: 자문회 특별 전형과 동일' : o.label;
+                    return `<option value="${o.value}"${isDisabled4geup ? ' disabled' : ''}>${label}</option>`;
+                }).join('');
+            const prevGradeStillValid = APPLY_GRADE_OPTIONS_ALL.some(o => o.value === prevGrade) && !(isAdvisoryRevelation && prevGrade === '4급');
+            gradeEl.value = prevGradeStillValid ? prevGrade : '';
 
             gradeEl.disabled = isSpecial;
             if (isSpecial) gradeEl.value = '';
             noteEl.classList.toggle('hidden', !isSpecial);
-            note4El.classList.toggle('hidden', !isAdvisoryRevelation);
-        }
-
-        // "자문회 특별 전형으로 변경" 버튼: 과목을 자문회 특별 전형(계시록 통달)으로 자동 전환한다.
-        function switchApplySubjectToAdvisorySpecial() {
-            const subjectEl = document.getElementById('apply-subject');
-            if (!subjectEl) return;
-            // 과목 옵션 목록에 특별 전형이 없으면(부서 변경 순서 등으로) 먼저 다시 그려둔다.
-            if (![...subjectEl.options].some(o => o.value === APPLY_SPECIAL_SUBJECT_VALUE)) {
-                renderApplySubjectOptions({ resetValue: false });
-            }
-            subjectEl.value = APPLY_SPECIAL_SUBJECT_VALUE;
-            syncApplyGradeToSubject();
-            saveApplyDraft();
         }
 
         function bindApplyDeptSubjectSync() {
