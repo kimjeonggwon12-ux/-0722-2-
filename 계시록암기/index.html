@@ -961,7 +961,13 @@ function normalizeTextForComparison(text) {
         .replace(/,/g, '') // 쉼표 무시
         .replace(/[()]/g, '') // 괄호 무시
         .replace(/세째/g, '셋째') // '세째'를 '셋째'로 통일
-        .replace(/네째/g, '넷째'); // '네째'를 '넷째'로 통일
+        .replace(/네째/g, '넷째') // '네째'를 '넷째'로 통일
+        .replace(/비췸/g, '비침') // '비췸'(고어)을 '비침'으로 통일
+        .replace(/쌔/g, '새') // '~ㄹ쌔'(고어)를 '~ㄹ새'로 통일
+        .replace(/찐/g, '진') // '찐저'(고어)를 '진저'로 통일
+        .replace(/앎으로/g, '알므로') // '앎으로'와 '알므로' 동일 인정
+        .replace(/륙/g, '육') // '륙'(두음법칙 이전 표기)을 '육'으로 통일
+        .replace(/두째/g, '둘째'); // '두째'(사투리)를 '둘째'로 통일
 }
 
 function formatTime(totalSeconds) {
