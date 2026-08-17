@@ -12773,6 +12773,42 @@
             saveTongdalProgress(progress);
         }
 
+        // 홈 화면 "이어서 하기" 버튼이 가리켜야 할 위치를 실제 진도로 계산한다.
+        // (progress.last는 "가장 최근에 연 장"이라 완료한 장을 나중에 다시 열람만 해도
+        //  뒤로 밀려날 수 있어, 대신 완료 기록/진행 중 문제 저장을 근거로 다시 계산한다.)
+        // 우선순위: 1) 풀다 만 장이 있으면 그 장의 그 문항으로  2) 없으면 아직 완료 못한
+        // 가장 앞선 장의 1번으로  3) 22장을 모두 완료했으면 null(버튼 숨김).
+        function getTongdalResumeTarget() {
+            const progress = loadTongdalProgress();
+            const completedSet = new Set(progress.completed);
+
+            const quizState = loadTongdalQuizState();
+            if (quizState && quizState.chapterKey && !completedSet.has(quizState.chapterKey)) {
+                const items = quizDataStore[quizState.chapterKey];
+                const total = items ? items.length : 0;
+                if (total && quizState.total === total && Array.isArray(quizState.history)
+                    && quizState.history.length === total && Number.isInteger(quizState.currentIndex)
+                    && quizState.currentIndex >= 0 && quizState.currentIndex < total) {
+                    return { chapterKey: quizState.chapterKey, questionNumber: quizState.currentIndex + 1, inProgress: true };
+                }
+            }
+
+            for (let i = 1; i <= TONGDAL_TOTAL_CHAPTERS; i++) {
+                const key = 'ch' + i;
+                if (!completedSet.has(key)) return { chapterKey: key, questionNumber: null, inProgress: false };
+            }
+            return null; // 22장 전부 완료
+        }
+
+        // "진도 초기화": 완료 기록과 풀던 문제 이어하기 저장을 모두 지운다.
+        // (개별 장 문제 자체나 4급 144문항 학습/시험 진도에는 영향을 주지 않는다.)
+        function resetTongdalProgress() {
+            if (!confirm('계시록 통달 학습 진도를 초기화할까요?\n완료 기록과 이어서 풀던 문제 위치가 모두 지워집니다.')) return;
+            try { localStorage.removeItem(TONGDAL_PROGRESS_KEY); } catch (e) { /* 무시 */ }
+            clearTongdalQuizState();
+            renderTongdalProgressPanel();
+        }
+
         // 방 선택(screen-home) 상단에 진도율 + "이어서 하기" 배너를 그린다.
         function renderTongdalProgressPanel() {
             const panel = document.getElementById('tongdal-progress-panel');
@@ -12780,10 +12816,28 @@
             const progress = loadTongdalProgress();
             const doneCount = progress.completed.length;
             const percent = Math.round((doneCount / TONGDAL_TOTAL_CHAPTERS) * 100);
+            const target = getTongdalResumeTarget();
 
-            const resumeHtml = progress.last ? `
-                <button onclick="startChapter('${progress.last}')" class="w-full mt-3 bg-[#4f46e5] hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
-                    ▶ 이어서 하기 (계시록 ${progress.last.replace('ch', '')}장부터)
+            let resumeHtml = '';
+            if (target) {
+                const chapterNum = target.chapterKey.replace('ch', '');
+                const label = target.inProgress
+                    ? `계시록 ${chapterNum}장 ${target.questionNumber}번부터`
+                    : `계시록 ${chapterNum}장부터`;
+                resumeHtml = `
+                <button onclick="startChapter('${target.chapterKey}')" class="w-full mt-3 bg-[#4f46e5] hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
+                    ▶ 이어서 하기 (${label})
+                </button>`;
+            } else if (doneCount >= TONGDAL_TOTAL_CHAPTERS) {
+                resumeHtml = `
+                <div class="w-full mt-3 bg-emerald-50 text-emerald-700 rounded-2xl py-3 font-black text-[13px] text-center">
+                    🎉 22장을 모두 완료했습니다!
+                </div>`;
+            }
+
+            const resetHtml = (doneCount > 0) ? `
+                <button onclick="resetTongdalProgress()" class="w-full mt-2 bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 rounded-xl py-2 text-[12px] font-black active:scale-95 transition-transform">
+                    진도 초기화
                 </button>` : '';
 
             panel.innerHTML = `
@@ -12796,6 +12850,7 @@
                         <div class="h-full bg-gradient-to-r from-[#818cf8] to-[#4f46e5] rounded-full transition-all" style="width:${percent}%"></div>
                     </div>
                     ${resumeHtml}
+                    ${resetHtml}
                 </div>`;
         }
 

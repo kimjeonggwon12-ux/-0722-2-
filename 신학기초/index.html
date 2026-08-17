@@ -1102,6 +1102,22 @@
             saveTheologyProgress(progress);
         }
 
+        // "이어서 하기"가 가리킬 과목을 계산한다: 아직 들어가 보지 않은 과목 중 정해진 순서상
+        // 가장 앞선 과목. (progress.last를 그대로 쓰면, 이미 다 둘러본 과목을 나중에 다시
+        // 열람만 해도 이어서 하기가 그 과목으로 뒷걸음질친다.) 모두 들어가 봤다면 null.
+        function getTheologyResumeTarget() {
+            const progress = loadTheologyProgress();
+            const completedSet = new Set(progress.completed);
+            return THEOLOGY_SUBJECTS.find(s => !completedSet.has(s)) || null;
+        }
+
+        // "진도 초기화": 완료(방문) 기록을 모두 지운다. (작성 중이던 답/시험 기록은 별도이므로 남겨둔다.)
+        function resetTheologyProgress() {
+            if (!confirm('신학 교재 종합 암기 마스터 학습 진도를 초기화할까요?\n완료 기록이 모두 지워집니다.')) return;
+            try { localStorage.removeItem(THEOLOGY_PROGRESS_KEY); } catch (e) { /* 무시 */ }
+            renderTheologyProgressPanel();
+        }
+
         // 과목 선택(view-home) 화면 상단에 진도율 + "이어서 하기" 배너를 그린다.
         function renderTheologyProgressPanel() {
             const panel = document.getElementById('theology-progress-panel');
@@ -1110,11 +1126,24 @@
             const doneCount = progress.completed.length;
             const total = THEOLOGY_SUBJECTS.length;
             const percent = Math.round((doneCount / total) * 100);
-            const lastLabel = progress.last ? THEOLOGY_SUBJECT_LABELS[progress.last] : '';
+            const target = getTheologyResumeTarget();
 
-            const resumeHtml = progress.last ? `
-                <button onclick="app.selectSubject('${progress.last}')" class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
-                    ▶ 이어서 하기 (${lastLabel})
+            let resumeHtml = '';
+            if (target) {
+                resumeHtml = `
+                <button onclick="app.selectSubject('${target}')" class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl py-3 font-black text-[14px] shadow-md active:scale-95 transition-transform">
+                    ▶ 이어서 하기 (${THEOLOGY_SUBJECT_LABELS[target]})
+                </button>`;
+            } else if (doneCount >= total) {
+                resumeHtml = `
+                <div class="w-full mt-3 bg-emerald-50 text-emerald-700 rounded-2xl py-3 font-black text-[13px] text-center">
+                    🎉 전 과목을 모두 둘러보셨습니다!
+                </div>`;
+            }
+
+            const resetHtml = (doneCount > 0) ? `
+                <button onclick="resetTheologyProgress()" class="w-full mt-2 bg-white hover:bg-rose-50 text-rose-500 border border-rose-200 rounded-xl py-2 text-[12px] font-black active:scale-95 transition-transform">
+                    진도 초기화
                 </button>` : '';
 
             panel.innerHTML = `
@@ -1127,6 +1156,7 @@
                         <div class="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all" style="width:${percent}%"></div>
                     </div>
                     ${resumeHtml}
+                    ${resetHtml}
                 </div>`;
         }
 
