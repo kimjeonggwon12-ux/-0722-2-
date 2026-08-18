@@ -1796,7 +1796,7 @@
                         <div class="flex items-start gap-2">
                             <span class="bg-slate-200 text-slate-700 w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-xs font-black mt-0.5">${idx+1}</span>
                             <div class="font-extrabold text-slate-800 ${titleSize} break-keep whitespace-pre-wrap flex-grow">${questionText}</div>
-                            ${canReadAloud ? `<button onclick="app.readSingleItem(${idx})" aria-label="이 문항 읽어주기" class="flex-shrink-0 text-indigo-500 hover:text-indigo-700 p-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>` : ''}
+                            ${canReadAloud ? `<button onclick="app.readFromItem(${idx})" aria-label="이 문항부터 이어 듣기" class="flex-shrink-0 text-indigo-500 hover:text-indigo-700 p-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>` : ''}
                         </div>
                         <div class="ml-8 text-sm text-indigo-700 font-bold bg-indigo-50/50 p-3 rounded-lg border border-indigo-100 break-keep leading-relaxed whitespace-pre-wrap">${item.a}</div>
                     </div>
@@ -1884,15 +1884,13 @@
                     if (appState.ttsPlaying) this._speakQueueFrom(idx + 1);
                 });
             },
-            readSingleItem(idx) {
+            readFromItem(idx) {
                 if (!('speechSynthesis' in window)) return;
                 if (!appState.ttsData[idx]) return;
                 this.stopReadAloud();
                 appState.ttsPlaying = true;
                 if (els.previewAudioPlayBtn) els.previewAudioPlayBtn.querySelector('span').textContent = '읽는 중…';
-                this._highlightCard(idx);
-                if (els.previewAudioStatus) els.previewAudioStatus.textContent = `${idx + 1}번 문항 읽는 중`;
-                this._speakSegments(this._buildSegments(idx), 0, () => { this.stopReadAloud(); });
+                this._speakQueueFrom(idx);
             },
             stopReadAloud() {
                 if (appState.ttsPauseTimer) { clearTimeout(appState.ttsPauseTimer); appState.ttsPauseTimer = null; }

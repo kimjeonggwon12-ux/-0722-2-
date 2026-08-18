@@ -350,6 +350,22 @@
                     <button id="toggle-original-btn" class="px-3 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition font-semibold shadow-sm">원문 보기</button>
                 </div>
                 <div id="original-text-container" class="hidden mt-6 p-4 sm:p-6 bg-amber-50/50 border border-amber-100 rounded-xl">
+                    <div id="chapter-audio-bar" class="hidden items-center gap-2 flex-wrap mb-4 pb-4 border-b border-amber-200">
+                        <button id="chapter-audio-play-btn" class="flex-shrink-0 flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <span>장 전체 듣기</span>
+                        </button>
+                        <button id="chapter-audio-stop-btn" class="flex-shrink-0 flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-600 text-xs font-black px-2.5 py-1.5 rounded-lg border border-slate-300 transition">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+                            <span>정지</span>
+                        </button>
+                        <span id="chapter-audio-status" class="flex-grow text-xs font-bold text-teal-700 truncate">차분한 목소리로 전체를 이어 읽어드려요</span>
+                        <select id="chapter-audio-rate" class="flex-shrink-0 text-xs font-bold border border-teal-200 rounded-lg px-1.5 py-1.5 bg-white text-teal-700">
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                        </select>
+                    </div>
                     <p id="original-text" class="text-slate-700 leading-6 sm:leading-8 text-sm sm:text-lg whitespace-pre-line break-keep"></p>
                 </div>
             </div>
@@ -988,6 +1004,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const originalTextContainer = document.getElementById('original-text-container');
     const originalText = document.getElementById('original-text');
     const toggleOriginalBtn = document.getElementById('toggle-original-btn');
+    const chapterAudioBar = document.getElementById('chapter-audio-bar');
+    const chapterAudioPlayBtn = document.getElementById('chapter-audio-play-btn');
+    const chapterAudioStopBtn = document.getElementById('chapter-audio-stop-btn');
+    const chapterAudioStatus = document.getElementById('chapter-audio-status');
+    const chapterAudioRateSelect = document.getElementById('chapter-audio-rate');
     const resultContainer = document.getElementById('result-container');
     const resultText = document.getElementById('result-text');
     const verseNavigation = document.getElementById('verse-navigation');
@@ -1036,6 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentChapter = null;
     let currentVerseIndex = 0;
     let memorizationMode = 'verse'; // 'verse' | 'chapter'
+    const chapterTts = { playing: false, index: -1, rate: 1, pauseTimer: null, voice: null, voiceLoaded: false };
     let chapterTimerInterval = null;
     let chapterStartTime = null;
 
@@ -1293,6 +1315,11 @@ document.addEventListener('DOMContentLoaded', () => {
         prevVerseBtn.addEventListener('click', () => navigateVerse(-1));
         nextVerseBtn.addEventListener('click', () => navigateVerse(1));
         toggleOriginalBtn.addEventListener('click', toggleOriginalText);
+        if (chapterAudioPlayBtn) chapterAudioPlayBtn.addEventListener('click', toggleChapterReadAloud);
+        if (chapterAudioStopBtn) chapterAudioStopBtn.addEventListener('click', stopChapterReadAloud);
+        if (chapterAudioRateSelect) chapterAudioRateSelect.addEventListener('change', (e) => {
+            chapterTts.rate = parseFloat(e.target.value) || 1;
+        });
         checkChapterBtn.addEventListener('click', compareText);
         if (checkChapterBtnTop) checkChapterBtnTop.addEventListener('click', compareText);
         downloadPdfBtn.addEventListener('click', generateResultPdf);
@@ -1407,6 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayCurrentTask() {
+        stopChapterReadAloud();
         userInput.value = '';
         resultContainer.classList.add('hidden');
         originalTextContainer.classList.add('hidden');
@@ -1446,6 +1474,12 @@ document.addEventListener('DOMContentLoaded', () => {
             originalText.textContent = fullChapterText;
             totalCount.textContent = currentChapter.verses.length;
             populateChapterInputs();
+        }
+
+        if (chapterAudioBar) {
+            const canReadChapterAloud = memorizationMode === 'chapter' && ('speechSynthesis' in window);
+            chapterAudioBar.classList.toggle('hidden', !canReadChapterAloud);
+            chapterAudioBar.classList.toggle('flex', canReadChapterAloud);
         }
     }
     
@@ -1561,6 +1595,84 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleOriginalText() {
         const isHidden = originalTextContainer.classList.toggle('hidden');
         toggleOriginalBtn.textContent = isHidden ? '원문 보기' : '원문 숨기기';
+    }
+
+    // ===== 장 전체 암송 - 오디오 낭독 =====
+    // 절 번호는 TTS가 고유어(한, 두, 세)로 잘못 읽지 않도록 한자어 숫자로 직접 풀어쓴다.
+    function sinoKorean(n) {
+        if (n === 0) return '영';
+        const digits = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const units = ['', '십', '백', '천'];
+        const str = String(n);
+        let s = '';
+        for (let i = 0; i < str.length; i++) {
+            const d = +str[i];
+            const place = str.length - i - 1;
+            if (d === 0) continue;
+            if (place === 0) s += digits[d];
+            else s += (d === 1 ? '' : digits[d]) + units[place];
+        }
+        return s || '영';
+    }
+    function getCalmKoreanVoice() {
+        if (!('speechSynthesis' in window)) return null;
+        if (chapterTts.voiceLoaded) return chapterTts.voice;
+        const voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('ko'));
+        if (!voices.length) return null;
+        chapterTts.voice = voices[0];
+        chapterTts.voiceLoaded = true;
+        return chapterTts.voice;
+    }
+    function buildChapterVerseSegments(verse) {
+        return [
+            { text: `${sinoKorean(verse.verse)}절`, pauseAfter: 300 },
+            { text: verse.text, pauseAfter: 280 },
+        ];
+    }
+    function speakChapterSegments(segments, segIdx, onDone) {
+        if (!chapterTts.playing) return;
+        if (segIdx >= segments.length) { onDone(); return; }
+        const seg = segments[segIdx];
+        const utterance = new SpeechSynthesisUtterance(seg.text);
+        utterance.lang = 'ko-KR';
+        utterance.rate = chapterTts.rate * 0.85; // 차분하고 편안하게 들리도록 기본 속도를 낮춘다
+        utterance.pitch = 1.0;
+        const voice = getCalmKoreanVoice();
+        if (voice) utterance.voice = voice;
+        utterance.onend = () => {
+            if (!chapterTts.playing) return;
+            chapterTts.pauseTimer = setTimeout(() => {
+                speakChapterSegments(segments, segIdx + 1, onDone);
+            }, seg.pauseAfter || 200);
+        };
+        utterance.onerror = () => { stopChapterReadAloud(); };
+        speechSynthesis.speak(utterance);
+    }
+    function speakChapterFrom(idx) {
+        if (!chapterTts.playing) return;
+        const verse = currentChapter && currentChapter.verses[idx];
+        if (!verse) { stopChapterReadAloud(); return; }
+        chapterTts.index = idx;
+        if (chapterAudioStatus) chapterAudioStatus.textContent = `${idx + 1} / ${currentChapter.verses.length}절 읽는 중`;
+        speakChapterSegments(buildChapterVerseSegments(verse), 0, () => {
+            if (chapterTts.playing) speakChapterFrom(idx + 1);
+        });
+    }
+    function toggleChapterReadAloud() {
+        if (!('speechSynthesis' in window)) return;
+        if (chapterTts.playing) { stopChapterReadAloud(); return; }
+        if (memorizationMode !== 'chapter' || !currentChapter) return;
+        chapterTts.playing = true;
+        if (chapterAudioPlayBtn) chapterAudioPlayBtn.querySelector('span').textContent = '읽는 중…';
+        speakChapterFrom(0);
+    }
+    function stopChapterReadAloud() {
+        if (chapterTts.pauseTimer) { clearTimeout(chapterTts.pauseTimer); chapterTts.pauseTimer = null; }
+        if ('speechSynthesis' in window) speechSynthesis.cancel();
+        chapterTts.playing = false;
+        chapterTts.index = -1;
+        if (chapterAudioPlayBtn) chapterAudioPlayBtn.querySelector('span').textContent = '장 전체 듣기';
+        if (chapterAudioStatus) chapterAudioStatus.textContent = '차분한 목소리로 전체를 이어 읽어드려요';
     }
 
     function handleUserInput(event) {
