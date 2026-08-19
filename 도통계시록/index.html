@@ -318,7 +318,7 @@
 </head>
 <body class="antialiased">
 
-    <div class="fixed top-2 left-2 z-50 flex gap-1.5">
+    <div id="fixed-home-nav" class="fixed top-2 left-2 z-50 flex gap-1.5">
         <a href="../index.html#rooms" class="bg-[#ede9fe] backdrop-blur border border-[#c4b5fd] text-[#5b21b6] hover:bg-[#ddd6fe] hover:border-[#a78bfa] rounded-full px-3 py-1.5 shadow-sm text-[11px] font-bold flex items-center gap-1 no-underline transition-colors" title="홈 화면으로">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6"/></svg>
             홈으로
@@ -12962,6 +12962,9 @@
             });
             els.screens[screenName].classList.remove('hidden');
             els.screens[screenName].classList.add('flex');
+            // 모의고사 급수 선택 화면에서는 뒤로가기 버튼만 남기고, 항상 떠 있는 홈으로 버튼은 숨긴다.
+            const fixedHomeNav = document.getElementById('fixed-home-nav');
+            if (fixedHomeNav) fixedHomeNav.classList.toggle('hidden', screenName === 'gradeSelect');
             if (screenName === 'home') renderTongdalProgressPanel();
         }
 
