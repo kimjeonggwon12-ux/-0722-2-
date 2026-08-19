@@ -308,6 +308,12 @@
         }
         .pulse-glow-red { animation: pulseGlowRed 1.8s ease-in-out infinite; }
 
+        @keyframes mockExamShortcutPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.45), 0 8px 20px rgba(79, 70, 229, 0.2); }
+            50% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0), 0 8px 20px rgba(79, 70, 229, 0.2); }
+        }
+        .mock-exam-shortcut { animation: mockExamShortcutPulse 1.8s ease-in-out infinite; }
+
     </style>
 </head>
 <body class="antialiased">
@@ -540,6 +546,18 @@
                         <div class="text-[13px] text-slate-400 font-bold leading-tight mt-1">생명나무가 있는 거룩한 성</div>
                     </div>
                     <button type="button" onclick="event.stopPropagation(); openChapterStudy('ch22')" class="shrink-0 ml-2 bg-[#4f46e5] hover:bg-indigo-700 text-white px-4 py-3 rounded-2xl text-[13px] font-black shadow-sm active:scale-95 transition-transform flex flex-col items-center justify-center gap-0.5 leading-tight"><span class="text-lg">📖</span><span>문제은행</span></button></div>
+
+                <button onclick="showScreen('gradeSelect')" class="mock-exam-shortcut w-full rounded-3xl p-4 flex items-center shadow-lg text-left border-4 border-[#7c6ff0] relative overflow-hidden mt-2" style="background: linear-gradient(135deg, #ede9fe, #ddd6fe);">
+                    <span class="absolute -top-1 -right-1 bg-[#7c6ff0] text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">급수별 모의고사</span>
+                    <div class="w-14 h-14 rounded-2xl text-white flex items-center justify-center text-2xl shadow-sm shrink-0" style="background: linear-gradient(135deg, #a89bf9, #4f46e5);">🎯</div>
+                    <div class="flex-grow ml-4">
+                        <div class="text-[#1e1b4b] text-[16px] font-black leading-tight">계시록 통달 자격증<br>급수별 모의고사</div>
+                        <div class="text-[#4f46e5] text-[12px] font-bold mt-1">1~4급 : 계시록 본문의 참 뜻과 핵심 성구</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-white text-[#4f46e5] flex items-center justify-center shrink-0 shadow-sm">
+                        <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </button>
             </div>
 
             <!-- 하단 책상 일러스트 (레퍼런스 스타일) -->
@@ -588,6 +606,10 @@
                 <div class="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-white mb-3" style="background: url('../assets/tongdari.png') center 22% / 170% no-repeat, #efe9ff;"></div>
                 <div class="font-['Jalnan'] text-2xl text-[#4f46e5]">계시록 통달 급수 시험</div>
                 <p class="text-slate-400 text-[12px] font-bold mt-2 break-keep">응시할 급수를 선택하세요<br>선택한 급수의 범위에서 문제가 출제됩니다</p>
+                <div class="mt-3 w-full bg-[#ede9fe] border-2 border-[#c4b5fd] rounded-2xl px-4 py-3 text-left">
+                    <p class="text-[#5b21b6] text-[13px] font-black leading-snug break-keep">🎯 모의고사는 실제 시험유형과 동일한 연습 문제를 제시합니다.</p>
+                    <p class="text-[#7c3aed] text-[12px] font-bold leading-snug break-keep mt-1">열 때마다 문제 조합이 달라집니다. 예상 문제가 아닙니다.</p>
+                </div>
             </div>
 
             <div class="w-full space-y-4 relative z-10 pb-10">
