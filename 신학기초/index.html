@@ -1986,18 +1986,17 @@
                 }
                 els.headerTabs.innerHTML = tabsHtml;
             },
-            // 급수 시험 상단에 출제 범위·과목별 문항 수·이름 입력란을 표시(급수 시험이 아니면 숨김)
+            // 급수 시험 상단에 출제 범위·이름 입력란을 표시(급수 시험이 아니면 숨김).
+            // 과목별 문항 수 breakdown은 헤드에 넣으면 난잡해지므로 넣지 않고, 대신 문항 목록의
+            // 각 구간(섹션) 구분 배지(renderQuestions의 📘 라벨)에서 구간별 문항 수를 보여준다.
             renderGradeExamSummary() {
                 const gradeKey = appState.currentSubject;
                 const sections = gradeSections[gradeKey];
                 if (!sections) { els.gradeExamSummary.classList.add('hidden'); return; }
 
-                const counts = {};
-                appState.questions.forEach(q => { counts[q._gradeLabel] = (counts[q._gradeLabel] || 0) + this.parseSubQuestions(q.a).length; });
                 const total = appState.questions.reduce((s, q) => s + this.parseSubQuestions(q.a).length, 0);
-                const breakdown = sections.map(sec => `${sec.label} ${counts[sec.label] || 0}문항`).join(' · ');
 
-                els.gradeExamRangeText.textContent = `출제 범위: ${gradeRangeText[gradeKey] || ''} · 총 ${total}문항(${breakdown}), 문항당 2점`;
+                els.gradeExamRangeText.innerHTML = `<span class="block">📚 출제 범위: ${gradeRangeText[gradeKey] || ''}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
                 els.gradeExamSummary.classList.remove('hidden');
                 els.gradeExamNameInput.value = appState.studentName || '';
                 els.gradeExamNameError.classList.add('hidden');

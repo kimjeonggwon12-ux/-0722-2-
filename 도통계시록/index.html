@@ -12612,15 +12612,15 @@
             if (backBtn) backBtn.setAttribute('onclick', "showScreen('gradeSelect')");
             const hint = document.getElementById('g4-mock-hint');
             if (hint) hint.textContent = '빈칸을 채우고 Enter를 누르면 다음 칸으로 넘어가요. 다 쓴 뒤 제출하기를 누르면 한 번에 채점되고, 틀린 문항은 오답노트에서 볼 수 있어요';
+            // 장 범위별 문항 수 breakdown은 헤드에 넣으면 난잡해지므로 넣지 않고, 대신 문항 목록의
+            // 각 구간 구분 배지(📘 curGroup, startGradeMock 참고)에서 구간별 문항 수를 보여준다.
             const rangeText = document.getElementById('g4-mock-range-text');
             if (rangeText) {
                 if (gradeKey === 'grade4') {
-                    rangeText.textContent = '출제 범위: 계 1~22장 · 총 50문항, 문항당 2점';
+                    rangeText.innerHTML = '<span class="block">📚 출제 범위: 계 1~22장</span><span class="block mt-1">📝 총 50문항 · ✏️ 문항당 2점</span>';
                 } else if (cfg) {
-                    const groupLabel = g => (g.from === g.to ? `계 ${g.from}장` : `계 ${g.from}~${g.to}장`);
                     const total = cfg.groups.reduce((s, g) => s + g.count, 0);
-                    const breakdown = cfg.groups.length > 1 ? `(${cfg.groups.map(g => `${groupLabel(g)} ${g.count}문항`).join(' · ')})` : '';
-                    rangeText.textContent = `출제 ${cfg.rangeLabel} · 총 ${total}문항${breakdown}, 문항당 2점`;
+                    rangeText.innerHTML = `<span class="block">📚 출제 ${cfg.rangeLabel}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
                 }
             }
         }

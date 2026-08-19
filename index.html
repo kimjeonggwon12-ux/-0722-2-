@@ -604,7 +604,7 @@
                             <img src="assets/memo-logo-woman.jpg" alt="새 노래를 부르는 여인" class="w-full h-full object-cover">
                         </div>
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
-                        <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep">출제 범위: 계 1~5장 · 1~10번 구절 괄호 넣기 · 11~25번 구절 쓰기</p>
+                        <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep"><span class="block">📚 출제 범위: 계 1~5장</span><span class="block mt-1">📝 총 25문항 · ✏️ 문항당 2점</span></p>
                         <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[11px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
                         <p class="inline-block bg-slate-100 text-slate-600 text-[11px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
                     </div>
@@ -1617,7 +1617,9 @@
             const cfg = MEMO_GRADES[memoState.gradeKey];
             const total = memoState.questions.length;
             document.getElementById('memo-exam-title').textContent = `계시록 암기 ${cfg.label} 모의고사`;
-            document.getElementById('memo-exam-range').textContent = `출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')} · 총 ${total}문항(괄호 넣기 ${total - cfg.topCount} + 구절 전체 쓰기 ${cfg.topCount}), 문항당 2점`;
+            // 괄호 넣기/구절 전체 쓰기 문항 수 breakdown은 헤드에 넣으면 난잡해지므로 넣지 않는다.
+            // 시험지 안에서 "구절 전체 쓰기" 구간은 이미 별도 소제목으로 구분되어 있다.
+            document.getElementById('memo-exam-range').innerHTML = `<span class="block">📚 출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
             document.getElementById('memo-exam-name-input').value = '';
             document.getElementById('memo-exam-name-error').classList.add('opacity-0');
 
