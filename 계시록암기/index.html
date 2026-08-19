@@ -1128,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // "진도 초기화": 완료 기록을 모두 지운다. (채점 기록/이력은 별도이므로 남겨둔다.)
-    // inline onclick에서 호출되므로(위 1202번째 줄 안내대로) window에 노출해야 한다.
+    // inline onclick에서 호출되므로 window에 노출해야 한다.
     window.resetMemoRoomProgress = function() {
         if (!confirm('요한계시록 완벽 암기 학습 진도를 초기화할까요?\n완료 기록이 모두 지워집니다.')) return;
         try { localStorage.removeItem(MEMO_ROOM_PROGRESS_KEY); } catch (e) { /* 무시 */ }
