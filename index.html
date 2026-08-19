@@ -99,111 +99,80 @@
         }
         .rooms-photo {
             position: relative;
-            aspect-ratio: 820 / 842;
+            aspect-ratio: 820 / 1220;
             width: min(100%, 420px, calc((100vh - 40px) * 0.672));
             width: min(100%, 420px, calc((100dvh - 40px) * 0.672));
-            background: url('assets/rooms-cover-v2.jpg') top center / cover no-repeat;
+            background: url('assets/rooms-cover-v2.jpg') center / cover no-repeat;
             border-radius: 20px;
             box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
             overflow: hidden;
             container-type: inline-size;
         }
-        /* 모의고사 바로가기 미니 버튼: 각 공부방 카드 하단 중앙에 밑변과 겹치도록 배치한 동그란 펄스 버튼 */
+        /* 계시록 통달 자격증 준비 코너: 모의고사 아이콘만 원본 패널 배경색으로 가려 숨긴다 */
+        .mock-icon-mask {
+            position: absolute;
+            background: linear-gradient(180deg, #eff6fe, #e6f0fc);
+            border-radius: 14px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        /* 시험 안내를 강조하는 "필독" 리본 배지 (펄스 대신 정적 강조) */
+        .exam-info-badge {
+            position: absolute;
+            top: -6px;
+            right: 6%;
+            background: linear-gradient(135deg, #fde68a, #fbbf24);
+            color: #78350f;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 9px;
+            border-radius: 999px;
+            box-shadow: 0 2px 6px rgba(120, 53, 15, 0.35), 0 0 0 2px #fff;
+            z-index: 3;
+            pointer-events: none;
+        }
+        /* 모의고사 바로가기 미니 버튼: 공부방 카드 하단 중앙에 밑변과 겹치도록 배치한 동그란 펄스 버튼.
+           각 공부방 카드 색상(초록/보라/핑크)과 어울리도록 색을 맞춘다. */
         .mini-mock-btn {
             position: absolute;
-            top: 96.5%;
+            top: 34.5%;
             transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #fb923c, #ea580c);
             color: #fff;
-            font-size: 17px;
-            box-shadow: 0 3px 10px rgba(234, 88, 12, 0.45), 0 0 0 3px #fff;
+            font-size: 15px;
             z-index: 5;
-            animation: miniMockPulse 2s ease-out infinite;
             transition: transform 0.12s ease;
         }
         .mini-mock-btn:active { transform: translate(-50%, -50%) scale(0.9); }
         .mini-mock-btn:hover { transform: translate(-50%, -50%) scale(1.08); }
-        @keyframes miniMockPulse {
-            0%, 100% { box-shadow: 0 3px 10px rgba(234,88,12,0.45), 0 0 0 3px #fff, 0 0 0 3px rgba(251,146,60,0.65); }
-            50% { box-shadow: 0 3px 10px rgba(234,88,12,0.45), 0 0 0 3px #fff, 0 0 0 11px rgba(251,146,60,0); }
+        .mini-mock-btn--green {
+            background: linear-gradient(145deg, #6ee7b7, #059669);
+            animation: miniMockPulseGreen 2s ease-out infinite;
         }
-        /* 계시록 통달 자격증 준비 코너: 원래의 원형 아이콘 + 라벨 디자인을 살려 시험 안내(강조)/시험 신청(펄스) 2개로 축소 */
-        .cert-mini-panel {
-            width: 100%;
-            max-width: 420px;
-            margin: 18px auto 0;
-            background: linear-gradient(180deg, #eef4ff, #dfe8ff);
-            border-radius: 20px;
-            padding: 14px 16px 16px;
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.14);
+        .mini-mock-btn--purple {
+            background: linear-gradient(145deg, #c4b5fd, #6d28d9);
+            animation: miniMockPulsePurple 2s ease-out infinite;
         }
-        .cert-mini-title {
-            text-align: center;
-            font-size: 13px;
-            font-weight: 900;
-            color: #3730a3;
-            letter-spacing: 0.02em;
-            margin-bottom: 12px;
+        .mini-mock-btn--pink {
+            background: linear-gradient(145deg, #fda4af, #e11d48);
+            animation: miniMockPulsePink 2s ease-out infinite;
         }
-        .cert-mini-row { display: flex; justify-content: center; gap: 28px; }
-        .cert-mini-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            width: 84px;
+        @keyframes miniMockPulseGreen {
+            0%, 100% { box-shadow: 0 3px 10px rgba(5,150,105,0.4), 0 0 0 3px #fff, 0 0 0 3px rgba(16,185,129,0.6); }
+            50% { box-shadow: 0 3px 10px rgba(5,150,105,0.4), 0 0 0 3px #fff, 0 0 0 10px rgba(16,185,129,0); }
         }
-        .cert-mini-circle-wrap { position: relative; }
-        .cert-mini-badge {
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #fbbf24;
-            color: #78350f;
-            font-size: 9.5px;
-            font-weight: 900;
-            padding: 2px 8px;
-            border-radius: 999px;
-            box-shadow: 0 2px 5px rgba(120, 53, 15, 0.3);
-            white-space: nowrap;
-            z-index: 2;
+        @keyframes miniMockPulsePurple {
+            0%, 100% { box-shadow: 0 3px 10px rgba(109,40,217,0.4), 0 0 0 3px #fff, 0 0 0 3px rgba(196,181,253,0.7); }
+            50% { box-shadow: 0 3px 10px rgba(109,40,217,0.4), 0 0 0 3px #fff, 0 0 0 10px rgba(196,181,253,0); }
         }
-        .cert-mini-circle {
-            width: 62px;
-            height: 62px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .cert-mini-col:active .cert-mini-circle { transform: scale(0.92); }
-        .cert-mini-circle--info {
-            background: linear-gradient(160deg, #60a5fa, #1d4ed8);
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4), 0 0 0 3px #fff, 0 0 0 5px #3b82f6;
-        }
-        .cert-mini-circle--apply {
-            background: linear-gradient(160deg, #4ade80, #16a34a);
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4), 0 0 0 3px #fff;
-            animation: certApplyPulse 2s ease-out infinite;
-        }
-        @keyframes certApplyPulse {
-            0%, 100% { box-shadow: 0 4px 12px rgba(22,163,74,0.4), 0 0 0 3px #fff, 0 0 0 3px rgba(74,222,128,0.7); }
-            50% { box-shadow: 0 4px 12px rgba(22,163,74,0.4), 0 0 0 3px #fff, 0 0 0 12px rgba(74,222,128,0); }
-        }
-        .cert-mini-label {
-            font-size: 13px;
-            font-weight: 900;
-            color: #312e81;
+        @keyframes miniMockPulsePink {
+            0%, 100% { box-shadow: 0 3px 10px rgba(225,29,72,0.4), 0 0 0 3px #fff, 0 0 0 3px rgba(253,164,175,0.7); }
+            50% { box-shadow: 0 3px 10px rgba(225,29,72,0.4), 0 0 0 3px #fff, 0 0 0 10px rgba(253,164,175,0); }
         }
         .rooms-hotspot {
             position: absolute;
@@ -392,30 +361,17 @@
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
             <div class="rooms-photo">
-                <a href="신학기초/index.html" class="rooms-hotspot" style="left:7%; top:50%; width:29%; height:47.8%;" aria-label="초중고 신학 공부방"></a>
-                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:38%; top:50%; width:29%; height:47.8%;" aria-label="계시록 통달 공부방"></a>
-                <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:50%; width:27%; height:47.8%;" aria-label="계시록 암기 공부방"></a>
-                <a href="신학기초/index.html#grade" class="mini-mock-btn" style="left:21.5%;" aria-label="초중고 신학 모의고사 바로가기">🎯</a>
-                <a href="도통계시록/index.html#grade" class="mini-mock-btn" style="left:52.5%;" aria-label="계시록 통달 모의고사 바로가기">🎯</a>
-                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="mini-mock-btn" style="left:81.5%;" aria-label="계시록 암기 모의고사 바로가기">🎯</a>
-            </div>
-            <div class="cert-mini-panel">
-                <p class="cert-mini-title">✦ 계시록 통달 자격증 준비 ✦</p>
-                <div class="cert-mini-row">
-                    <a href="#examinfo" onclick="showExamInfo()" class="cert-mini-col">
-                        <span class="cert-mini-circle-wrap">
-                            <span class="cert-mini-badge">필독</span>
-                            <span class="cert-mini-circle cert-mini-circle--info">📘</span>
-                        </span>
-                        <span class="cert-mini-label">시험 안내</span>
-                    </a>
-                    <a href="#apply" onclick="showApplyMenu()" class="cert-mini-col">
-                        <span class="cert-mini-circle-wrap">
-                            <span class="cert-mini-circle cert-mini-circle--apply">📝</span>
-                        </span>
-                        <span class="cert-mini-label">시험 신청</span>
-                    </a>
-                </div>
+                <a href="신학기초/index.html" class="rooms-hotspot" style="left:7%; top:34.5%; width:29%; height:33%;" aria-label="초중고 신학 공부방"></a>
+                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:38%; top:34.5%; width:29%; height:33%;" aria-label="계시록 통달 공부방"></a>
+                <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:34.5%; width:27%; height:33%;" aria-label="계시록 암기 공부방"></a>
+                <a href="신학기초/index.html#grade" class="mini-mock-btn mini-mock-btn--green" style="left:21.5%;" aria-label="초중고 신학 모의고사 바로가기">📝</a>
+                <a href="도통계시록/index.html#grade" class="mini-mock-btn mini-mock-btn--purple" style="left:52.5%;" aria-label="계시록 통달 모의고사 바로가기">📝</a>
+                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="mini-mock-btn mini-mock-btn--pink" style="left:81.5%;" aria-label="계시록 암기 모의고사 바로가기">📝</a>
+                <div class="mock-icon-mask" style="left:58%; top:74%; width:39%; height:25%;"></div>
+                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:7%; top:76%; width:29%; height:19%;" aria-label="시험 안내">
+                    <span class="exam-info-badge">필독</span>
+                </a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot rooms-hotspot-pulse" style="left:37%; top:76%; width:27%; height:19%;" aria-label="시험 신청"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
                 <button onclick="showSuggest()" class="suggest-badge">
@@ -645,7 +601,7 @@
                     <div class="w-20 h-20 rounded-full shadow-md border-2 border-white mb-3 mx-auto overflow-hidden">
                         <img src="assets/memo-logo-woman.jpg" alt="새 노래를 부르는 여인" class="w-full h-full object-cover">
                     </div>
-                    <h1 class="text-2xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 자격증을 위한 모의고사</h1>
+                    <h1 class="text-2xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 자격증 모의고사</h1>
                     <div class="mt-3 bg-fuchsia-50 border-2 border-fuchsia-200 rounded-2xl px-4 py-3 text-left">
                         <p class="text-fuchsia-700 text-[13px] font-black leading-snug break-keep">🎯 모의고사는 실제 시험유형과 동일한 연습 문제를 제시합니다.</p>
                         <p class="text-fuchsia-600 text-[12px] font-bold leading-snug break-keep mt-1">열 때마다 문제 조합이 달라집니다. 예상 문제가 아닙니다.</p>
