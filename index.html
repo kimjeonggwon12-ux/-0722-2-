@@ -108,35 +108,11 @@
             overflow: hidden;
             container-type: inline-size;
         }
-        /* 모의고사 미니 버튼(초록/보라/핑크 알약, 이미지에 이미 그려져 있음) 위의 투명 핫스팟:
-           각 공부방 색에 맞춰 펄스 링을 두르고, 눌렀을 때 눌리는 느낌을 준다. */
+        /* 모의고사 알약 버튼 위의 투명 핫스팟: 발광/펄스 없이 눌렀을 때 반응하는 느낌만 준다 */
         .rooms-hotspot-mock {
             border-radius: 999px;
         }
-        .rooms-hotspot-mock--green { animation: mockPulseGreen 1.8s ease-out infinite; }
-        .rooms-hotspot-mock--purple { animation: mockPulsePurple 1.8s ease-out infinite; }
-        .rooms-hotspot-mock--pink { animation: mockPulsePink 1.8s ease-out infinite; }
-        @keyframes mockPulseGreen {
-            0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.6), 0 0 0 0 rgba(16,185,129,0.75); }
-            50% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.85), 0 0 0 8px rgba(16,185,129,0); }
-        }
-        @keyframes mockPulsePurple {
-            0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.6), 0 0 0 0 rgba(124,58,237,0.75); }
-            50% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.85), 0 0 0 8px rgba(124,58,237,0); }
-        }
-        @keyframes mockPulsePink {
-            0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.6), 0 0 0 0 rgba(225,29,72,0.75); }
-            50% { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.85), 0 0 0 8px rgba(225,29,72,0); }
-        }
-        /* 계시록 통달 자격증 시험 신청하기: 형광 노란빛이 발광하며 펄스 */
-        .rooms-hotspot-neon {
-            border-radius: 24px;
-            animation: examApplyNeonPulse 1.6s ease-in-out infinite;
-        }
-        @keyframes examApplyNeonPulse {
-            0%, 100% { box-shadow: inset 0 0 0 3px #f4ff2e, 0 0 10px 2px rgba(244,255,46,0.7), 0 0 0 0 rgba(244,255,46,0.6); }
-            50% { box-shadow: inset 0 0 0 3px #f4ff2e, 0 0 22px 8px rgba(244,255,46,0.95), 0 0 0 10px rgba(244,255,46,0); }
-        }
+        /* 계시록 통달 자격증 시험 신청하기 박스 위의 투명 핫스팟: 테두리/펄스 없이 눌림 반응만 */
         .rooms-hotspot {
             position: absolute;
             display: block;
@@ -328,12 +304,12 @@
                 <a href="도통계시록/index.html" class="rooms-hotspot" style="left:37%; top:33%; width:29%; height:32%;" aria-label="계시록 통달 공부방"></a>
                 <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:33%; width:28%; height:32%;" aria-label="계시록 암기 공부방"></a>
 
-                <a href="신학기초/index.html#grade" class="rooms-hotspot rooms-hotspot-mock rooms-hotspot-mock--green" style="left:5%; top:65.5%; width:30%; height:6.5%;" aria-label="초중고 신학 모의고사"></a>
-                <a href="도통계시록/index.html#grade" class="rooms-hotspot rooms-hotspot-mock rooms-hotspot-mock--purple" style="left:37%; top:65.5%; width:29%; height:6.5%;" aria-label="계시록 통달 모의고사"></a>
-                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="rooms-hotspot rooms-hotspot-mock rooms-hotspot-mock--pink" style="left:68%; top:65.5%; width:28%; height:6.5%;" aria-label="계시록 암기 모의고사"></a>
+                <a href="신학기초/index.html#grade" class="rooms-hotspot rooms-hotspot-mock" style="left:3%; top:67%; width:30%; height:6.5%;" aria-label="초중고 신학 모의고사"></a>
+                <a href="도통계시록/index.html#grade" class="rooms-hotspot rooms-hotspot-mock" style="left:35%; top:67%; width:29%; height:6.5%;" aria-label="계시록 통달 모의고사"></a>
+                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="rooms-hotspot rooms-hotspot-mock" style="left:66%; top:67%; width:28%; height:6.5%;" aria-label="계시록 암기 모의고사"></a>
 
                 <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:5%; top:75%; width:27%; height:19%;" aria-label="시험 안내"></a>
-                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot rooms-hotspot-neon" style="left:36%; top:75%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
             </div>
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
                 <button onclick="showSuggest()" class="suggest-badge">
@@ -570,7 +546,7 @@
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <button onclick="startMemoExamSheet('grade4')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                    <button onclick="startMemoExamSheet('grade4')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group min-h-[92px]">
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #e9a6f7, #a21caf);">4급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 4급</h3>
@@ -578,7 +554,7 @@
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
-                    <button onclick="startMemoExamSheet('grade3')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                    <button onclick="startMemoExamSheet('grade3')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group min-h-[92px]">
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #d68af0, #86198f);">3급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 3급</h3>
@@ -586,7 +562,7 @@
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
-                    <button onclick="startMemoExamSheet('grade2')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
+                    <button onclick="startMemoExamSheet('grade2')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-slate-100 hover:border-fuchsia-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group min-h-[92px]">
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #c26beb, #701a75);">2급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 2급</h3>
@@ -594,7 +570,7 @@
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
-                    <button onclick="startMemoExamSheet('grade1')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-amber-300 transition-all rounded-2xl p-4 text-left shadow-sm shadow-amber-200/40 flex items-center gap-4 group relative overflow-hidden">
+                    <button onclick="startMemoExamSheet('grade1')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-amber-300 transition-all rounded-2xl p-4 text-left shadow-sm shadow-amber-200/40 flex items-center gap-4 group relative overflow-hidden min-h-[92px]">
                         <span class="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">최고 급수 👑</span>
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #4c1d95, #1e1b4b);">1급</div>
                         <div class="flex-grow">
