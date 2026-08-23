@@ -12286,7 +12286,7 @@
         }
 
         // 학생 입력 끝에 붙은 조사 한 글자는 없거나 틀려도 정답으로 인정 (정답 쪽은 그대로 유지)
-        const G4_TRAILING_PARTICLES = ['은', '는', '이', '가', '을', '를', '도', '의'];
+        const G4_TRAILING_PARTICLES = ['은', '는', '이', '가', '을', '를', '도', '의', '들'];
         function g4StripTrailingParticle(normStr) {
             if (normStr.length > 1 && G4_TRAILING_PARTICLES.includes(normStr[normStr.length - 1])) {
                 return normStr.slice(0, -1);

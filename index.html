@@ -2297,12 +2297,10 @@
                 return;
             }
 
-            const isDuplicate = loadApplications().some(a => a.name === name && a.memberId === memberId && a.status !== '취소');
-            if (isDuplicate) {
-                errEl.textContent = '이미 신청하셨습니다. 이전 신청을 취소하고 다시 신청해주세요.';
-                errEl.classList.remove('opacity-0');
-                return;
-            }
+            // 중복 신청 여부는 이 기기의 localStorage가 아니라 서버(시트) 기준으로만 판단한다.
+            // (취소가 다른 기기/관리자에 의해 처리된 경우 이 기기의 로컬 기록이 낡아있을 수 있어,
+            //  로컬 기준으로 먼저 막으면 정상적인 재신청까지 차단하는 문제가 있었다. 서버의 apply
+            //  액션이 이름+고유번호 기준으로 이미 정확하게 중복을 거부하며, 그 결과는 아래에서 처리한다.)
             errEl.classList.add('opacity-0');
 
             const app = {
