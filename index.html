@@ -684,8 +684,8 @@
                     <button onclick="showApplyCancel()" class="w-full bg-white hover:bg-rose-50 border-2 border-slate-100 hover:border-rose-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
                         <div class="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">🔍</div>
                         <div class="flex-grow">
-                            <h3 class="font-extrabold text-slate-800 text-base">신청 조회 · 신청 취소</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">이전에 넣은 신청 내역을 확인하거나 취소합니다</p>
+                            <h3 class="font-extrabold text-slate-800 text-base">신청 조회 및 변경</h3>
+                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">이전에 넣은 신청 내역을 확인하고 변경하거나 취소합니다</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -801,7 +801,7 @@
                         </div>
                         <button type="submit" id="apply-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-sm font-black transition-colors">신청하기</button>
                     </form>
-                    <button onclick="showApplyCancel()" class="w-full text-center bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 text-base font-black py-3 rounded-xl mt-4 transition-colors">신청 조회 · 신청 취소</button>
+                    <button onclick="showApplyCancel()" class="w-full text-center bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 text-base font-black py-3 rounded-xl mt-4 transition-colors">신청 조회 및 변경</button>
                 </div>
 
                 <!-- 신청 완료 -->
@@ -818,7 +818,7 @@
             </div>
         </div>
 
-        <!-- 시험 신청 취소 / 조회 화면 -->
+        <!-- 신청 조회 및 변경 화면 -->
         <div id="view-applycancel" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
                 <button onclick="showApplyMenu()" class="nav-back-glow flex items-center gap-1.5 text-violet-700 text-[12px] font-black transition-colors mb-4">
@@ -826,8 +826,8 @@
                     뒤로가기
                 </button>
                 <div class="text-center mb-5">
-                    <h1 class="text-2xl font-black text-rose-600 font-jua break-keep">신청 조회 · 신청 취소</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">이름으로 신청 내역을 조회하세요 (동명이인이 있으면 확인 후 선택)</p>
+                    <h1 class="text-2xl font-black text-rose-600 font-jua break-keep">신청 조회 및 변경</h1>
+                    <p class="text-slate-400 text-[11px] mt-1 break-keep">이름으로 신청 내역을 조회하세요</p>
                 </div>
                 <p id="cancel-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">이름을 입력해주세요.</p>
                 <p id="cancel-lookup-msg" class="hidden text-blue-700 text-[11px] font-bold text-center bg-blue-50 rounded-full px-3 py-1.5 mb-3"></p>
@@ -836,10 +836,9 @@
                         <label class="field-label">이름</label>
                         <input type="text" id="cancel-name" class="field-input" placeholder="이름을 입력하세요">
                     </div>
-                    <div>
-                        <label class="field-label">고유번호 (선택 — 모르면 비워두세요)</label>
-                        <input type="text" id="cancel-uid" inputmode="numeric" class="field-input" placeholder="- 없이 숫자만 입력하세요" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                    </div>
+                    <!-- 고유번호는 이름 검색 결과에서 본인을 선택하는 방식으로 대체되어 더 이상 직접 입력받지 않는다.
+                         cancelApplication() 등 내부 로직이 특정 인물의 고유번호를 기억해두는 용도로만 이 필드를 계속 쓴다. -->
+                    <input type="hidden" id="cancel-uid">
                     <button id="cancel-lookup-btn" onclick="lookupApplications()" class="w-full bg-rose-500 hover:bg-rose-600 text-white rounded-xl py-3 text-sm font-black transition-colors">조회하기</button>
                 </div>
                 <div id="cancel-results" class="space-y-3"></div>
@@ -2624,22 +2623,32 @@
             lastLookupRowsById = {};
             rows.forEach(r => { lastLookupRowsById[r.id] = r; });
 
-            // 고유번호를 직접 입력했다면 이미 특정 인물로 좁혀진 것이므로 동명이인 선택을 건너뛴다.
+            // 사용자가 직접 조회하기를 누른 경우(이름만 입력, 고유번호는 화면에 없음)에는 항상
+            // 기본 정보 목록을 먼저 보여주고 본인을 선택하게 한다. memberId가 채워져 있는 경우는
+            // cancelApplication() 등이 특정 인물의 결과를 바로 새로고침하려고 내부적으로 다시 호출한
+            // 것이므로, 목록 단계를 건너뛰고 곧바로 그 사람의 신청 내역을 보여준다.
             const uniqueIds = [...new Set(rows.map(r => r.memberId))];
-            if (!memberId && uniqueIds.length > 1) {
+            if (!memberId) {
                 lastLookupAllRows = rows;
                 lastLookupUniqueIds = uniqueIds;
-                renderNameDisambiguation(rows, uniqueIds);
+                renderApplicantList(rows, uniqueIds);
             } else {
-                renderCancelResults(rows);
+                renderCancelResults(rows, { showBackToList: true });
             }
         }
 
-        // 동명이인이 있을 때 지파·교회·부서·직책 등 기본 정보만 보여주고 본인을 선택하게 한다.
+        // 이름 검색 결과를 지파·교회·부서·직책 등 기본 정보만으로 보여주고 본인을 선택하게 한다.
         // 고유번호나 전화번호는 개인정보 보호를 위해 여기서 노출하지 않는다.
-        function renderNameDisambiguation(rows, uniqueIds) {
+        function renderApplicantList(rows, uniqueIds) {
             const el = document.getElementById('cancel-results');
-            el.innerHTML = `<p class="text-center text-slate-500 text-xs font-bold py-1 break-keep">동명이인이 있습니다. 아래에서 본인 정보를 확인하고 선택해주세요.</p>` +
+            if (!rows || rows.length === 0) {
+                el.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
+                return;
+            }
+            const introText = uniqueIds.length > 1
+                ? '동명이인이 있습니다. 아래에서 본인 정보를 확인하고 선택해주세요.'
+                : '아래에서 본인 정보를 확인하고 선택해주세요.';
+            el.innerHTML = `<p class="text-center text-slate-500 text-xs font-bold py-1 break-keep">${introText}</p>` +
                 uniqueIds.map(mid => {
                     const r = rows.find(row => row.memberId === mid); // 대표 1건(정보 표시용)
                     const label = [r.tribe, r.church, r.department, r.position].filter(Boolean).join(' · ');
@@ -2654,7 +2663,7 @@
 
         function selectApplicant(memberId) {
             const rows = lastLookupAllRows.filter(r => r.memberId === memberId);
-            renderCancelResults(rows, { showBackToList: lastLookupUniqueIds.length > 1 });
+            renderCancelResults(rows, { showBackToList: true });
         }
 
         function renderCancelResults(rows, { showBackToList = false } = {}) {
@@ -2664,7 +2673,7 @@
                 return;
             }
             const backLink = showBackToList
-                ? `<button onclick="renderNameDisambiguation(lastLookupAllRows, lastLookupUniqueIds)" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 underline">← 다른 사람 선택</button>`
+                ? `<button onclick="renderApplicantList(lastLookupAllRows, lastLookupUniqueIds)" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 underline">← 다른 사람 선택</button>`
                 : '';
             const reasonOptions = CANCEL_REASONS.map(r => `<option value="${r}">${r}</option>`).join('');
             el.innerHTML = backLink + rows.map(r => `
