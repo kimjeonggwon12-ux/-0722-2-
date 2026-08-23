@@ -12340,17 +12340,39 @@
             return allCorrect;
         }
 
-        function buildG4WrongListHtml(items, wrongIdxs) {
+        // ns('study'/'exam'/'mock')를 알아야 문항 카드(g4-card-${ns}-${i})에서 실제로 입력했던 답을
+        // 읽어올 수 있다. 채점 자체는 이미 끝난 g4AnswerMatches()를 그대로 재사용해 빈칸별로
+        // "내가 쓴 답"과 "정답"을 나란히 보여주기만 하고, 채점 방식 자체는 바꾸지 않는다.
+        function buildG4WrongListHtml(items, wrongIdxs, ns) {
             if (wrongIdxs.length === 0) {
                 return '<p class="text-[12px] text-emerald-600 font-bold text-center py-4">🎉 틀린 문항이 없습니다!</p>';
             }
             return wrongIdxs.map(i => {
                 const it = items[i];
                 const full = it.template.replace(/\{\{(.*?)\}\}/g, '$1');
+                const card = ns ? document.getElementById(`g4-card-${ns}-${i}`) : null;
+                const blanks = card ? [...card.querySelectorAll('.g4-blank')] : [];
+                const compareHtml = blanks.map(inp => {
+                    const userAns = inp.value.trim();
+                    const correctAns = inp.dataset.ans || '';
+                    if (g4AnswerMatches(userAns, correctAns)) return ''; // 맞힌 빈칸은 비교를 보여줄 필요 없음
+                    return `
+                        <div class="mt-1.5 grid grid-cols-2 gap-2">
+                            <div class="bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5">
+                                <p class="text-[10px] font-black text-rose-500 mb-0.5">내가 쓴 답</p>
+                                <p class="text-[12px] font-bold text-rose-700 break-keep">${userAns ? escapeHtml(userAns) : '(입력 안 함)'}</p>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5">
+                                <p class="text-[10px] font-black text-emerald-600 mb-0.5">정답</p>
+                                <p class="text-[12px] font-bold text-emerald-700 break-keep">${escapeHtml(correctAns)}</p>
+                            </div>
+                        </div>`;
+                }).join('');
                 return `
                 <div class="border-b border-slate-100 py-2.5 last:border-0">
                     <p class="text-[12px] font-black text-[#1e1b4b]">${i + 1}. ${escapeHtml(it.q)} <span class="text-slate-400 font-bold">(계 ${it.ch}장${it.v ? `:${it.v}` : ''})</span></p>
                     <p class="text-[12px] text-rose-600 break-keep mt-0.5">${escapeHtml(full)}</p>
+                    ${compareHtml}
                 </div>`;
             }).join('');
         }
@@ -12547,7 +12569,7 @@
             if (tally) tally.textContent = `정답 ${correct}/${total}`;
             const wrongIdxs = [...g4ExamState.results.entries()].filter(([, ok]) => !ok).map(([i]) => i);
             const wrongBox = document.getElementById('grade4-exam-wronglist');
-            wrongBox.innerHTML = `<div class="flex items-center justify-between mb-2"><h3 class="text-[13px] font-black text-rose-600">틀린 문항 다시보기 (${wrongIdxs.length}개)</h3>${wrongIdxs.length > 0 ? `<button type="button" onclick="retryGrade4ExamWrong()" class="no-print text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2 py-1 rounded font-bold transition">틀린 문항만 다시 풀기</button>` : ''}</div>${buildG4WrongListHtml(g4ExamState.items, wrongIdxs)}`;
+            wrongBox.innerHTML = `<div class="flex items-center justify-between mb-2"><h3 class="text-[13px] font-black text-rose-600">틀린 문항 다시보기 (${wrongIdxs.length}개)</h3>${wrongIdxs.length > 0 ? `<button type="button" onclick="retryGrade4ExamWrong()" class="no-print text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2 py-1 rounded font-bold transition">틀린 문항만 다시 풀기</button>` : ''}</div>${buildG4WrongListHtml(g4ExamState.items, wrongIdxs, 'exam')}`;
             wrongBox.classList.remove('hidden');
             g4ExamState.lastWrongItems = wrongIdxs.map(i => g4ExamState.items[i]);
             document.getElementById('g4-exam-print-btn').classList.remove('hidden');
@@ -12711,7 +12733,7 @@
             const total = g4MockState.items.length * pointPer;
             const wrongIdxs = [...g4MockState.results.entries()].filter(([, ok]) => !ok).map(([i]) => i);
             const wrongBox = document.getElementById('grade4-mock-wronglist');
-            wrongBox.innerHTML = `<h3 class="text-[13px] font-black text-rose-600 mb-2">틀린 문항 다시보기 (${wrongIdxs.length}개)</h3>${buildG4WrongListHtml(g4MockState.items, wrongIdxs)}`;
+            wrongBox.innerHTML = `<h3 class="text-[13px] font-black text-rose-600 mb-2">틀린 문항 다시보기 (${wrongIdxs.length}개)</h3>${buildG4WrongListHtml(g4MockState.items, wrongIdxs, 'mock')}`;
             wrongBox.classList.remove('hidden');
             document.getElementById('g4-mock-print-btn').classList.remove('hidden');
             document.getElementById('grade4-mock-final-score').textContent = score;
@@ -12887,7 +12909,7 @@
         }
 
         // "공부하기": 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답을 1번부터 번호 순으로
-        // 나열하고, 각 문항 아래에 관련 성구 주소(ref)와 근거 성구 본문(verses)도 함께 보여주는 화면.
+        // 나열하는 화면. 카드 하나에 계시록 본문(verses) → 문항 번호/문제/답/관련 성구(ref) 순으로 보여준다.
         // 어르신도 보기 편하도록 글씨를 크게, 항목 사이 간격을 넉넉하게 잡는다.
         window.openChapterStudy = function(chapterKey) {
             const items = quizDataStore[chapterKey];
@@ -12905,13 +12927,13 @@
                         const verseText = chapterVerses[String(item.v)] || '';
                         return `
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                            <div class="flex items-center gap-3">
+                            ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
+                            <div class="flex items-center gap-3${verseText ? ' mt-3 pt-3 border-t border-slate-100' : ''}">
                                 <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
                                 <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
                             </div>
                             <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">${escapeHtml(item.a)}</p>
                             ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
-                            ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep mt-3 pt-3 border-t border-slate-100"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
                         </div>`;
                     }).join('');
                 }
