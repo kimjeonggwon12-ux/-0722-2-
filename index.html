@@ -2260,6 +2260,9 @@
         }
 
         // 접수번호 형식: YYMM-00001 (해당 연월 안에서 5자리 일련번호)
+        // 서버(시트)가 실제 접수번호를 내려주기 전까지, 혹은 오프라인/기술적 실패로 서버 값을
+        // 받지 못했을 때만 쓰는 "임시" 로컬 번호. 기기별로만 증가하는 카운터라 시트의 실제
+        // 일련번호와 항상 일치하는 것은 아니므로, 서버 응답을 받으면 반드시 서버 값으로 교체한다.
         function genApplyId() {
             const d = new Date();
             const ym = String(d.getFullYear()).slice(2) + pad2(d.getMonth() + 1);
@@ -2304,7 +2307,7 @@
             errEl.classList.add('opacity-0');
 
             const app = {
-                id: genApplyId(),
+                id: genApplyId(), // 임시 번호 — 서버가 접수번호를 내려주면 아래에서 그 값으로 교체됨
                 appliedAt: nowStr(),
                 status: '접수완료',
                 tribe, church, department, position, name, memberId, phone, examTime, subject, grade,
@@ -2333,6 +2336,13 @@
                 errEl.textContent = result.message || `신청 처리에 실패했습니다. (서버 응답: ${JSON.stringify(result)})`;
                 errEl.classList.remove('opacity-0');
                 return;
+            }
+
+            // 서버가 정상적으로 접수를 처리하고 접수번호를 내려줬다면, 시트와 동일한 그 번호를 사용한다.
+            // (로컬 임시 번호는 기기별로만 증가해 시트의 실제 일련번호와 어긋날 수 있음 — 검색/조회 시
+            //  표시되는 접수번호가 시트와 다르게 보이던 문제의 원인이었음)
+            if (result && result.success && result.id) {
+                app.id = result.id;
             }
 
             const list = loadApplications();
