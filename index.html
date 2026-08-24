@@ -282,6 +282,10 @@
                     <span class="badge-icon">💡</span>
                     개선 건의하기
                 </button>
+                <button onclick="logout()" class="suggest-badge">
+                    <span class="badge-icon" style="background:linear-gradient(160deg, #cbd5e1, #64748b);">🔒</span>
+                    로그아웃
+                </button>
             </div>
         </div>
 
@@ -1949,6 +1953,12 @@
         function backToRooms() {
             window.location.hash = '#rooms';
             showRooms();
+        }
+
+        function logout() {
+            localStorage.removeItem(AUTH_KEY);
+            window.location.hash = '';
+            showView('view-login');
         }
 
         function notifyComingSoonRoot() {
