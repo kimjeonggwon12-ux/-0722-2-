@@ -152,41 +152,6 @@
             background-color: #fef2f2; /* red-50 */
             animation: shake 0.3s ease-in-out;
         }
-        .voice-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            background: #f0fdfa;
-            border: 2px solid #99f6e4;
-            color: #0f766e;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .voice-btn:hover { background: #ccfbf1; }
-        .voice-btn:disabled { opacity: 0.6; cursor: default; }
-        .voice-btn-inline {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 26px;
-            height: 26px;
-            background: #f0fdfa;
-            border: 1px solid #99f6e4;
-            color: #0f766e;
-            border-radius: 999px;
-            font-size: 12px;
-            line-height: 1;
-            cursor: pointer;
-            margin-top: 6px;
-        }
-        .voice-btn-inline:hover { background: #ccfbf1; }
-        .voice-btn-inline:disabled { opacity: 0.6; cursor: default; }
 
         /* Glassmorphism utility */
         .glass-panel {
@@ -393,7 +358,7 @@
                 <div class="mb-8">
                     <label for="user-input" class="block text-sm font-bold text-slate-500 mb-3 uppercase tracking-wide">암송 입력</label>
                     <textarea id="user-input" rows="4" class="w-full p-3 sm:p-5 border border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-teal-100 focus:border-teal-400 text-base sm:text-xl leading-relaxed transition bg-slate-50 focus:bg-white resize-none" placeholder="이곳에 암송한 말씀을 입력하세요..."></textarea>
-                    <button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>
+                    
                 </div>
                 
                 <!-- Blank Practice Section -->
@@ -483,40 +448,6 @@
 
 
 <script>
-// 음성으로 입력하기: 입력칸 바로 뒤 버튼에서 호출, 인식된 텍스트를 그 입력칸에 채워줌
-function startVoiceInput(inputEl, btnEl) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 사파리를 이용해주세요.');
-        return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ko-KR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    // 마이크를 다시 눌러 재인식할 때는 이전에 잘못 인식된 내용이 남아있지 않도록 먼저 지운다
-    inputEl.value = '';
-    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-
-    const originalLabel = btnEl.textContent;
-    btnEl.textContent = btnEl.classList.contains('voice-btn-inline') ? '🎙️' : '🎙️ 듣는 중...';
-    btnEl.disabled = true;
-
-    recognition.onresult = function (event) {
-        const text = event.results[0][0].transcript;
-        inputEl.value = text;
-        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-    recognition.onerror = function (event) {
-        alert('음성 인식에 실패했습니다: ' + event.error);
-    };
-    recognition.onend = function () {
-        btnEl.textContent = originalLabel;
-        btnEl.disabled = false;
-    };
-    recognition.start();
-}
 
 // 데이터: 제공된 PDF 텍스트를 파싱하고 정리한 요한계시록 본문
 const revelationData = [
@@ -1548,16 +1479,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        const verseVoiceBtn = document.createElement('button');
-        verseVoiceBtn.type = 'button';
-        verseVoiceBtn.className = 'voice-btn-inline';
-        verseVoiceBtn.title = '음성으로 입력';
-        verseVoiceBtn.textContent = '🎤';
-        verseVoiceBtn.onclick = function () { startVoiceInput(verseTextarea, verseVoiceBtn); };
-
         inputWrapper.appendChild(verseNumber);
         inputWrapper.appendChild(verseTextarea);
-        inputWrapper.appendChild(verseVoiceBtn);
 
         const resultWrapper = document.createElement('div');
         resultWrapper.className = 'p-4 bg-slate-50 rounded-xl min-h-[56px] border border-slate-100 text-slate-700 leading-relaxed chapter-result-display whitespace-pre-wrap';
@@ -2031,13 +1954,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('focus', () => blankPuzzleFeedback.textContent = '');
 
                 blankPuzzleContent.appendChild(input);
-                const blankVoiceBtn = document.createElement('button');
-                blankVoiceBtn.type = 'button';
-                blankVoiceBtn.className = 'voice-btn-inline';
-                blankVoiceBtn.title = '음성으로 입력';
-                blankVoiceBtn.textContent = '🎤';
-                blankVoiceBtn.onclick = function () { startVoiceInput(input, blankVoiceBtn); };
-                blankPuzzleContent.appendChild(blankVoiceBtn);
                 if (punctuation) {
                      const span = document.createElement('span');
                      span.textContent = punctuation;

@@ -93,40 +93,6 @@
             #print-header-area, #view-results { display: block !important; }
             #print-title { font-size: 24pt !important; text-align: center !important; margin-bottom: 20px !important; }
         }
-        .voice-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            background: #eef2ff;
-            border: 2px solid #c7d2fe;
-            color: #4338ca;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .voice-btn:hover { background: #e0e7ff; }
-        .voice-btn:disabled { opacity: 0.6; cursor: default; }
-        .voice-btn-inline {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 26px;
-            height: 26px;
-            background: #eef2ff;
-            border: 1px solid #c7d2fe;
-            color: #4338ca;
-            border-radius: 999px;
-            font-size: 12px;
-            line-height: 1;
-            cursor: pointer;
-        }
-        .voice-btn-inline:hover { background: #e0e7ff; }
-        .voice-btn-inline:disabled { opacity: 0.6; cursor: default; }
     </style>
 </head>
 <body class="antialiased">
@@ -1514,40 +1480,6 @@
             return pool.slice(0, wantCount);
         }
 
-        // 음성으로 입력하기: 입력칸 바로 뒤 버튼에서 호출, 인식된 텍스트를 그 입력칸에 채워줌
-        function startVoiceInput(inputEl, btnEl) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 사파리를 이용해주세요.');
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'ko-KR';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            // 마이크를 다시 눌러 재인식할 때는 이전에 잘못 인식된 내용이 남아있지 않도록 먼저 지운다
-            inputEl.value = '';
-            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-
-            const originalLabel = btnEl.textContent;
-            btnEl.textContent = btnEl.classList.contains('voice-btn-inline') ? '🎙️' : '🎙️ 듣는 중...';
-            btnEl.disabled = true;
-
-            recognition.onresult = function (event) {
-                const text = event.results[0][0].transcript;
-                inputEl.value = text;
-                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-            };
-            recognition.onerror = function (event) {
-                alert('음성 인식에 실패했습니다: ' + event.error);
-            };
-            recognition.onend = function () {
-                btnEl.textContent = originalLabel;
-                btnEl.disabled = false;
-            };
-            recognition.start();
-        }
 
         const app = {
             init() {
@@ -1634,8 +1566,9 @@
                                     if (nextLineInput) {
                                         nextLineInput.focus();
                                     } else {
+                                        // 소문항 개별 다시 쓰기 중일 때는 이미 채점된(readOnly) 다음 소문항으로 넘어가지 않고 바로 채점한다
                                         const nextSubInput = document.getElementById(`input-${idx}-${parseInt(subIdx) + 1}-0`);
-                                        if (nextSubInput) {
+                                        if (nextSubInput && !nextSubInput.readOnly) {
                                             nextSubInput.focus();
                                         } else if (appState.results[idx]) {
                                             goToNextQuestion();
@@ -2917,7 +2850,7 @@
                                             </div>
                                             <div class="relative w-full flex flex-col gap-2">
                                     `;
-                                    
+
                                     lines.forEach((line, lineIdx) => {
                                         let prefix = "";
                                         let colonMatch = line.match(/^(.*?):\s+(.*)$/);
@@ -2927,23 +2860,24 @@
                                             <div class="relative w-full flex items-stretch">
                                                 ${prefix ? `<div class="bg-indigo-50/50 border border-slate-300 border-r-0 rounded-l-xl px-3 py-2 flex items-center justify-center text-[12px] font-bold text-indigo-800 break-keep min-w-[60px] max-w-[120px] md:max-w-[160px] text-center print:bg-slate-100 print:border-slate-400 print:text-slate-800">${prefix}</div>` : ''}
                                                 <textarea id="input-${idx}-${subIdx}-${lineIdx}" data-index="${idx}" data-subindex="${subIdx}" data-lineindex="${lineIdx}" lang="ko" class="w-full min-h-[48px] p-2 border border-slate-300 ${prefix ? 'rounded-r-xl' : 'rounded-xl'} text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none print:border-slate-400" placeholder="${prefix ? '답안 입력' : '소문항 정답 입력'} (완료 후 Enter)"></textarea>
-                                                <button type="button" class="voice-btn-inline self-center" onclick="startVoiceInput(this.previousElementSibling, this)" title="음성으로 입력">🎤</button>
+
                                                 <div id="sub-stamp-box-${idx}-${subIdx}-${lineIdx}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div>
                                             </div>
                                         `;
                                     });
                                     inputAreaHtml += `
+                                            <button type="button" id="sub-retry-btn-${idx}-${subIdx}" onclick="app.retrySingleSub(${idx}, ${subIdx})" class="hidden self-end text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2 py-0.5 rounded font-bold transition">✏️ 이 소문항만 다시 쓰기</button>
                                             </div>
                                         </div>
                                     `;
                                 });
                                 inputAreaHtml += `</div>`;
                             } else {
-                                inputAreaHtml = `<div class="relative w-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[96px] md:min-h-[130px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
+                                inputAreaHtml = `<div class="relative w-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[96px] md:min-h-[130px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
                             }
                         } else {
                             // 제목/비유처럼 한두 줄이면 충분한 짧은 답만 필요한 과목은 연습 모드 입력칸도 작게(약 2줄 분량)
-                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[64px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>`;
+                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full min-h-[64px] p-3 border border-slate-300 rounded-xl text-sm leading-relaxed transition-colors" placeholder="${placeholder}"></textarea>`;
                         }
 
                         html += `
@@ -3046,7 +2980,7 @@
                                             <div class="relative w-full flex items-stretch">
                                                 ${prefix ? `<div class="bg-indigo-50/50 border border-slate-300 border-r-0 rounded-l-xl px-3 py-2 flex items-center justify-center text-[12px] font-bold text-indigo-800 break-keep min-w-[60px] max-w-[120px] md:max-w-[160px] text-center print:bg-slate-100 print:border-slate-400 print:text-slate-800">${prefix}</div>` : ''}
                                                 <textarea id="input-${idx}-${subIdx}-${lineIdx}" data-index="${idx}" data-subindex="${subIdx}" data-lineindex="${lineIdx}" lang="ko" class="w-full min-h-[48px] h-12 p-2 border border-slate-300 ${prefix ? 'rounded-r-xl' : 'rounded-xl'} text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none print:border-slate-400" placeholder="${prefix ? '답안 입력' : '소문항 정답 입력'}"></textarea>
-                                                <button type="button" class="voice-btn-inline self-center" onclick="startVoiceInput(this.previousElementSibling, this)" title="음성으로 입력">🎤</button>
+                                                
                                                 <div id="sub-stamp-box-${idx}-${subIdx}-${lineIdx}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div>
                                             </div>
                                         `;
@@ -3058,11 +2992,11 @@
                                 });
                                 inputAreaHtml += `</div>`;
                             } else {
-                                inputAreaHtml = `<div class="relative w-full h-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full p-3 border border-slate-300 rounded-lg text-sm h-24 md:h-32 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn mt-1" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
+                                inputAreaHtml = `<div class="relative w-full h-full"><textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full p-3 border border-slate-300 rounded-lg text-sm h-24 md:h-32 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea><div id="sub-stamp-box-${idx}-0" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center w-full h-full"></div></div>`;
                             }
                         } else {
                             // 제목/비유처럼 한 줄 정도의 짧은 답만 필요한 과목은 입력칸을 작게
-                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm h-12 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea><button type="button" class="voice-btn-inline mt-1" onclick="startVoiceInput(this.previousElementSibling, this)" title="음성으로 입력">🎤</button>`;
+                            inputAreaHtml = `<textarea id="input-${idx}" data-index="${idx}" lang="ko" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm h-12 transition-colors print:border-slate-400" placeholder="${placeholder}"></textarea>`;
                         }
 
                         if (q._gradeLabel && q._gradeLabel !== (idx > 0 ? appState.questions[idx - 1]._gradeLabel : null)) {
@@ -3231,6 +3165,36 @@
                     inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             },
+            // 여러 소문항 중 틀린 소문항 하나만 지우고 다시 쓸 수 있게 함 (다른 소문항은 그대로 둠)
+            retrySingleSub(index, subIdx) {
+                let lineIdx = 0;
+                let firstInput = null;
+                while (true) {
+                    const el = document.getElementById(`input-${index}-${subIdx}-${lineIdx}`);
+                    if (!el) break;
+                    el.readOnly = false;
+                    el.value = '';
+                    el.classList.remove('correct', 'incorrect');
+                    const stampBox = document.getElementById(`sub-stamp-box-${index}-${subIdx}-${lineIdx}`);
+                    if (stampBox) stampBox.innerHTML = '';
+                    if (!firstInput) firstInput = el;
+                    lineIdx++;
+                }
+                const markEl = document.getElementById(`sub-badge-mark-${index}-${subIdx}`);
+                if (markEl) markEl.innerHTML = '';
+                const retryBtn = document.getElementById(`sub-retry-btn-${index}-${subIdx}`);
+                if (retryBtn) retryBtn.classList.add('hidden');
+
+                appState.results[index] = null;
+                const submitBtn = document.getElementById(`submit-${index}`);
+                if (submitBtn) submitBtn.classList.remove('hidden');
+
+                this.updateProgress();
+                if (firstInput) {
+                    firstInput.focus();
+                    firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            },
             updateCardUI(index, status, diff, subResults, subBadgeResults) {
                 const inputEl = document.getElementById(`input-${index}`); const feedbackArea = document.getElementById(`feedback-${index}`);
                 const iconEl = document.getElementById(`feedback-icon-${index}`); const titleEl = document.getElementById(`feedback-title-${index}`);
@@ -3247,6 +3211,8 @@
                         if (markEl) markEl.innerHTML = b.isCorrect
                             ? '<span class="text-emerald-500 text-2xl font-black leading-none">◯</span>'
                             : '<span class="text-rose-500 text-3xl font-black leading-none">／</span>';
+                        const retryBtn = document.getElementById(`sub-retry-btn-${index}-${b.subIdx}`);
+                        if (retryBtn) retryBtn.classList.toggle('hidden', b.isCorrect);
                     });
                 }
 
@@ -3623,7 +3589,7 @@
                             <div id="inline-retry-${idx}" class="hidden mt-2 flex flex-col gap-2 no-print">
                                 <div class="text-[11px] text-slate-500 font-bold flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div> 다시 정답을 적어보세요</div>
                                 <textarea id="retry-input-${idx}" lang="ko" class="w-full h-24 p-3 border border-indigo-300 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="${this.getPlaceholder()}" onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); app.checkInlineRetry(${idx}); }"></textarea>
-                                <button type="button" class="voice-btn self-start" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>
+                                
                                 <div class="flex justify-end gap-2 mt-1">
                                     <button onclick="app.cancelInlineRetry(${idx})" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition">취소</button>
                                     <button onclick="app.checkInlineRetry(${idx})" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-sm">정답 확인</button>

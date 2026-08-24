@@ -225,42 +225,6 @@
             vertical-align: baseline;
         }
         .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
-        .voice-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            background: #f5f3ff;
-            border: 2px solid #ddd6fe;
-            color: #6d28d9;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-        .voice-btn:hover { background: #ede9fe; }
-        .voice-btn:disabled { opacity: 0.6; cursor: default; }
-        .voice-btn-inline {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 22px;
-            height: 22px;
-            background: #f5f3ff;
-            border: 1px solid #ddd6fe;
-            color: #6d28d9;
-            border-radius: 999px;
-            font-size: 11px;
-            line-height: 1;
-            cursor: pointer;
-            vertical-align: middle;
-            margin: 0 2px;
-        }
-        .voice-btn-inline:hover { background: #ede9fe; }
-        .voice-btn-inline:disabled { opacity: 0.6; cursor: default; }
     </style>
 </head>
 <body class="antialiased">
@@ -1549,40 +1513,6 @@
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // 음성으로 입력하기: 입력칸 바로 뒤 버튼에서 호출, 인식된 텍스트를 그 입력칸에 채워줌
-        function startVoiceInput(inputEl, btnEl) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('이 브라우저는 음성 인식을 지원하지 않습니다. 크롬이나 사파리를 이용해주세요.');
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'ko-KR';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            // 마이크를 다시 눌러 재인식할 때는 이전에 잘못 인식된 내용이 남아있지 않도록 먼저 지운다
-            inputEl.value = '';
-            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-
-            const originalLabel = btnEl.textContent;
-            btnEl.textContent = btnEl.classList.contains('voice-btn-inline') ? '🎙️' : '🎙️ 듣는 중...';
-            btnEl.disabled = true;
-
-            recognition.onresult = function (event) {
-                const text = event.results[0][0].transcript;
-                inputEl.value = text;
-                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-            };
-            recognition.onerror = function (event) {
-                alert('음성 인식에 실패했습니다: ' + event.error);
-            };
-            recognition.onend = function () {
-                btnEl.textContent = originalLabel;
-                btnEl.disabled = false;
-            };
-            recognition.start();
-        }
 
         let memoState = { gradeKey: 'grade4', name: '', chapters: [], passage: [], questions: [], answers: [], lastResult: null, startedAt: null, elapsedMs: 0 };
 
@@ -1638,7 +1568,7 @@
                     const q = memoState.questions[idx];
                     // 괄호 폭을 정답 글자수(띄어쓰기 포함)에 비례하게 넓혀 글자가 가리지 않도록 함
                     const blankWidth = Math.min(Math.max(q.answer.length * 0.95 + 1.4, 4), 32).toFixed(1) + 'em';
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" style="width:${blankWidth}" autocomplete="off" spellcheck="false" lang="ko"><button type="button" class="voice-btn-inline" onclick="startVoiceInput(this.previousElementSibling, this)" title="음성으로 입력">🎤</button><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" style="width:${blankWidth}" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
                 } else {
                     html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
                 }
@@ -1654,7 +1584,7 @@
                         <span class="text-[11px] font-black text-slate-400">${escapeHtml(q.address)} 전체 쓰기</span>
                     </div>
                     <textarea id="memo-ans-${idx}" data-idx="${idx}" class="field-input memo-answer-input" rows="2" placeholder="구절을 그대로 써보세요" spellcheck="false" lang="ko"></textarea>
-                    <button type="button" class="voice-btn mt-2" onclick="startVoiceInput(this.previousElementSibling, this)">🎤 음성으로 입력</button>
+                    
                 </div>`;
             });
 
