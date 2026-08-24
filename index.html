@@ -806,6 +806,7 @@
                                 <option value="1급">1급</option>
                             </select>
                             <p id="apply-grade-advisory-note" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 자문회 특별 전형은 급수를 직접 선택하지 않고, 시험 점수로 급수가 자동 결정됩니다.<br>1급 - 90점 이상<br>2급 - 80점 이상<br>3급 - 70점 이상<br>4급 - 60점 이상</p>
+                            <p id="apply-grade-range-note" class="hidden text-[11px] text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep"></p>
                         </div>
                         <div>
                             <label class="field-label">시험 시간</label>
@@ -2447,6 +2448,29 @@
             { value: '1급', label: '1급' }
         ];
 
+        // 과목·급수별 시험 범위. "급수별 시험 범위" 안내 카드(초중고 신학/계시록 통달/계시록 암기)와 동일한 내용을
+        // 신청서의 급수 select 옵션과 하단 안내문에도 그대로 노출해, 신청자가 급수 명칭만 보고 헷갈리지 않게 한다.
+        const APPLY_GRADE_RANGE_BY_SUBJECT = {
+            '초중고 신학': {
+                '4급': '초등 제목·초등 종강 시험',
+                '3급': '초등 제목·초등 종강 시험·초등 비유의 의미와 핵심 성구',
+                '2급': '초·중 제목·초·중 종강 시험·초등 비유의 의미와 핵심 성구',
+                '1급': '초·중·고 제목·초·중·고 종강 시험·초등 비유의 의미와 핵심 성구·수료 종합 시험'
+            },
+            '계시록 통달': {
+                '4급': '계 1~22장 중 144문항',
+                '3급': '계 1~7장',
+                '2급': '계 1~15장',
+                '1급': '계 1~22장'
+            },
+            '계시록 암기': {
+                '4급': '계 1~5장',
+                '3급': '계 1~10장',
+                '2급': '계 1~16장',
+                '1급': '계 1~22장'
+            }
+        };
+
         // 과목이 "자문회 특별 전형(계시록 통달)"이면 급수 select를 비활성화·초기화하고 자동 결정 안내문을 보여준다.
         // 다른 과목이면 급수 select를 다시 활성화하고 안내문을 숨긴다.
         // 부서가 "자문회"이고 과목이 "계시록 통달"이면, 자문회 4급은 자문회 특별 전형과 동일하므로
@@ -2460,13 +2484,22 @@
 
             const isSpecial = subjectEl.value === APPLY_SPECIAL_SUBJECT_VALUE;
             const isAdvisoryRevelation = deptEl.value === '자문회' && subjectEl.value === '계시록 통달';
+            const rangeMap = APPLY_GRADE_RANGE_BY_SUBJECT[subjectEl.value];
 
             // 급수 선택지를 조합에 맞게 다시 그린다 (선택값이 새 목록에도 있고 비활성화 대상이 아니면 유지).
+            // 급수 명칭만으로는 시험 범위를 알 수 없으므로, 선택된 과목에 맞는 시험 범위를 급수 옵션 라벨에 함께 표시한다.
             const prevGrade = gradeEl.value;
             gradeEl.innerHTML = '<option value="">급수를 선택하세요</option>' +
                 APPLY_GRADE_OPTIONS_ALL.map(o => {
                     const isDisabled4geup = isAdvisoryRevelation && o.value === '4급';
-                    const label = isDisabled4geup ? '4급: 자문회 특별 전형과 동일' : o.label;
+                    let label;
+                    if (isDisabled4geup) {
+                        label = '4급: 자문회 특별 전형과 동일';
+                    } else if (rangeMap && rangeMap[o.value]) {
+                        label = `${o.value}: ${rangeMap[o.value]}`;
+                    } else {
+                        label = o.label;
+                    }
                     return `<option value="${o.value}"${isDisabled4geup ? ' disabled' : ''}>${label}</option>`;
                 }).join('');
             const prevGradeStillValid = APPLY_GRADE_OPTIONS_ALL.some(o => o.value === prevGrade) && !(isAdvisoryRevelation && prevGrade === '4급');
@@ -2475,6 +2508,26 @@
             gradeEl.disabled = isSpecial;
             if (isSpecial) gradeEl.value = '';
             noteEl.classList.toggle('hidden', !isSpecial);
+            updateApplyGradeRangeNote();
+        }
+
+        // 급수 select 아래에 "선택한 급수의 시험 범위"를 한 번 더 문장으로 풀어서 보여준다.
+        // 네이티브 select는 화면이 좁으면 옵션 라벨이 잘려 보일 수 있어, 선택 후에도 전체 범위를 확인할 수 있게 하기 위함이다.
+        function updateApplyGradeRangeNote() {
+            const subjectEl = document.getElementById('apply-subject');
+            const gradeEl = document.getElementById('apply-grade');
+            const rangeNoteEl = document.getElementById('apply-grade-range-note');
+            if (!subjectEl || !gradeEl || !rangeNoteEl) return;
+
+            const rangeMap = APPLY_GRADE_RANGE_BY_SUBJECT[subjectEl.value];
+            const range = rangeMap && rangeMap[gradeEl.value];
+            if (!gradeEl.disabled && range) {
+                rangeNoteEl.textContent = `📖 ${subjectEl.value} ${gradeEl.value} 시험 범위: ${range}`;
+                rangeNoteEl.classList.remove('hidden');
+            } else {
+                rangeNoteEl.textContent = '';
+                rangeNoteEl.classList.add('hidden');
+            }
         }
 
         function bindApplyDeptSubjectSync() {
@@ -2489,6 +2542,12 @@
                 subjectEl.dataset.gradeSyncBound = '1';
                 // 과목을 바꿀 때마다 급수 select 활성화 상태와 안내문을 과목에 맞게 갱신한다.
                 subjectEl.addEventListener('change', syncApplyGradeToSubject);
+            }
+            const gradeEl = document.getElementById('apply-grade');
+            if (gradeEl && !gradeEl.dataset.rangeNoteBound) {
+                gradeEl.dataset.rangeNoteBound = '1';
+                // 급수를 직접 바꿀 때마다 하단 시험 범위 안내문을 갱신한다.
+                gradeEl.addEventListener('change', updateApplyGradeRangeNote);
             }
         }
 
@@ -2546,6 +2605,7 @@
             document.getElementById('apply-subject').value = row.subject || '';
             syncApplyGradeToSubject(); // 과목에 맞는 급수 옵션으로 다시 그린 뒤
             document.getElementById('apply-grade').value = row.grade || '';
+            updateApplyGradeRangeNote(); // 급수 값을 직접 대입했으므로 하단 시험 범위 안내문도 다시 갱신한다.
             document.getElementById('apply-time').value = row.examTime || '';
 
             // 이름·고유번호는 본인 확인 키이므로 변경 화면에서는 잠그고 값만 보여준다.
