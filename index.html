@@ -58,9 +58,10 @@
             margin: 0 auto 16px;
             border-radius: 12px;
             overflow: hidden;
-            background: #0a0a0a;
-            border: 1px solid #2a2a2a;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 0 12px rgba(255,60,60,0.15);
+            background: linear-gradient(90deg, #fbbf24, #fb923c, #f472b6, #a78bfa, #fbbf24);
+            background-size: 300% 100%;
+            animation: ledBgShift 8s ease-in-out infinite;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
         .led-banner-track {
             display: flex;
@@ -71,12 +72,15 @@
         .led-banner-track span {
             display: inline-block;
             padding: 14px 8px;
-            font-family: 'Courier New', monospace;
             font-weight: 900;
             font-size: 16px;
             letter-spacing: 1px;
-            color: #ff4040;
-            text-shadow: 0 0 5px rgba(255,64,64,0.9), 0 0 14px rgba(255,64,64,0.6), 0 0 22px rgba(255,64,64,0.35);
+            color: #ffffff;
+            text-shadow: 0 0 4px rgba(255,255,255,0.7), 0 1px 3px rgba(0,0,0,0.2);
+        }
+        @keyframes ledBgShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
         @keyframes ledScroll {
             from { transform: translateX(0); }
