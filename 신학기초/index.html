@@ -2306,16 +2306,37 @@
                 const shorter = u.length > c.length ? c : u;
                 return shorter === longer.slice(0, -1);
             },
+            // 띄어쓰기는 사용자가 어디에 넣었든 채점에 영향을 주지 않는다: 사용자가 입력한
+            // 한글/숫자를 공백 없이 하나로 이어붙인 뒤, 정답의 단어들을 순서대로 하나씩
+            // 떼어내며 맞춰본다. 이때 각 단어는 위 tokenLenientMatch와 똑같이 끝 한 글자만
+            // 틀리거나(치환) 있고 없고(추가/누락) 해도 허용한다 — 즉 "띄어쓰기가 틀렸다"와
+            // "끝 글자(조사)가 틀렸다"가 같은 단어에서 동시에 일어나도 정답으로 인정된다.
+            // 단어 경계를 어디로 볼지 여러 가지가 있을 수 있어 백트래킹으로 모두 시도해보고
+            // (idx, pos) 조합은 메모이제이션해 입력이 길어져도 느려지지 않게 한다.
+            lenientAlign(cTokens, uFull) {
+                const memo = new Map();
+                const rec = (idx, pos) => {
+                    if (idx === cTokens.length) return pos === uFull.length;
+                    const key = idx + ',' + pos;
+                    if (memo.has(key)) return memo.get(key);
+                    const cTok = cTokens[idx];
+                    let ok = false;
+                    for (const delta of [0, -1, 1]) {
+                        const take = cTok.length + delta;
+                        if (take <= 0 || pos + take > uFull.length) continue;
+                        const seg = uFull.slice(pos, pos + take);
+                        if (this.tokenLenientMatch(seg, cTok) && rec(idx + 1, pos + take)) { ok = true; break; }
+                    }
+                    memo.set(key, ok);
+                    return ok;
+                };
+                return rec(0, 0);
+            },
             lenientCompare(userText, correctText) {
-                // 띄어쓰기 자체는 채점에 영향을 주지 않는다: 공백까지 포함해 한글/숫자 이외를
-                // 모두 지운 전체 문자열이 정답과 같으면(붙여 쓰거나 띄어 쓴 위치가 달라도)
-                // 무조건 정답으로 인정한다. 이 검사를 통과하지 못한 경우에만 기존처럼
-                // 띄어쓰기 단위(단어)로 나눠 단어 개수를 맞춰보고 조사 관용 규칙을 적용한다.
-                if (this.normalizeString(userText) === this.normalizeString(correctText)) return true;
-                const uTokens = (userText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
                 const cTokens = (correctText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
-                if (uTokens.length === 0 || uTokens.length !== cTokens.length) return false;
-                return uTokens.every((ut, i) => this.tokenLenientMatch(ut, cTokens[i]));
+                const uFull = this.normalizeString(userText);
+                if (!uFull || cTokens.length === 0) return false;
+                return this.lenientAlign(cTokens, uFull);
             },
             // 채점에 실제로 쓸 비교 함수(연습/시험 공통): 조사 관용, 핵심 단어는 정확 비교.
             answerCompare(userText, correctText) {
