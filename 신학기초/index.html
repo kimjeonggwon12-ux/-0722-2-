@@ -2307,6 +2307,11 @@
                 return shorter === longer.slice(0, -1);
             },
             lenientCompare(userText, correctText) {
+                // 띄어쓰기 자체는 채점에 영향을 주지 않는다: 공백까지 포함해 한글/숫자 이외를
+                // 모두 지운 전체 문자열이 정답과 같으면(붙여 쓰거나 띄어 쓴 위치가 달라도)
+                // 무조건 정답으로 인정한다. 이 검사를 통과하지 못한 경우에만 기존처럼
+                // 띄어쓰기 단위(단어)로 나눠 단어 개수를 맞춰보고 조사 관용 규칙을 적용한다.
+                if (this.normalizeString(userText) === this.normalizeString(correctText)) return true;
                 const uTokens = (userText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
                 const cTokens = (correctText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
                 if (uTokens.length === 0 || uTokens.length !== cTokens.length) return false;
