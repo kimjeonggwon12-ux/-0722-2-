@@ -545,10 +545,11 @@
             </div>
             <div class="flex-grow overflow-y-auto p-5">
                 <div class="max-w-xl mx-auto">
-                    <div class="flex gap-2 mb-4">
-                        <button type="button" id="chapter-study-mode-answer" onclick="setChapterStudyMode('answer')" class="flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-[#4f46e5] text-white shadow-sm">전체 정답 보기</button>
-                        <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-white text-slate-400 border border-slate-200">괄호 넣기</button>
+                    <div class="bg-[#e8eaf6] rounded-2xl p-1.5 flex gap-1.5 shadow-inner">
+                        <button type="button" id="chapter-study-mode-answer" onclick="setChapterStudyMode('answer')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">전체 정답 보기</button>
+                        <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">괄호 넣기</button>
                     </div>
+                    <p class="text-center text-[13px] text-slate-400 font-bold mt-2.5 mb-4">괄호 넣기를 연습하며 모의고사를 준비하세요.</p>
                     <div id="chapter-study-container" class="space-y-4 pb-10"></div>
                 </div>
             </div>
@@ -12101,7 +12102,7 @@
             parts.forEach((part, i) => {
                 if (i % 2 === 1) {
                     const w = Math.max(part.length * 1.15 + 1.2, 3.2);
-                    html += `<span class="g4-mark" id="${markPrefix}-${blankIdx}"><input type="text" class="g4-blank" data-ans="${escapeHtml(part)}" style="width:${w}rem" lang="ko" autocomplete="off" spellcheck="false"></span>`;
+                    html += `<span class="g4-mark" id="${markPrefix}-${blankIdx}"><input type="text" class="g4-blank" data-ans="${escapeHtml(part)}" style="width:${w}rem" lang="ko" autocomplete="off" spellcheck="false" enterkeyhint="done"></span>`;
                     blankIdx++;
                 } else {
                     html += escapeHtml(part);
@@ -12872,8 +12873,8 @@
             const answerBtn = document.getElementById('chapter-study-mode-answer');
             const blankBtn = document.getElementById('chapter-study-mode-blank');
             if (!answerBtn || !blankBtn) return;
-            const active = 'flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-[#4f46e5] text-white shadow-sm';
-            const inactive = 'flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-white text-slate-400 border border-slate-200';
+            const active = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all bg-white text-[#4f46e5] shadow-md scale-[1.02]';
+            const inactive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all bg-transparent text-[#7986cb]';
             answerBtn.className = chapterStudyState.mode === 'answer' ? active : inactive;
             blankBtn.className = chapterStudyState.mode === 'blank' ? active : inactive;
         }
@@ -12920,9 +12921,17 @@
         // — RICH_CHAPTERS에 없는 장만(현재는 없지만 대비용) quizDataStore의 답(item.a)에서
         //   splitBareBracketPrefix/splitTrailingKeyTerm으로 핵심 단어만 빈칸으로 잘라내는
         //   buildMockPoolFromQuizData와 동일한 규칙으로 대체한다.
-        // 카드 렌더링·Enter 채점·정답 보기는 4급 빈칸 엔진(buildG4CardHtml/bindG4Enter/checkG4Answer)을
-        // ns='bank'로 그대로 재사용한다. Enter를 치면 채점되며(정답이면 정답 보기가 자동으로 열림),
-        // "정답 보기" 버튼으로 언제든 직접 답을 볼 수도 있다.
+        // 카드 자체는 "전체 정답 보기" 모드와 같은 큰 글씨 디자인(성구 → 번호/문제 → 답 → 관련 성구
+        // 순서)을 그대로 따르고, 답 자리만 빈칸 입력으로 바뀐다 — 그래서 관련 성구가 항상 "답 아래"에
+        // 온다. 성구 본문 음영(하이라이트)도 g4 전용의 글자-단위 퍼지 매칭(findG4VerseSpan) 대신
+        // 3지선다/전체 정답 보기와 완전히 같은 함수(highlightVerseKeyword, item.q 기준 정확 일치)를
+        // 그대로 재사용한다 — 이게 원본이다.
+        // 빈칸 입력·정답 보기·다시 쓰기는 4급 엔진의 범용 함수(parseG4Template/toggleG4Preview/
+        // resetG4Card/checkG4Answer, 전부 id 기반이라 ns='bank'로 그대로 재사용 가능)를 쓰되,
+        // Enter 동작만 이 화면 전용(bindBankEnter)으로 새로 만든다: 4급 엔진은 한 번 채점된 카드는
+        // Enter를 다시 눌러도 재채점하지 않고 다음 칸으로만 넘어가지만, 여기서는 "오답이면 그대로 두어
+        // 다시 쓰고 Enter → 재채점, 맞으면(동그라미) 다음 문제로" 방식이라 Enter를 누를 때마다 항상
+        // 다시 채점한다.
         function buildBankBlankTemplate(answerRaw) {
             const a = (answerRaw || '').trim();
             if (!a) return '{{}}';
@@ -12934,8 +12943,54 @@
             return `${finalPrefix}{{${finalCore}}}`;
         }
 
+        function buildBankCardHtml(item, idx, chapterVerses, chapterNum) {
+            const verseText = chapterVerses[String(item.v)] || '';
+            const answerOnly = extractG4Answers(item.template).map(escapeHtml).join(' / ');
+            return `
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100" id="g4-card-bank-${idx}">
+                ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
+                <div class="flex items-center gap-3${verseText ? ' mt-3 pt-3 border-t border-slate-100' : ''}">
+                    <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
+                    <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
+                </div>
+                <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">${parseG4Template(item.template, `g4-mark-bank-${idx}`)}</p>
+                <div class="flex justify-end items-center gap-1.5 mt-2">
+                    <button type="button" onclick="toggleG4Preview('bank', ${idx})" class="g4-preview-btn text-[12px] bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2.5 py-1.5 rounded-lg font-bold transition">정답 보기</button>
+                    <button type="button" onclick="resetG4Card('bank', ${idx})" class="text-[12px] bg-white text-slate-500 border border-slate-200 px-2.5 py-1.5 rounded-lg font-bold hover:bg-slate-100 transition">다시 쓰기</button>
+                </div>
+                <div id="g4-preview-bank-${idx}" class="hidden text-[13px] bg-indigo-50/80 border border-indigo-100 p-2.5 rounded-lg text-indigo-800 break-keep font-bold mt-1">정답: ${answerOnly}</div>
+                <div id="g4-feedback-bank-${idx}" class="hidden text-[13px] font-bold rounded-lg px-3 py-2 mt-1"></div>
+                ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
+            </div>`;
+        }
+
+        // Enter를 누를 때마다(이미 채점된 상태여도) checkG4Answer로 항상 다시 채점한다.
+        // 전부 맞으면(동그라미) 다음 카드의 첫 빈칸으로 이동, 아직 틀린 빈칸이 있으면 포커스를
+        // 그대로 두어(입력값 그대로 남아있음) 바로 고쳐 쓰고 다시 Enter를 칠 수 있게 한다.
+        // 데스크톱 keydown Enter와 동일하게 모바일 가상 키보드의 확인/완료 키도 Enter keydown을
+        // 보내므로(입력 input에 enterkeyhint="done" 지정, parseG4Template 참고) 폰에서도 그대로 동작한다.
+        function bindBankEnter(idx, totalCount) {
+            const card = document.getElementById(`g4-card-bank-${idx}`);
+            if (!card) return;
+            const inputs = Array.from(card.querySelectorAll('.g4-blank'));
+            inputs.forEach(inp => {
+                inp.addEventListener('focus', () => inp.select());
+                inp.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Enter') return;
+                    e.preventDefault();
+                    const allCorrect = checkG4Answer('bank', idx);
+                    if (!allCorrect) return;
+                    const nextCard = document.getElementById(`g4-card-bank-${idx + 1}`);
+                    const nextInput = nextCard ? nextCard.querySelector('.g4-blank') : null;
+                    if (nextInput) { nextInput.focus(); nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                    else if (idx === totalCount - 1) inp.blur();
+                });
+            });
+        }
+
         function renderChapterStudyBlankMode(chapterKey, items, container) {
             const chapterNum = Number(chapterKey.replace('ch', ''));
+            const chapterVerses = verses[chapterKey] || {};
             const bankItems = (RICH_CHAPTERS[chapterNum] && RICH_CHAPTERS[chapterNum].length)
                 ? buildMockPoolFromRich(chapterNum)
                 : items.map(qi => ({
@@ -12946,8 +13001,8 @@
                     v: qi.v,
                     hl: qi.h || qi.q,
                 }));
-            container.innerHTML = bankItems.map((item, idx) => buildG4CardHtml(item, 'bank', idx, null, true)).join('');
-            bankItems.forEach((item, idx) => bindG4Enter('bank', idx, bankItems.length, (i) => checkG4Answer('bank', i), true));
+            container.innerHTML = bankItems.map((item, idx) => buildBankCardHtml(item, idx, chapterVerses, chapterNum)).join('');
+            bankItems.forEach((item, idx) => bindBankEnter(idx, bankItems.length));
         }
 
         window.startChapter = function(chapterKey) {
