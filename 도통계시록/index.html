@@ -544,7 +544,13 @@
                 </button>
             </div>
             <div class="flex-grow overflow-y-auto p-5">
-                <div id="chapter-study-container" class="max-w-xl mx-auto space-y-4 pb-10"></div>
+                <div class="max-w-xl mx-auto">
+                    <div class="flex gap-2 mb-4">
+                        <button type="button" id="chapter-study-mode-answer" onclick="setChapterStudyMode('answer')" class="flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-[#4f46e5] text-white shadow-sm">전체 정답 보기</button>
+                        <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-white text-slate-400 border border-slate-200">괄호 넣기</button>
+                    </div>
+                    <div id="chapter-study-container" class="space-y-4 pb-10"></div>
+                </div>
             </div>
         </div>
 
@@ -12839,38 +12845,110 @@
         }
 
         // "공부하기": 객관식 퀴즈와 같은 문제은행(quizDataStore)의 문제+정답을 1번부터 번호 순으로
-        // 나열하는 화면. 카드 하나에 계시록 본문(verses) → 문항 번호/문제/답/관련 성구(ref) 순으로 보여준다.
+        // 나열하는 화면. "전체 정답 보기"(기존 방식: 문제/답을 바로 다 보여줌)와 "괄호 넣기"
+        // (모의고사와 같은 빈칸 채우기 방식, g4-blank 엔진 재사용) 두 모드를 토글로 전환한다.
         // 어르신도 보기 편하도록 글씨를 크게, 항목 사이 간격을 넉넉하게 잡는다.
+        const chapterStudyState = { key: null, mode: 'answer' };
+
         window.openChapterStudy = function(chapterKey) {
-            const items = quizDataStore[chapterKey];
-            const chapterVerses = verses[chapterKey] || {};
-            const chapterNum = chapterKey.replace('ch', '');
+            chapterStudyState.key = chapterKey;
             const titles = chapterTitles[chapterKey];
             const titleEl = document.getElementById('chapter-study-title');
-            fitHeaderTitle(titleEl, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterNum}장`);
-            const container = document.getElementById('chapter-study-container');
-            if (container) {
-                if (!items || items.length === 0) {
-                    container.innerHTML = '<p class="text-center text-slate-400 text-base font-bold py-10">이 장의 문제 자료가 아직 없습니다.</p>';
-                } else {
-                    container.innerHTML = items.map((item, idx) => {
-                        const verseText = chapterVerses[String(item.v)] || '';
-                        return `
-                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                            ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
-                            <div class="flex items-center gap-3${verseText ? ' mt-3 pt-3 border-t border-slate-100' : ''}">
-                                <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
-                                <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
-                            </div>
-                            <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">${escapeHtml(item.a)}</p>
-                            ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
-                        </div>`;
-                    }).join('');
-                }
-            }
+            fitHeaderTitle(titleEl, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`);
+            renderChapterStudyModeButtons();
+            renderChapterStudyItems();
             showScreen('chapterStudy');
             document.querySelector('#screen-chapter-study .overflow-y-auto').scrollTop = 0;
         };
+
+        window.setChapterStudyMode = function(mode) {
+            if (chapterStudyState.mode === mode) return;
+            chapterStudyState.mode = mode;
+            renderChapterStudyModeButtons();
+            renderChapterStudyItems();
+        };
+
+        function renderChapterStudyModeButtons() {
+            const answerBtn = document.getElementById('chapter-study-mode-answer');
+            const blankBtn = document.getElementById('chapter-study-mode-blank');
+            if (!answerBtn || !blankBtn) return;
+            const active = 'flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-[#4f46e5] text-white shadow-sm';
+            const inactive = 'flex-1 py-2.5 rounded-xl text-[14px] font-black transition-colors bg-white text-slate-400 border border-slate-200';
+            answerBtn.className = chapterStudyState.mode === 'answer' ? active : inactive;
+            blankBtn.className = chapterStudyState.mode === 'blank' ? active : inactive;
+        }
+
+        function renderChapterStudyItems() {
+            const chapterKey = chapterStudyState.key;
+            const items = quizDataStore[chapterKey];
+            const container = document.getElementById('chapter-study-container');
+            if (!container) return;
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 text-base font-bold py-10">이 장의 문제 자료가 아직 없습니다.</p>';
+                return;
+            }
+            if (chapterStudyState.mode === 'blank') {
+                renderChapterStudyBlankMode(chapterKey, items, container);
+            } else {
+                renderChapterStudyAnswerMode(chapterKey, items, container);
+            }
+        }
+
+        // 전체 정답 보기 모드: 기존 문제은행 화면 그대로(계시록 본문 → 번호/문제/답/관련 성구).
+        function renderChapterStudyAnswerMode(chapterKey, items, container) {
+            const chapterVerses = verses[chapterKey] || {};
+            const chapterNum = chapterKey.replace('ch', '');
+            container.innerHTML = items.map((item, idx) => {
+                const verseText = chapterVerses[String(item.v)] || '';
+                return `
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    ${verseText ? `<p class="text-[21px] leading-7 text-slate-500 font-medium break-keep"><span class="inline-block align-middle bg-[#5c6bc0] text-white text-[14px] font-black rounded-full px-3 py-1.5 mr-2 whitespace-nowrap">계 ${chapterNum}:${item.v}</span>${highlightVerseKeyword(verseText, item)}</p>` : ''}
+                    <div class="flex items-center gap-3${verseText ? ' mt-3 pt-3 border-t border-slate-100' : ''}">
+                        <span class="shrink-0 w-10 h-10 rounded-full bg-[#e8eaf6] text-[#4f46e5] flex items-center justify-center font-black text-lg">${idx + 1}</span>
+                        <p class="text-[23px] leading-7 text-slate-800 font-black break-keep">${escapeHtml(item.q)}</p>
+                    </div>
+                    <p class="text-[21px] leading-7 text-[#4f46e5] font-black break-keep mt-2">${escapeHtml(item.a)}</p>
+                    ${item.ref ? `<p class="text-[18px] leading-6 text-emerald-700 font-bold break-keep mt-2">📍 관련 성구: ${escapeHtml(item.ref)}</p>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // 괄호 넣기 모드: 모의고사(pickRangeItems)와 정확히 같은 소스 선택 규칙을 그대로 따른다.
+        // — RICH_CHAPTERS[장]이 있으면(현재 1~22장 전부 있음) 그 정식 원고 문항(buildMockPoolFromRich,
+        //   모의고사가 실제로 쓰는 것과 동일한 template)을 그대로 쓴다. 즉 여기서 괄호(빈칸) 처리되는
+        //   부분은 모의고사에서 괄호 처리되는 부분과 완전히 동일하다.
+        // — RICH_CHAPTERS에 없는 장만(현재는 없지만 대비용) quizDataStore의 답(item.a)에서
+        //   splitBareBracketPrefix/splitTrailingKeyTerm으로 핵심 단어만 빈칸으로 잘라내는
+        //   buildMockPoolFromQuizData와 동일한 규칙으로 대체한다.
+        // 카드 렌더링·Enter 채점·정답 보기는 4급 빈칸 엔진(buildG4CardHtml/bindG4Enter/checkG4Answer)을
+        // ns='bank'로 그대로 재사용한다. Enter를 치면 채점되며(정답이면 정답 보기가 자동으로 열림),
+        // "정답 보기" 버튼으로 언제든 직접 답을 볼 수도 있다.
+        function buildBankBlankTemplate(answerRaw) {
+            const a = (answerRaw || '').trim();
+            if (!a) return '{{}}';
+            const bracket = splitBareBracketPrefix(a);
+            if (!bracket.core) return `${bracket.prefix}{{}}`;
+            const trail = splitTrailingKeyTerm(bracket.core);
+            const finalPrefix = bracket.prefix + (trail ? trail.prefix : '');
+            const finalCore = trail ? trail.core : bracket.core;
+            return `${finalPrefix}{{${finalCore}}}`;
+        }
+
+        function renderChapterStudyBlankMode(chapterKey, items, container) {
+            const chapterNum = Number(chapterKey.replace('ch', ''));
+            const bankItems = (RICH_CHAPTERS[chapterNum] && RICH_CHAPTERS[chapterNum].length)
+                ? buildMockPoolFromRich(chapterNum)
+                : items.map(qi => ({
+                    ch: chapterNum,
+                    q: qi.q,
+                    template: buildBankBlankTemplate(qi.a),
+                    ref: qi.ref || '',
+                    v: qi.v,
+                    hl: qi.h || qi.q,
+                }));
+            container.innerHTML = bankItems.map((item, idx) => buildG4CardHtml(item, 'bank', idx, null, true)).join('');
+            bankItems.forEach((item, idx) => bindG4Enter('bank', idx, bankItems.length, (i) => checkG4Answer('bank', i), true));
+        }
 
         window.startChapter = function(chapterKey) {
             state.currentChapterKey = chapterKey;
