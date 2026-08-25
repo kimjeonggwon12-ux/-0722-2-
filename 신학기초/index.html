@@ -2393,9 +2393,58 @@
                 if (!uFull || cTokens.length === 0) return false;
                 return this.lenientAlign(cTokens, uFull);
             },
+            // 콤마(,)로 구분된 여러 항목(성구/내용 등)이 정답에 있을 때, 그 항목들을 어떤 순서로
+            // 쓰든 정답으로 인정하기 위한 절 단위 분리. 각 절 내부의 단어 순서는 그대로 지켜야
+            // 한다(콤마로 나뉜 "항목" 단위의 순서만 자유롭게 허용).
+            splitClauses(text) {
+                return (text || '').split(',').map(s => s.trim()).filter(Boolean);
+            },
+            // 정답 절들(cClauses)과 사용자가 쓴 절들(uClauses)을 순서 무관 1:1 매칭해본다.
+            // 절 개수가 다르거나(콤마 개수가 다름) 콤마가 없는 단일 절 정답이면 매칭을 시도하지
+            // 않고 null을 반환해, 기존 순서 그대로 비교하는 lenientCompare로 처리되게 한다.
+            // 성공 시 { order, cClauses, uClauses }를 반환한다 — order[i]는 cClauses[i]가
+            // 대응된 uClauses의 인덱스.
+            matchClausesAnyOrder(userText, correctText) {
+                const cClauses = this.splitClauses(correctText);
+                if (cClauses.length < 2) return null;
+                const uClauses = this.splitClauses(userText);
+                if (uClauses.length !== cClauses.length) return null;
+                const n = cClauses.length;
+                const used = new Array(n).fill(false);
+                const order = new Array(n).fill(-1);
+                const tryMatch = (ci) => {
+                    if (ci === n) return true;
+                    for (let ui = 0; ui < n; ui++) {
+                        if (used[ui]) continue;
+                        if (this.lenientCompare(uClauses[ui], cClauses[ci])) {
+                            used[ui] = true; order[ci] = ui;
+                            if (tryMatch(ci + 1)) return true;
+                            used[ui] = false; order[ci] = -1;
+                        }
+                    }
+                    return false;
+                };
+                return tryMatch(0) ? { order, cClauses, uClauses } : null;
+            },
             // 채점에 실제로 쓸 비교 함수(연습/시험 공통): 조사 관용, 핵심 단어는 정확 비교.
+            // 성구를 먼저 쓰든 내용을 먼저 쓰든, 성구가 여러 개일 때 그 순서가 서로 달라도
+            // (콤마로 구분된 항목들의 순서 무관 매칭이 가능하면) 정답으로 인정한다.
             answerCompare(userText, correctText) {
-                return this.lenientCompare(userText, correctText);
+                if (this.lenientCompare(userText, correctText)) return true;
+                return !!this.matchClausesAnyOrder(userText, correctText);
+            },
+            // diffChars에 넘길 "비교 기준 정답 문구"를 구한다. 콤마 순서 무관 매칭으로 정답
+            // 처리된 경우, 정답 절들을 사용자가 실제로 쓴 순서에 맞게 재배열해서 반환한다.
+            // 이렇게 해야 diffChars가 "순서를 바꿔 쓴 것" 자체를 오탈자처럼 빨간색/노란색으로
+            // 잘못 표시하지 않고, 진짜 오탈자만 짚어준다.
+            alignedCorrectText(userText, correctText) {
+                const m = this.matchClausesAnyOrder(userText, correctText);
+                if (!m) return correctText;
+                return m.order
+                    .map((uIdx, ci) => ({ uIdx, text: m.cClauses[ci] }))
+                    .sort((a, b) => a.uIdx - b.uIdx)
+                    .map(x => x.text)
+                    .join(', ');
             },
             diffChars(user, correct) {
                 const u = this.normalizeString(user); const c = this.normalizeString(correct);
@@ -3219,7 +3268,9 @@
                                 // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 정답이어도
                                 // 항상 내가 실제로 쓴 글자 기준으로 비교해서 보여준다(정답 텍스트로
                                 // 바꿔 보여주지 않음 — 어디를 틀렸는지 빨간색으로 그대로 확인 가능).
-                                subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
+                                // 콤마로 구분된 항목 순서를 바꿔 써서 정답 처리된 경우, 비교 기준 정답도
+                                // 내가 쓴 순서에 맞게 재배열해서 "순서만 다른 것"이 오탈자로 보이지 않게 한다.
+                                subDiff = subDiff.concat(this.diffChars(userVal || '미작성', this.alignedCorrectText(userVal, expected)));
                             });
                             
                             if (!isSubCorrect) incorrectSubCount++;
@@ -3249,7 +3300,9 @@
                 // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 항상 내가 실제로 쓴 글자
                 // 기준으로 비교해서 보여준다(정답 처리됐다고 정답 텍스트로 바꿔 보여주지 않음 —
                 // 그래야 어디를 틀렸는지 빨간색으로 그대로 확인할 수 있다).
-                diff = this.diffChars(userInput, q.a);
+                // 콤마로 구분된 항목 순서를 바꿔 써서 정답 처리된 경우, 비교 기준 정답도 내가 쓴
+                // 순서에 맞게 재배열해서 "순서만 다른 것"이 오탈자로 보이지 않게 한다.
+                diff = this.diffChars(userInput, this.alignedCorrectText(userInput, q.a));
 
                 appState.results[index] = { q: q.q, status: status, expected: q.a, actual: userInput, diff: diff, totalSubCount: 1, incorrectSubCount: isCorrect ? 0 : 1, gradeLabel: q._gradeLabel };
                 this.updateCardUI(index, status, diff, null);
@@ -3797,7 +3850,9 @@
                 } else if (isCorrect) {
                     // 끝 글자(조사·어미 등)만 다른 관용 처리 정답: 정답 텍스트로 바꿔 보여주지 않고
                     // 내가 실제로 쓴 글자 기준으로 어디가 달랐는지 그대로 보여준다(빨간색 오타 확인용).
-                    const charDiff = this.diffChars(userInput, q.a);
+                    // 콤마로 구분된 항목 순서를 바꿔 써서 정답 처리된 경우, 비교 기준 정답도 내가 쓴
+                    // 순서에 맞게 재배열해서 "순서만 다른 것"이 오탈자로 보이지 않게 한다.
+                    const charDiff = this.diffChars(userInput, this.alignedCorrectText(userInput, q.a));
                     feedbackEl.className = "mt-2 text-sm font-extrabold p-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 fade-in text-left";
                     feedbackEl.innerHTML = `
                         <div class="text-center mb-2">정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">끝 글자(조사·어미 등) 차이는 정답으로 인정됩니다.</span></div>
