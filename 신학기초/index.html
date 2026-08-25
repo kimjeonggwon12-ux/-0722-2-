@@ -284,7 +284,8 @@
                 </div>
             </div>
 
-            <p class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+            <p id="grading-notice-text" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">채점 기준: 핵심 단어는 정확히 기록하되, 문장 끝 한 글자(조사·어미 등)는 틀려도 정답으로 인정됩니다.</p>
+            <p id="star-notice-text" class="hidden text-[11px] text-amber-700 bg-amber-50 border border-amber-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">⭐ 별표 문항: 자주 틀리는 문항. 문항 오른쪽 위 별표를 눌러두면 모드 선택 화면에서 별표한 문항만 모아 연습·시험볼 수 있어요.</p>
 
             <div id="grade-exam-summary" class="hidden bg-white border-2 border-emerald-100 rounded-2xl p-4 mb-4">
                 <p id="grade-exam-range-text" class="text-[11px] text-slate-600 font-bold break-keep leading-relaxed"></p>
@@ -316,7 +317,7 @@
             </button>
             <div id="print-header-area" class="hidden border-2 border-slate-800 p-5 rounded-xl mb-6 w-full">
                 <h1 class="text-2xl font-black text-center text-slate-900 mb-2" id="print-title">시험지</h1>
-                <p class="text-center text-[12px] font-black text-emerald-700 mb-3">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+                <p id="print-grading-notice-text" class="text-center text-[12px] font-black text-emerald-700 mb-3">채점 기준: 핵심 단어는 정확히 기록하되, 문장 끝 한 글자(조사·어미 등)는 틀려도 정답으로 인정됩니다.</p>
                 <div class="grid grid-cols-3 gap-4 text-sm text-slate-700">
                     <div><strong>제출자 이름:</strong> <span id="print-name-text">____________________</span></div>
                     <div><strong>제출 일자:</strong> ____________________</div>
@@ -938,13 +939,14 @@
                 { label: '중등 종강 시험', data: dataMidFinal, flexible: false },
                 { label: '초등 비유의 의미와 핵심 성구', data: dataParable, flexible: true },
             ],
+            // 고등 종강 시험(dataHighFinal)은 수료 종합 시험(dataTotalFinal)과 문제·답이 겹치므로
+            // 1급 모의고사 무작위 출제 풀에서 제외한다(다른 급수에는 애초에 포함된 적 없음).
             grade1: [
                 { label: '신학교재 초등 제목', data: dataElem, flexible: true },
                 { label: '신학교재 중등 제목', data: dataMid, flexible: true },
                 { label: '신학교재 고등 제목', data: dataHigh, flexible: true },
                 { label: '초등 종강 시험', data: dataElemFinal, flexible: false },
                 { label: '중등 종강 시험', data: dataMidFinal, flexible: false },
-                { label: '고등 종강 시험', data: dataHighFinal, flexible: false },
                 { label: '초등 비유의 의미와 핵심 성구', data: dataParable, flexible: true },
                 { label: '수료 종합 시험', data: dataTotalFinal, flexible: false },
             ],
@@ -953,7 +955,7 @@
             grade4: '초등 제목 · 초등 종강 시험',
             grade3: '초등 제목 · 초등 종강 시험 · 초등 비유의 의미와 핵심 성구',
             grade2: '초등·중등 제목 · 초등·중등 종강 시험 · 초등 비유의 의미와 핵심 성구',
-            grade1: '초등·중등·고등 제목 · 초등·중등·고등 종강 시험 · 초등 비유의 의미와 핵심 성구 · 수료 종합 시험',
+            grade1: '초등·중등·고등 제목 · 초등·중등 종강 시험 · 초등 비유의 의미와 핵심 성구 · 수료 종합 시험',
         };
         const gradeMeta = {
             grade4: { title: '초중고 신학 4급 시험', badge: '4급', color: 'text-emerald-700 bg-emerald-100' },
@@ -981,6 +983,8 @@
             progressText: document.getElementById('progress-text'),
             totalCount: document.getElementById('total-count'),
             testModeBadge: document.getElementById('test-mode-badge'),
+            gradingNoticeText: document.getElementById('grading-notice-text'),
+            starNoticeText: document.getElementById('star-notice-text'),
             questionsContainer: document.getElementById('questions-container'),
             quizContainer: document.getElementById('quiz-container'),
             finishBtnContainer: document.getElementById('finish-btn-container'),
@@ -994,6 +998,7 @@
             printHeaderTitle: document.getElementById('print-title'),
             printScoreText: document.getElementById('print-score-text'),
             printNameText: document.getElementById('print-name-text'),
+            printGradingNoticeText: document.getElementById('print-grading-notice-text'),
             scoreLabel: document.getElementById('score-label'),
             resultTitle: document.getElementById('result-title'),
             resultDesc: document.getElementById('result-desc'),
@@ -1029,6 +1034,8 @@
             currentMode: null,
             questions: [],
             results: [],
+            starredMap: {},
+            starredOnlyMode: false,
             studentName: '',
             timerHandle: null,
             startedAt: null,
@@ -1076,6 +1083,21 @@
 
         function saveTheologyProgress(progress) {
             try { localStorage.setItem(THEOLOGY_PROGRESS_KEY, JSON.stringify(progress)); } catch (e) { /* 저장 실패는 무시 */ }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 별표(자주 틀리는 문항) 저장 — 이 기기의 localStorage에만 저장, 서버 연동 없음.
+        // 과목명(subject)별로 그 과목 데이터 배열의 원본 인덱스(origIdx) 목록을 저장한다.
+        // ─────────────────────────────────────────────────────────
+        const THEOLOGY_STARRED_KEY = 'sion_starred_theology';
+        function loadStarredMap() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(THEOLOGY_STARRED_KEY));
+                return (raw && typeof raw === 'object') ? raw : {};
+            } catch (e) { return {}; }
+        }
+        function saveStarredMap(map) {
+            try { localStorage.setItem(THEOLOGY_STARRED_KEY, JSON.stringify(map)); } catch (e) { /* 저장 실패는 무시 */ }
         }
 
         // 과목에 들어갈 때마다 "마지막 위치"와 "완료(방문)한 과목" 목록을 함께 저장한다.
@@ -1484,6 +1506,7 @@
         const app = {
             init() {
                 window.app = this;
+                appState.starredMap = loadStarredMap();
                 this.bindEvents();
                 this.renderGradeDescriptions();
                 if ('speechSynthesis' in window) {
@@ -1613,12 +1636,12 @@
                 window.scrollTo(0, 0);
             },
             showHome() {
-                appState.currentSubject = null; appState.currentMode = null;
+                appState.currentSubject = null; appState.currentMode = null; appState.starredOnlyMode = false;
                 this.showView('home');
                 renderTheologyProgressPanel();
             },
             showGradeSelect() {
-                appState.currentSubject = null; appState.currentMode = null;
+                appState.currentSubject = null; appState.currentMode = null; appState.starredOnlyMode = false;
                 this.showView('gradeSelect');
             },
             backFromTest() {
@@ -1651,6 +1674,7 @@
 
             selectSubject(subject) {
                 appState.currentSubject = subject;
+                appState.starredOnlyMode = false;
                 markTheologySubjectProgress(subject);
                 let title = '', color = '';
                 switch(subject) {
@@ -1702,14 +1726,25 @@
                     <div class="relative z-10 flex items-center gap-3"><div class="bg-white text-slate-900 p-2 rounded-lg"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2"></path></svg></div><h3 class="font-extrabold text-white text-xl">실전 시험지 모드</h3></div>
                     <p class="relative z-10 text-slate-300 text-sm font-medium">전체 문항을 한 번에 작성한 후 일괄 채점합니다.<br>완료 후 <b class="text-sky-300">시험지 PDF 출력 및 저장</b>이 가능합니다.</p>
                 </button>`;
-                
+
+                const starredCount = (appState.starredMap[subject] || []).length;
+                html += `
+                <div class="mt-4 p-4 rounded-2xl border-2 ${starredCount > 0 ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}">
+                    <p class="text-[11px] font-black ${starredCount > 0 ? 'text-amber-700' : 'text-slate-400'} break-keep">⭐ 별표 문항: 자주 틀리는 문항 ${starredCount > 0 ? `— ${starredCount}개 별표됨` : '(연습 중 문항 카드의 ⭐를 눌러 표시해보세요)'}</p>
+                    ${starredCount > 0 ? `
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="app.startStarredPractice('practice')" class="flex-1 py-2 bg-white hover:bg-amber-100 border border-amber-300 text-amber-700 text-[12px] font-bold rounded-lg transition">별표만 연습하기</button>
+                        <button onclick="app.startStarredPractice('exam')" class="flex-1 py-2 bg-white hover:bg-amber-100 border border-amber-300 text-amber-700 text-[12px] font-bold rounded-lg transition">별표만 시험보기</button>
+                    </div>` : ''}
+                </div>`;
+
                 if (subject !== 'parable') {
                     const isFinalExam = ['elemFinal', 'midFinal', 'highFinal', 'totalFinal'].includes(subject);
                     html += `
                     <button onclick="app.showPreviewListModal('${subject}')" class="relative mt-6 w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 shadow-sm">
                         ${isFinalExam ? `<span class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">NEW</span>` : ''}
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-                        전체 문항 한눈에 보기
+                        전체 문항 보기
                         ${isFinalExam ? `<span class="flex items-center gap-1 text-indigo-600 text-[11px] font-black bg-indigo-100 px-2 py-1 rounded-full ml-1"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07M18.36 5.64a9 9 0 010 12.73" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>읽어주기</span>` : ''}
                     </button>
                     `;
@@ -1860,20 +1895,42 @@
                 appState.ttsRate = parseFloat(val) || 1;
             },
             
+            // subject 하나의 전체 문항 배열을 만든다(별표 필터링 없는 원본). 각 문항의 배열 내
+            // 위치가 그대로 별표 저장에 쓰는 origIdx가 되므로, 여기서 순서를 바꾸면 안 된다.
+            getSubjectQuestions(subject) {
+                if (subject === 'parable') return [...dataParable];
+                if (subject === 'elem') return [...dataElem];
+                if (subject === 'elemFinal') return [...dataElemFinal];
+                if (subject === 'mid') return [...dataMid];
+                if (subject === 'midFinal') return [...dataMidFinal];
+                if (subject === 'high') return [...dataHigh];
+                if (subject === 'highFinal') return [...dataHighFinal];
+                if (subject === 'totalFinal') return [...dataTotalFinal];
+                if (gradeSections[subject]) return this.buildGradeQuestions(subject);
+                return [];
+            },
             startTest(mode) {
                 appState.currentMode = mode;
-                if (appState.currentSubject === 'parable') appState.questions = [...dataParable];
-                else if (appState.currentSubject === 'elem') appState.questions = [...dataElem];
-                else if (appState.currentSubject === 'elemFinal') appState.questions = [...dataElemFinal];
-                else if (appState.currentSubject === 'mid') appState.questions = [...dataMid];
-                else if (appState.currentSubject === 'midFinal') appState.questions = [...dataMidFinal];
-                else if (appState.currentSubject === 'high') appState.questions = [...dataHigh];
-                else if (appState.currentSubject === 'highFinal') appState.questions = [...dataHighFinal];
-                else if (appState.currentSubject === 'totalFinal') appState.questions = [...dataTotalFinal];
-                else if (gradeSections[appState.currentSubject]) appState.questions = this.buildGradeQuestions(appState.currentSubject);
+                appState.questions = this.getSubjectQuestions(appState.currentSubject);
+                // 별표 문항만 연습/시험 세션 도중 상단 탭(연습⇄시험)을 눌러 모드만 바꾼 경우에도
+                // 별표 필터가 유지되도록, 여기서 다시 한 번 적용한다.
+                if (appState.starredOnlyMode) {
+                    const starred = appState.starredMap[appState.currentSubject] || [];
+                    appState.questions = appState.questions
+                        .map((q, i) => ({ ...q, _origIdx: i }))
+                        .filter(q => starred.includes(q._origIdx));
+                }
 
                 if(mode === 'quiz') this.initQuizMode();
                 else this.restartCurrentMode();
+            },
+            // 별표(자주 틀리는 문항)만 모아 연습하거나 시험 보기. 별표한 문항이 없으면 아무 것도 하지 않는다
+            // (모드 선택 화면에서 이 버튼 자체를 별표가 있을 때만 보여주므로 평소엔 호출될 일이 없다).
+            startStarredPractice(mode) {
+                const starred = appState.starredMap[appState.currentSubject] || [];
+                if (starred.length === 0) return;
+                appState.starredOnlyMode = true;
+                this.startTest(mode);
             },
             switchMode(mode) {
                 if (appState.currentMode === mode) return;
@@ -1963,6 +2020,8 @@
                 els.questionsContainer.classList.remove('hidden'); els.finishBtnContainer.classList.remove('hidden');
 
                 const resetBtn = document.getElementById('practice-reset-btn');
+                if (els.gradingNoticeText) els.gradingNoticeText.textContent = '채점 기준: 핵심 단어는 정확히 기록하되, 문장 끝 한 글자(조사·어미 등)는 틀려도 정답으로 인정됩니다.';
+                if (els.starNoticeText) els.starNoticeText.classList.toggle('hidden', appState.currentMode !== 'practice');
                 if(appState.currentMode === 'practice') {
                     els.testModeBadge.textContent = '문항별 암기 연습'; els.testModeBadge.className = 'text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md';
                     if (appState.timerHandle) { clearInterval(appState.timerHandle); appState.timerHandle = null; }
@@ -2283,6 +2342,61 @@
 
             normalizeString(str) { return str ? str.replace(/[^가-힣0-9]/g, '') : ''; },
             strictCompare(userText, correctText) { return this.normalizeString(userText) === this.normalizeString(correctText); },
+            // 관용적 채점: 조사(은/는/이/가/을/를 등)뿐 아니라 어미(고/어/아 등)까지 워낙 다양해서
+            // 목록으로 다 관리하기 어려우므로, "조사·어미는 보통 한 글자"라는 점을 이용해 끝 한
+            // 글자가 틀리거나(치환) 있고 없고(추가/누락) 하는 것은 모두 정답으로 인정한다.
+            // 문장 전체 기준이 아니라 띄어쓰기 단위(단어)마다 각각 적용한다 — 한 문장에 여러 단어가
+            // 있으면 단어마다 끝 한 글자씩 관용된다(정답과 단어 개수 자체가 다르면 오답).
+            // 각 단어의 핵심 부분은 한 글자도 다르면 안 되므로(토시 단위로 정확히 일치해야 함),
+            // 끝 한 글자를 뗀 나머지가 완전히 같을 때만 허용한다(그 나머지가 최소 1글자는 있어야
+            // 함 — 한 글자짜리 단어끼리 우연히 통과하는 것을 막기 위함).
+            // 연습/시험(모의고사) 모드 모두 이 채점 기준을 쓴다(성구 학습 cloze는 별도로 그대로 둠).
+            tokenLenientMatch(u, c) {
+                if (u === c) return true;
+                if (!u || !c || Math.abs(u.length - c.length) > 1) return false;
+                if (u.length === c.length) {
+                    return u.length >= 2 && u.slice(0, -1) === c.slice(0, -1);
+                }
+                const longer = u.length > c.length ? u : c;
+                const shorter = u.length > c.length ? c : u;
+                return shorter === longer.slice(0, -1);
+            },
+            // 띄어쓰기는 사용자가 어디에 넣었든 채점에 영향을 주지 않는다: 사용자가 입력한
+            // 한글/숫자를 공백 없이 하나로 이어붙인 뒤, 정답의 단어들을 순서대로 하나씩
+            // 떼어내며 맞춰본다. 이때 각 단어는 위 tokenLenientMatch와 똑같이 끝 한 글자만
+            // 틀리거나(치환) 있고 없고(추가/누락) 해도 허용한다 — 즉 "띄어쓰기가 틀렸다"와
+            // "끝 글자(조사)가 틀렸다"가 같은 단어에서 동시에 일어나도 정답으로 인정된다.
+            // 단어 경계를 어디로 볼지 여러 가지가 있을 수 있어 백트래킹으로 모두 시도해보고
+            // (idx, pos) 조합은 메모이제이션해 입력이 길어져도 느려지지 않게 한다.
+            lenientAlign(cTokens, uFull) {
+                const memo = new Map();
+                const rec = (idx, pos) => {
+                    if (idx === cTokens.length) return pos === uFull.length;
+                    const key = idx + ',' + pos;
+                    if (memo.has(key)) return memo.get(key);
+                    const cTok = cTokens[idx];
+                    let ok = false;
+                    for (const delta of [0, -1, 1]) {
+                        const take = cTok.length + delta;
+                        if (take <= 0 || pos + take > uFull.length) continue;
+                        const seg = uFull.slice(pos, pos + take);
+                        if (this.tokenLenientMatch(seg, cTok) && rec(idx + 1, pos + take)) { ok = true; break; }
+                    }
+                    memo.set(key, ok);
+                    return ok;
+                };
+                return rec(0, 0);
+            },
+            lenientCompare(userText, correctText) {
+                const cTokens = (correctText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
+                const uFull = this.normalizeString(userText);
+                if (!uFull || cTokens.length === 0) return false;
+                return this.lenientAlign(cTokens, uFull);
+            },
+            // 채점에 실제로 쓸 비교 함수(연습/시험 공통): 조사 관용, 핵심 단어는 정확 비교.
+            answerCompare(userText, correctText) {
+                return this.lenientCompare(userText, correctText);
+            },
             diffChars(user, correct) {
                 const u = this.normalizeString(user); const c = this.normalizeString(correct);
                 const dp = Array(u.length + 1).fill(null).map(() => Array(c.length + 1).fill(0));
@@ -2328,6 +2442,20 @@
                     if (previewBox.classList.contains('hidden')) { previewBox.classList.remove('hidden'); previewBox.classList.add('fade-in'); }
                     else { previewBox.classList.add('hidden'); previewBox.classList.remove('fade-in'); }
                 }
+            },
+            // 별표(자주 틀리는 문항) 토글. idx는 화면(현재 렌더된 questions 배열)상의 위치, origIdx는
+            // 그 과목 데이터 배열에서의 원래 위치 — 별표는 항상 origIdx 기준으로 저장해야 별표만
+            // 모아 보는 화면과 원래 과목 화면에서 같은 문항이 같은 별표 상태로 보인다.
+            toggleStar(idx, origIdx) {
+                const subject = appState.currentSubject;
+                if (!appState.starredMap[subject]) appState.starredMap[subject] = [];
+                const list = appState.starredMap[subject];
+                const pos = list.indexOf(origIdx);
+                const nowStarred = pos === -1;
+                if (nowStarred) list.push(origIdx); else list.splice(pos, 1);
+                saveStarredMap(appState.starredMap);
+                const btn = document.getElementById(`star-btn-${idx}`);
+                if (btn) btn.textContent = nowStarred ? '⭐' : '☆';
             },
 
             getKeywordsForCloze(qItem) {
@@ -2824,7 +2952,12 @@
                 
                 if (appState.currentMode === 'practice') {
                     const isLongText = this.isLongFormSubject(appState.currentSubject);
+                    const starredList = appState.starredMap[appState.currentSubject] || [];
                     appState.questions.forEach((q, idx) => {
+                        // 별표 문항만 모아 연습하는 세션에서는 문항이 원본 배열에서 필터링되어 있으므로,
+                        // 별표 저장/조회에는 화면상의 idx가 아니라 원본 배열 위치(origIdx)를 써야 한다.
+                        const origIdx = q._origIdx !== undefined ? q._origIdx : idx;
+                        const isStarred = starredList.includes(origIdx);
                         const hasVerses = isParable && q.refs && q.refs.length > 0;
                         const questionText = isLongText ? q.q.replace(/^\d+\.\s*/, '') : q.q;
                         const alignClass = isLongText ? "items-start text-left" : "items-center text-center";
@@ -2886,6 +3019,7 @@
                             <div class="q-grid">
                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center ${alignClass} relative">
                                     <span class="absolute top-4 left-4 bg-indigo-100 text-indigo-700 w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shadow-sm">${idx + 1}</span>
+                                    <button type="button" id="star-btn-${idx}" onclick="app.toggleStar(${idx}, ${origIdx})" title="자주 틀리는 문항 별표" class="absolute top-3 right-3 text-lg leading-none transition hover:scale-110">${isStarred ? '⭐' : '☆'}</button>
                                     <h3 class="${titleSize} font-black text-slate-800 break-keep whitespace-pre-wrap leading-relaxed w-full">${questionText}</h3>
                                     ${(hasVerses || q.tutor) ? `
                                     <div class="mt-4 flex flex-col gap-2 w-full max-w-[150px]">
@@ -3065,11 +3199,11 @@
                                     expected = colonMatch[2];
                                 }
                                 
-                                let isLineCorrect = this.strictCompare(userVal, expected);
-                                
-                                if (!isLineCorrect && this.strictCompare(userVal, line)) isLineCorrect = true;
+                                let isLineCorrect = this.answerCompare(userVal, expected);
+
+                                if (!isLineCorrect && this.answerCompare(userVal, line)) isLineCorrect = true;
                                 if (!isLineCorrect && q.id === undefined && index >= 10 && index <= 19 && appState.currentSubject === 'elemFinal') {
-                                    if (this.strictCompare(userVal, expected)) isLineCorrect = true;
+                                    if (this.answerCompare(userVal, expected)) isLineCorrect = true;
                                 }
 
                                 if (!isLineCorrect) {
@@ -3081,12 +3215,11 @@
 
                                 if (lineIdx > 0) subDiff.push({ type: 'match', text: '\n  ' });
                                 if (prefix) subDiff.push({ type: 'match', text: `${prefix}: ` });
-                                
-                                if (isLineCorrect) {
-                                    subDiff.push({ type: 'match', text: expected });
-                                } else {
-                                    subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
-                                }
+
+                                // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 정답이어도
+                                // 항상 내가 실제로 쓴 글자 기준으로 비교해서 보여준다(정답 텍스트로
+                                // 바꿔 보여주지 않음 — 어디를 틀렸는지 빨간색으로 그대로 확인 가능).
+                                subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
                             });
                             
                             if (!isSubCorrect) incorrectSubCount++;
@@ -3111,10 +3244,13 @@
                 const userInput = inputEl.value.trim();
                 
                 if (!userInput && appState.currentMode === 'practice') { this.showMessage("정답을 입력해주세요."); inputEl.focus(); return; }
-                const isCorrect = this.strictCompare(userInput, q.a);
+                const isCorrect = this.answerCompare(userInput, q.a);
                 status = isCorrect ? 'correct' : 'incorrect';
-                diff = isCorrect ? [{ type: 'match', text: this.normalizeString(q.a) }] : this.diffChars(userInput, q.a);
-                
+                // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 항상 내가 실제로 쓴 글자
+                // 기준으로 비교해서 보여준다(정답 처리됐다고 정답 텍스트로 바꿔 보여주지 않음 —
+                // 그래야 어디를 틀렸는지 빨간색으로 그대로 확인할 수 있다).
+                diff = this.diffChars(userInput, q.a);
+
                 appState.results[index] = { q: q.q, status: status, expected: q.a, actual: userInput, diff: diff, totalSubCount: 1, incorrectSubCount: isCorrect ? 0 : 1, gradeLabel: q._gradeLabel };
                 this.updateCardUI(index, status, diff, null);
                 this.updateProgress();
@@ -3480,6 +3616,9 @@
                 els.resultScore.textContent = finalScore;
                 els.printScoreText.textContent = finalScore + " 점";
                 els.printNameText.textContent = appState.studentName || '____________________';
+                if (els.printGradingNoticeText) {
+                    els.printGradingNoticeText.textContent = '채점 기준: 핵심 단어는 정확히 기록하되, 문장 끝 한 글자(조사·어미 등)는 틀려도 정답으로 인정됩니다.';
+                }
                 els.resultScoreUnit.textContent = "점";
                 
                 const isFinalExam = this.isLongFormSubject(appState.currentSubject);
@@ -3640,19 +3779,35 @@
                     return;
                 }
                 
-                const isCorrect = this.strictCompare(userInput, q.a);
+                const exactMatch = this.strictCompare(userInput, q.a);
+                const isCorrect = this.answerCompare(userInput, q.a);
                 feedbackEl.classList.remove('hidden');
-                
-                if (isCorrect) {
+
+                if (isCorrect && exactMatch) {
                     feedbackEl.className = "mt-2 text-sm font-extrabold text-center p-3 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 fade-in";
                     feedbackEl.innerHTML = `정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">모범 정답과 정확히 일치합니다.</span>`;
                     inputEl.className = `w-full h-24 p-3 border-2 border-emerald-400 bg-emerald-50 rounded-lg text-sm text-emerald-800 transition-colors`;
                     inputEl.disabled = true;
-                    
+
                     // 정답 맞혔을 경우 1.5초 후 원래 리뷰 화면으로 복귀 (업데이트된 상태는 유지 안함. 단순히 연습용이므로)
                     setTimeout(() => {
                         this.cancelInlineRetry(index);
                     }, 1500);
+
+                } else if (isCorrect) {
+                    // 끝 글자(조사·어미 등)만 다른 관용 처리 정답: 정답 텍스트로 바꿔 보여주지 않고
+                    // 내가 실제로 쓴 글자 기준으로 어디가 달랐는지 그대로 보여준다(빨간색 오타 확인용).
+                    const charDiff = this.diffChars(userInput, q.a);
+                    feedbackEl.className = "mt-2 text-sm font-extrabold p-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 fade-in text-left";
+                    feedbackEl.innerHTML = `
+                        <div class="text-center mb-2">정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">끝 글자(조사·어미 등) 차이는 정답으로 인정됩니다.</span></div>
+                        <div class="bg-white p-2 rounded border border-emerald-100 text-xs font-normal break-all"><span class="font-bold text-emerald-600">작성 분석:</span> ${this.generateDiffHtml(charDiff)}</div>`;
+                    inputEl.className = `w-full h-24 p-3 border-2 border-emerald-400 bg-emerald-50 rounded-lg text-sm text-emerald-800 transition-colors`;
+                    inputEl.disabled = true;
+
+                    setTimeout(() => {
+                        this.cancelInlineRetry(index);
+                    }, 2500);
 
                 } else {
                     let charDiff = this.diffChars(userInput, q.a);
