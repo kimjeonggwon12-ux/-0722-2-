@@ -2288,15 +2288,15 @@
             normalizeString(str) { return str ? str.replace(/[^가-힣0-9]/g, '') : ''; },
             strictCompare(userText, correctText) { return this.normalizeString(userText) === this.normalizeString(correctText); },
             // 관용적 채점: 조사(은/는/이/가/을/를 등)뿐 아니라 어미(고/어/아 등)까지 워낙 다양해서
-            // 목록으로 다 관리하기 어려우므로, "조사·어미는 보통 한 글자"라는 점을 이용해 문장 맨
-            // 끝 한 글자가 틀리거나(치환) 있고 없고(추가/누락) 하는 것은 모두 정답으로 인정한다.
-            // 그 앞의 핵심 단어 자체는 한 글자도 다르면 안 되므로(토시 단위로 정확히 일치해야 함),
-            // 마지막 한 글자를 뗀 나머지가 완전히 같을 때만 허용한다(그 나머지가 최소 1글자는
-            // 있어야 함 — 한 글자짜리 오답끼리 우연히 통과하는 것을 막기 위함).
+            // 목록으로 다 관리하기 어려우므로, "조사·어미는 보통 한 글자"라는 점을 이용해 끝 한
+            // 글자가 틀리거나(치환) 있고 없고(추가/누락) 하는 것은 모두 정답으로 인정한다.
+            // 문장 전체 기준이 아니라 띄어쓰기 단위(단어)마다 각각 적용한다 — 한 문장에 여러 단어가
+            // 있으면 단어마다 끝 한 글자씩 관용된다(정답과 단어 개수 자체가 다르면 오답).
+            // 각 단어의 핵심 부분은 한 글자도 다르면 안 되므로(토시 단위로 정확히 일치해야 함),
+            // 끝 한 글자를 뗀 나머지가 완전히 같을 때만 허용한다(그 나머지가 최소 1글자는 있어야
+            // 함 — 한 글자짜리 단어끼리 우연히 통과하는 것을 막기 위함).
             // 연습/시험(모의고사) 모드 모두 이 채점 기준을 쓴다(성구 학습 cloze는 별도로 그대로 둠).
-            lenientCompare(userText, correctText) {
-                const u = this.normalizeString(userText);
-                const c = this.normalizeString(correctText);
+            tokenLenientMatch(u, c) {
                 if (u === c) return true;
                 if (!u || !c || Math.abs(u.length - c.length) > 1) return false;
                 if (u.length === c.length) {
@@ -2305,6 +2305,12 @@
                 const longer = u.length > c.length ? u : c;
                 const shorter = u.length > c.length ? c : u;
                 return shorter === longer.slice(0, -1);
+            },
+            lenientCompare(userText, correctText) {
+                const uTokens = (userText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
+                const cTokens = (correctText || '').trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t));
+                if (uTokens.length === 0 || uTokens.length !== cTokens.length) return false;
+                return uTokens.every((ut, i) => this.tokenLenientMatch(ut, cTokens[i]));
             },
             // 채점에 실제로 쓸 비교 함수(연습/시험 공통): 조사 관용, 핵심 단어는 정확 비교.
             answerCompare(userText, correctText) {
@@ -3108,12 +3114,11 @@
 
                                 if (lineIdx > 0) subDiff.push({ type: 'match', text: '\n  ' });
                                 if (prefix) subDiff.push({ type: 'match', text: `${prefix}: ` });
-                                
-                                if (isLineCorrect) {
-                                    subDiff.push({ type: 'match', text: expected });
-                                } else {
-                                    subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
-                                }
+
+                                // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 정답이어도
+                                // 항상 내가 실제로 쓴 글자 기준으로 비교해서 보여준다(정답 텍스트로
+                                // 바꿔 보여주지 않음 — 어디를 틀렸는지 빨간색으로 그대로 확인 가능).
+                                subDiff = subDiff.concat(this.diffChars(userVal || '미작성', expected));
                             });
                             
                             if (!isSubCorrect) incorrectSubCount++;
@@ -3140,8 +3145,11 @@
                 if (!userInput && appState.currentMode === 'practice') { this.showMessage("정답을 입력해주세요."); inputEl.focus(); return; }
                 const isCorrect = this.answerCompare(userInput, q.a);
                 status = isCorrect ? 'correct' : 'incorrect';
-                diff = isCorrect ? [{ type: 'match', text: this.normalizeString(q.a) }] : this.diffChars(userInput, q.a);
-                
+                // 관용 채점으로 오타가 있어도 정답 처리될 수 있으므로, 항상 내가 실제로 쓴 글자
+                // 기준으로 비교해서 보여준다(정답 처리됐다고 정답 텍스트로 바꿔 보여주지 않음 —
+                // 그래야 어디를 틀렸는지 빨간색으로 그대로 확인할 수 있다).
+                diff = this.diffChars(userInput, q.a);
+
                 appState.results[index] = { q: q.q, status: status, expected: q.a, actual: userInput, diff: diff, totalSubCount: 1, incorrectSubCount: isCorrect ? 0 : 1, gradeLabel: q._gradeLabel };
                 this.updateCardUI(index, status, diff, null);
                 this.updateProgress();
@@ -3670,19 +3678,35 @@
                     return;
                 }
                 
+                const exactMatch = this.strictCompare(userInput, q.a);
                 const isCorrect = this.answerCompare(userInput, q.a);
                 feedbackEl.classList.remove('hidden');
-                
-                if (isCorrect) {
+
+                if (isCorrect && exactMatch) {
                     feedbackEl.className = "mt-2 text-sm font-extrabold text-center p-3 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 fade-in";
                     feedbackEl.innerHTML = `정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">모범 정답과 정확히 일치합니다.</span>`;
                     inputEl.className = `w-full h-24 p-3 border-2 border-emerald-400 bg-emerald-50 rounded-lg text-sm text-emerald-800 transition-colors`;
                     inputEl.disabled = true;
-                    
+
                     // 정답 맞혔을 경우 1.5초 후 원래 리뷰 화면으로 복귀 (업데이트된 상태는 유지 안함. 단순히 연습용이므로)
                     setTimeout(() => {
                         this.cancelInlineRetry(index);
                     }, 1500);
+
+                } else if (isCorrect) {
+                    // 끝 글자(조사·어미 등)만 다른 관용 처리 정답: 정답 텍스트로 바꿔 보여주지 않고
+                    // 내가 실제로 쓴 글자 기준으로 어디가 달랐는지 그대로 보여준다(빨간색 오타 확인용).
+                    const charDiff = this.diffChars(userInput, q.a);
+                    feedbackEl.className = "mt-2 text-sm font-extrabold p-3 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 fade-in text-left";
+                    feedbackEl.innerHTML = `
+                        <div class="text-center mb-2">정답입니다! 🎉<br><span class="text-xs font-medium text-emerald-600 mt-1 block">끝 글자(조사·어미 등) 차이는 정답으로 인정됩니다.</span></div>
+                        <div class="bg-white p-2 rounded border border-emerald-100 text-xs font-normal break-all"><span class="font-bold text-emerald-600">작성 분석:</span> ${this.generateDiffHtml(charDiff)}</div>`;
+                    inputEl.className = `w-full h-24 p-3 border-2 border-emerald-400 bg-emerald-50 rounded-lg text-sm text-emerald-800 transition-colors`;
+                    inputEl.disabled = true;
+
+                    setTimeout(() => {
+                        this.cancelInlineRetry(index);
+                    }, 2500);
 
                 } else {
                     let charDiff = this.diffChars(userInput, q.a);
