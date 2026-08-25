@@ -284,7 +284,7 @@
                 </div>
             </div>
 
-            <p class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+            <p id="grading-notice-text" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
 
             <div id="grade-exam-summary" class="hidden bg-white border-2 border-emerald-100 rounded-2xl p-4 mb-4">
                 <p id="grade-exam-range-text" class="text-[11px] text-slate-600 font-bold break-keep leading-relaxed"></p>
@@ -316,7 +316,7 @@
             </button>
             <div id="print-header-area" class="hidden border-2 border-slate-800 p-5 rounded-xl mb-6 w-full">
                 <h1 class="text-2xl font-black text-center text-slate-900 mb-2" id="print-title">시험지</h1>
-                <p class="text-center text-[12px] font-black text-emerald-700 mb-3">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+                <p id="print-grading-notice-text" class="text-center text-[12px] font-black text-emerald-700 mb-3">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
                 <div class="grid grid-cols-3 gap-4 text-sm text-slate-700">
                     <div><strong>제출자 이름:</strong> <span id="print-name-text">____________________</span></div>
                     <div><strong>제출 일자:</strong> ____________________</div>
@@ -981,6 +981,7 @@
             progressText: document.getElementById('progress-text'),
             totalCount: document.getElementById('total-count'),
             testModeBadge: document.getElementById('test-mode-badge'),
+            gradingNoticeText: document.getElementById('grading-notice-text'),
             questionsContainer: document.getElementById('questions-container'),
             quizContainer: document.getElementById('quiz-container'),
             finishBtnContainer: document.getElementById('finish-btn-container'),
@@ -994,6 +995,7 @@
             printHeaderTitle: document.getElementById('print-title'),
             printScoreText: document.getElementById('print-score-text'),
             printNameText: document.getElementById('print-name-text'),
+            printGradingNoticeText: document.getElementById('print-grading-notice-text'),
             scoreLabel: document.getElementById('score-label'),
             resultTitle: document.getElementById('result-title'),
             resultDesc: document.getElementById('result-desc'),
@@ -1969,10 +1971,12 @@
                     const timerEl = document.getElementById('test-timer');
                     if (timerEl) timerEl.classList.add('hidden');
                     if (resetBtn) resetBtn.classList.remove('hidden');
+                    if (els.gradingNoticeText) els.gradingNoticeText.textContent = '채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.';
                 } else {
                     els.testModeBadge.textContent = '시험지 모드'; els.testModeBadge.className = 'text-sky-600 bg-sky-100 px-2 py-0.5 rounded-md';
                     this.startExamTimer();
                     if (resetBtn) resetBtn.classList.add('hidden');
+                    if (els.gradingNoticeText) els.gradingNoticeText.textContent = '채점 기준: 핵심 단어는 정확히 기록하되, 조사(은/는/이/가/을/를 등)는 채점에 반영되지 않습니다.';
                 }
 
                 this.renderGradeExamSummary();
@@ -2283,6 +2287,26 @@
 
             normalizeString(str) { return str ? str.replace(/[^가-힣0-9]/g, '') : ''; },
             strictCompare(userText, correctText) { return this.normalizeString(userText) === this.normalizeString(correctText); },
+            // 모의고사(시험 모드) 전용 관용적 채점: 문장 맨 끝의 조사 한 글자(은/는/이/가/을/를/도/의/들)는
+            // 있고 없고 달라도 정답으로 인정한다. 그 앞의 핵심 단어 자체는 한 글자도 다르면 안 되므로
+            // (토시 단위로 정확히 일치해야 함) 조사만 떼어내고 정확 비교(strictCompare와 동일한 방식)한다.
+            EXAM_TRAILING_PARTICLES: ['은', '는', '이', '가', '을', '를', '도', '의', '들'],
+            stripTrailingParticle(normalized) {
+                if (normalized.length > 1 && this.EXAM_TRAILING_PARTICLES.includes(normalized[normalized.length - 1])) {
+                    return normalized.slice(0, -1);
+                }
+                return normalized;
+            },
+            lenientCompare(userText, correctText) {
+                const u = this.normalizeString(userText);
+                const c = this.normalizeString(correctText);
+                if (u === c) return true;
+                return this.stripTrailingParticle(u) === this.stripTrailingParticle(c);
+            },
+            // 채점에 실제로 쓸 비교 함수: 모의고사(시험 모드)는 조사 관용, 그 외(연습 등)는 기존처럼 정확 비교.
+            answerCompare(userText, correctText) {
+                return appState.currentMode === 'exam' ? this.lenientCompare(userText, correctText) : this.strictCompare(userText, correctText);
+            },
             diffChars(user, correct) {
                 const u = this.normalizeString(user); const c = this.normalizeString(correct);
                 const dp = Array(u.length + 1).fill(null).map(() => Array(c.length + 1).fill(0));
@@ -3065,11 +3089,11 @@
                                     expected = colonMatch[2];
                                 }
                                 
-                                let isLineCorrect = this.strictCompare(userVal, expected);
-                                
-                                if (!isLineCorrect && this.strictCompare(userVal, line)) isLineCorrect = true;
+                                let isLineCorrect = this.answerCompare(userVal, expected);
+
+                                if (!isLineCorrect && this.answerCompare(userVal, line)) isLineCorrect = true;
                                 if (!isLineCorrect && q.id === undefined && index >= 10 && index <= 19 && appState.currentSubject === 'elemFinal') {
-                                    if (this.strictCompare(userVal, expected)) isLineCorrect = true;
+                                    if (this.answerCompare(userVal, expected)) isLineCorrect = true;
                                 }
 
                                 if (!isLineCorrect) {
@@ -3111,7 +3135,7 @@
                 const userInput = inputEl.value.trim();
                 
                 if (!userInput && appState.currentMode === 'practice') { this.showMessage("정답을 입력해주세요."); inputEl.focus(); return; }
-                const isCorrect = this.strictCompare(userInput, q.a);
+                const isCorrect = this.answerCompare(userInput, q.a);
                 status = isCorrect ? 'correct' : 'incorrect';
                 diff = isCorrect ? [{ type: 'match', text: this.normalizeString(q.a) }] : this.diffChars(userInput, q.a);
                 
@@ -3480,6 +3504,11 @@
                 els.resultScore.textContent = finalScore;
                 els.printScoreText.textContent = finalScore + " 점";
                 els.printNameText.textContent = appState.studentName || '____________________';
+                if (els.printGradingNoticeText) {
+                    els.printGradingNoticeText.textContent = appState.currentMode === 'exam'
+                        ? '채점 기준: 핵심 단어는 정확히 기록하되, 조사(은/는/이/가/을/를 등)는 채점에 반영되지 않습니다.'
+                        : '채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.';
+                }
                 els.resultScoreUnit.textContent = "점";
                 
                 const isFinalExam = this.isLongFormSubject(appState.currentSubject);
@@ -3640,7 +3669,7 @@
                     return;
                 }
                 
-                const isCorrect = this.strictCompare(userInput, q.a);
+                const isCorrect = this.answerCompare(userInput, q.a);
                 feedbackEl.classList.remove('hidden');
                 
                 if (isCorrect) {
