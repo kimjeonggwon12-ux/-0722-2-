@@ -13090,13 +13090,12 @@
             </div>`;
         }
 
-        // Enter를 누를 때마다(이미 채점된 상태여도) checkG4Answer로 항상 다시 채점한다.
-        // 전부 맞으면(동그라미) 다음 카드의 첫 빈칸으로 이동, 아직 틀린 빈칸이 있으면 포커스를
-        // 그대로 두어(입력값 그대로 남아있음) 바로 고쳐 쓰고 다시 Enter를 칠 수 있게 한다.
+        // Enter를 누를 때마다(이미 채점된 상태여도) checkG4Answer로 항상 다시 채점만 하고, 다음
+        // 문제로는 넘어가지 않는다(정답이어도 그대로 그 문항에 머물러 결과를 바로 확인할 수 있게).
         // 채점할 때마다 saveBankAnswers로 결과를 바로 저장해서 다음에 다시 열어도 남아있게 한다.
         // 데스크톱 keydown Enter와 동일하게 모바일 가상 키보드의 확인/완료 키도 Enter keydown을
         // 보내므로(입력 input에 enterkeyhint="done" 지정, parseG4Template 참고) 폰에서도 그대로 동작한다.
-        function bindBankEnter(chapterKey, idx, totalCount) {
+        function bindBankEnter(chapterKey, idx) {
             const card = document.getElementById(`g4-card-bank-${idx}`);
             if (!card) return;
             const inputs = Array.from(card.querySelectorAll('.g4-blank'));
@@ -13105,13 +13104,8 @@
                 inp.addEventListener('keydown', (e) => {
                     if (e.key !== 'Enter') return;
                     e.preventDefault();
-                    const allCorrect = checkG4Answer('bank', idx);
+                    checkG4Answer('bank', idx);
                     saveBankAnswers(chapterKey);
-                    if (!allCorrect) return;
-                    const nextCard = document.getElementById(`g4-card-bank-${idx + 1}`);
-                    const nextInput = nextCard ? nextCard.querySelector('.g4-blank') : null;
-                    if (nextInput) { nextInput.focus(); nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                    else if (idx === totalCount - 1) inp.blur();
                 });
             });
         }
@@ -13142,7 +13136,7 @@
                     <button type="button" onclick="resetChapterBankStudy('${chapterKey}')" class="text-[12px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg font-black transition active:scale-95">🗑 공부 초기화</button>
                 </div>`;
             container.innerHTML = resetBarHtml + bankItems.map((item, idx) => buildBankCardHtml(item, idx, chapterVerses, chapterNum)).join('');
-            bankItems.forEach((item, idx) => bindBankEnter(chapterKey, idx, bankItems.length));
+            bankItems.forEach((item, idx) => bindBankEnter(chapterKey, idx));
             container.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', () => saveBankAnswers(chapterKey)));
             restoreBankAnswers(chapterKey);
         }
