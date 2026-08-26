@@ -2399,52 +2399,64 @@
             splitClauses(text) {
                 return (text || '').split(',').map(s => s.trim()).filter(Boolean);
             },
-            // 정답 절들(cClauses)과 사용자가 쓴 절들(uClauses)을 순서 무관 1:1 매칭해본다.
-            // 절 개수가 다르거나(콤마 개수가 다름) 콤마가 없는 단일 절 정답이면 매칭을 시도하지
-            // 않고 null을 반환해, 기존 순서 그대로 비교하는 lenientCompare로 처리되게 한다.
-            // 성공 시 { order, cClauses, uClauses }를 반환한다 — order[i]는 cClauses[i]가
-            // 대응된 uClauses의 인덱스.
-            matchClausesAnyOrder(userText, correctText) {
-                const cClauses = this.splitClauses(correctText);
-                if (cClauses.length < 2) return null;
-                const uClauses = this.splitClauses(userText);
-                if (uClauses.length !== cClauses.length) return null;
-                const n = cClauses.length;
-                const used = new Array(n).fill(false);
-                const order = new Array(n).fill(-1);
-                const tryMatch = (ci) => {
-                    if (ci === n) return true;
-                    for (let ui = 0; ui < n; ui++) {
-                        if (used[ui]) continue;
-                        if (this.lenientCompare(uClauses[ui], cClauses[ci])) {
-                            used[ui] = true; order[ci] = ui;
-                            if (tryMatch(ci + 1)) return true;
-                            used[ui] = false; order[ci] = -1;
-                        }
+            // "계 1, 2, 3장"처럼 성구 주소 안에서 장/절을 나열하는 콤마와, "재림 예수님, 계 1,
+            // 2, 3장"처럼 서로 다른 항목(내용/성구)을 구분하는 콤마는 똑같이 ','로 적혀 있어
+            // splitClauses만으로는 구별할 수 없다. 숫자(+장/절/편 등 단위 한 글자, ~나 -로 이은
+            // 범위 포함)만 있는 절은 새 항목이 아니라 바로 앞 절(성구 주소)의 나열일 뿐이므로
+            // 앞 절에 다시 합쳐서 하나의 항목으로 취급한다.
+            mergeAddressContinuations(clauses) {
+                const merged = [];
+                clauses.forEach(c => {
+                    if (merged.length && /^[0-9~-]+\s*[장절편]?$/.test(c)) {
+                        merged[merged.length - 1] += ', ' + c;
+                    } else {
+                        merged.push(c);
                     }
-                    return false;
-                };
-                return tryMatch(0) ? { order, cClauses, uClauses } : null;
+                });
+                return merged;
+            },
+            permuteClauses(arr) {
+                if (arr.length <= 1) return [arr];
+                const result = [];
+                arr.forEach((item, i) => {
+                    const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+                    this.permuteClauses(rest).forEach(p => result.push([item, ...p]));
+                });
+                return result;
+            },
+            // 정답을 항목(성구 주소 나열은 하나로 합친 뒤) 단위로 나누고, 그 항목들을 사용자가
+            // 어떤 순서로 이어 썼든(콤마를 쓰든 안 쓰든 — 예: "계 123장 재림 예수님") 정답으로
+            // 인정하기 위해 항목 순서의 모든 경우의 수를 시도해 사용자가 실제로 입력한 문자열과
+            // 맞춰본다. 항목이 2개뿐이면 순서를 확인해볼 뿐 조합 폭발 걱정이 없고, 항목이 아주
+            // 많은 문항(순열 폭발 방지, 6개 초과)은 시도하지 않고 null을 반환해 기존 순서 그대로
+            // 비교하는 lenientCompare로 처리되게 한다.
+            findAnyOrderMatch(userText, correctText) {
+                const cClauses = this.mergeAddressContinuations(this.splitClauses(correctText));
+                if (cClauses.length < 2 || cClauses.length > 6) return null;
+                const uFull = this.normalizeString(userText);
+                if (!uFull) return null;
+                const perms = this.permuteClauses(cClauses);
+                for (const order of perms) {
+                    const cTokens = order.flatMap(clause => clause.trim().split(/\s+/).filter(Boolean).map(t => this.normalizeString(t)));
+                    if (this.lenientAlign(cTokens, uFull)) return { order };
+                }
+                return null;
             },
             // 채점에 실제로 쓸 비교 함수(연습/시험 공통): 조사 관용, 핵심 단어는 정확 비교.
             // 성구를 먼저 쓰든 내용을 먼저 쓰든, 성구가 여러 개일 때 그 순서가 서로 달라도
-            // (콤마로 구분된 항목들의 순서 무관 매칭이 가능하면) 정답으로 인정한다.
+            // (항목들의 순서 무관 매칭이 가능하면) 정답으로 인정한다.
             answerCompare(userText, correctText) {
                 if (this.lenientCompare(userText, correctText)) return true;
-                return !!this.matchClausesAnyOrder(userText, correctText);
+                return !!this.findAnyOrderMatch(userText, correctText);
             },
-            // diffChars에 넘길 "비교 기준 정답 문구"를 구한다. 콤마 순서 무관 매칭으로 정답
-            // 처리된 경우, 정답 절들을 사용자가 실제로 쓴 순서에 맞게 재배열해서 반환한다.
-            // 이렇게 해야 diffChars가 "순서를 바꿔 쓴 것" 자체를 오탈자처럼 빨간색/노란색으로
-            // 잘못 표시하지 않고, 진짜 오탈자만 짚어준다.
+            // diffChars에 넘길 "비교 기준 정답 문구"를 구한다. 순서 무관 매칭으로 정답 처리된
+            // 경우, 정답 항목들을 사용자가 실제로 맞춘 순서에 맞게 재배열해서 반환한다. 이렇게
+            // 해야 diffChars가 "순서를 바꿔 쓴 것" 자체를 오탈자처럼 빨간색/노란색으로 잘못
+            // 표시하지 않고, 진짜 오탈자만 짚어준다.
             alignedCorrectText(userText, correctText) {
-                const m = this.matchClausesAnyOrder(userText, correctText);
+                const m = this.findAnyOrderMatch(userText, correctText);
                 if (!m) return correctText;
-                return m.order
-                    .map((uIdx, ci) => ({ uIdx, text: m.cClauses[ci] }))
-                    .sort((a, b) => a.uIdx - b.uIdx)
-                    .map(x => x.text)
-                    .join(', ');
+                return m.order.join(', ');
             },
             diffChars(user, correct) {
                 const u = this.normalizeString(user); const c = this.normalizeString(correct);
