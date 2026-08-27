@@ -205,6 +205,13 @@
                 <h2 class="text-2xl md:text-3xl font-black text-slate-900 leading-tight">학습 모드 선택</h2>
             </div>
             <div class="w-full space-y-4 px-2 max-w-md" id="mode-buttons-container"></div>
+            <div id="theology-practice-history-section" class="hidden w-full px-2 max-w-md mt-5">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-[11px] font-black text-slate-400">📅 최근 연습 기록 (이 기기 기준)</p>
+                    <button onclick="clearTheologyPracticeHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                </div>
+                <div id="theology-practice-history-list" class="space-y-1.5"></div>
+            </div>
             <button onclick="app.showHome()" class="pill-shine mt-8 inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-sm font-black px-6 py-3 rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all">
                 과목 다시 선택
             </button>
@@ -262,6 +269,14 @@
                         <div><h3 class="font-extrabold text-slate-800 text-base">초중고 신학 1급 시험</h3><div class="mt-0.5" id="grade1-desc-text"></div></div>
                     </div>
                 </button>
+
+                <div id="theology-mock-history-section" class="hidden mt-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[11px] font-black text-slate-400">📅 최근 응시 기록 (이 기기 기준)</p>
+                        <button onclick="clearTheologyMockHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                    </div>
+                    <div id="theology-mock-history-list" class="space-y-1.5"></div>
+                </div>
             </div>
         </div>
 
@@ -1086,6 +1101,118 @@
         }
 
         // ─────────────────────────────────────────────────────────
+        // "연습"(문항별 암기 연습)과 "모의고사"(급수별 시험) 응시 기록 — 이 기기의 localStorage에만
+        // 저장, 최근 50건까지 보관 (계시록 암기 모의고사 기록과 같은 방식). showResults()는 이미
+        // appState.questions/results만으로 결과 화면 전체를 그려내므로, 그 두 값을 그대로 스냅샷
+        // 저장해두면 "불러오기"할 때 showResults()를 다시 호출하는 것만으로 그때 그 결과 화면이
+        // 그대로 재현된다(입력칸을 다시 채우거나 재채점할 필요가 없다).
+        // ─────────────────────────────────────────────────────────
+        function theologyNowStr() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+        function theologyEscapeHtml(str) {
+            return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        const THEOLOGY_HISTORY_KEY = 'sion_theology_history';
+
+        function loadTheologyHistory() {
+            try { return JSON.parse(localStorage.getItem(THEOLOGY_HISTORY_KEY)) || []; } catch (e) { return []; }
+        }
+        function saveTheologyHistoryEntry(entry) {
+            try {
+                const list = loadTheologyHistory();
+                list.unshift(entry);
+                localStorage.setItem(THEOLOGY_HISTORY_KEY, JSON.stringify(list.slice(0, 50)));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+        function deleteTheologyHistoryEntry(idx) {
+            const list = loadTheologyHistory();
+            list.splice(idx, 1);
+            try { localStorage.setItem(THEOLOGY_HISTORY_KEY, JSON.stringify(list)); } catch (e) { /* 무시 */ }
+            renderTheologyModeHistoryList();
+            renderTheologyMockHistoryList();
+        }
+        // "연습" 섹션의 전체 삭제: 지금 보고 있는 과목의 연습 기록만 지운다(다른 과목/모의고사 기록은 그대로 둔다).
+        function clearTheologyPracticeHistory() {
+            const subject = appState.currentSubject;
+            const remaining = loadTheologyHistory().filter(h => !(h.mode === 'practice' && h.subject === subject));
+            try { localStorage.setItem(THEOLOGY_HISTORY_KEY, JSON.stringify(remaining)); } catch (e) { /* 무시 */ }
+            renderTheologyModeHistoryList();
+        }
+        // "모의고사" 섹션의 전체 삭제: 급수별 모의고사 기록만 지운다(연습 기록은 그대로 둔다).
+        function clearTheologyMockHistory() {
+            const remaining = loadTheologyHistory().filter(h => !(h.mode === 'exam' && h.subject && h.subject.startsWith('grade')));
+            try { localStorage.setItem(THEOLOGY_HISTORY_KEY, JSON.stringify(remaining)); } catch (e) { /* 무시 */ }
+            renderTheologyMockHistoryList();
+        }
+        // 과목별 "학습 모드 선택" 화면에 그 과목의 최근 연습 기록을 보여준다.
+        function renderTheologyModeHistoryList() {
+            const section = document.getElementById('theology-practice-history-section');
+            const listEl = document.getElementById('theology-practice-history-list');
+            if (!section || !listEl) return;
+            const subject = appState.currentSubject;
+            const filtered = loadTheologyHistory().map((h, i) => ({ h, i })).filter(x => x.h.mode === 'practice' && x.h.subject === subject);
+            if (!filtered.length) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            listEl.innerHTML = filtered.slice(0, 5).map(({ h, i }) => `
+                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                    <button onclick="loadTheologyHistoryEntry(${i})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                        <span class="text-slate-500 flex-shrink-0">${theologyEscapeHtml(h.takenAt || '')}</span>
+                        <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-grow truncate">${h.score}점</span>
+                        <span class="text-fuchsia-400 flex-shrink-0">📂 불러오기</span>
+                    </button>
+                    <button onclick="deleteTheologyHistoryEntry(${i})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+                </div>
+            `).join('');
+        }
+        // 급수 선택 화면에 최근 모의고사 응시 기록(4개 급수 통합)을 보여준다.
+        function renderTheologyMockHistoryList() {
+            const section = document.getElementById('theology-mock-history-section');
+            const listEl = document.getElementById('theology-mock-history-list');
+            if (!section || !listEl) return;
+            const filtered = loadTheologyHistory().map((h, i) => ({ h, i })).filter(x => x.h.mode === 'exam' && x.h.subject && x.h.subject.startsWith('grade'));
+            if (!filtered.length) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            listEl.innerHTML = filtered.slice(0, 5).map(({ h, i }) => `
+                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                    <button onclick="loadTheologyHistoryEntry(${i})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                        <span class="text-slate-500 flex-shrink-0">${theologyEscapeHtml(h.takenAt || '')}</span>
+                        <span class="text-slate-400 flex-grow truncate">${theologyEscapeHtml(h.subjectLabel || '')} · ${theologyEscapeHtml(h.studentName || '')}</span>
+                        <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-shrink-0">${h.score}점</span>
+                        <span class="text-fuchsia-400 flex-shrink-0">📂 불러오기</span>
+                    </button>
+                    <button onclick="deleteTheologyHistoryEntry(${i})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+                </div>
+            `).join('');
+        }
+        // "불러오기": 저장해둔 questions/results 스냅샷을 appState에 그대로 얹고 showResults()를
+        // 다시 호출해 그때의 결과 화면을 재현한다. isHistoryReplay 플래그로 다시 저장되는 것을 막는다.
+        function loadTheologyHistoryEntry(idx) {
+            const list = loadTheologyHistory();
+            const entry = list[idx];
+            if (!entry) return;
+            appState.currentSubject = entry.subject;
+            appState.currentMode = entry.mode;
+            appState.questions = entry.questions || [];
+            appState.results = entry.results || [];
+            appState.studentName = entry.studentName || '';
+            appState.elapsedMs = entry.elapsedMs || 0;
+            if (els.headerTitle) els.headerTitle.textContent = entry.subjectLabel || '';
+            if (els.headerSubtitle) els.headerSubtitle.classList.add('hidden');
+            if (els.printHeaderTitle) els.printHeaderTitle.textContent = (entry.subjectLabel || '') + ' 시험지';
+            if (els.testModeBadge) {
+                els.testModeBadge.textContent = entry.mode === 'practice' ? '문항별 암기 연습' : '시험지 모드';
+                els.testModeBadge.className = entry.mode === 'practice' ? 'text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md' : 'text-sky-600 bg-sky-100 px-2 py-0.5 rounded-md';
+            }
+            appState.isHistoryReplay = true;
+            app.showResults();
+            appState.isHistoryReplay = false;
+        }
+
+        // ─────────────────────────────────────────────────────────
         // 별표(자주 틀리는 문항) 저장 — 이 기기의 localStorage에만 저장, 서버 연동 없음.
         // 과목명(subject)별로 그 과목 데이터 배열의 원본 인덱스(origIdx) 목록을 저장한다.
         // ─────────────────────────────────────────────────────────
@@ -1643,6 +1770,7 @@
             showGradeSelect() {
                 appState.currentSubject = null; appState.currentMode = null; appState.starredOnlyMode = false;
                 this.showView('gradeSelect');
+                renderTheologyMockHistoryList();
             },
             backFromTest() {
                 if (appState.currentSubject && appState.currentSubject.startsWith('grade')) {
@@ -1694,6 +1822,7 @@
                 els.printHeaderTitle.textContent = title + " 시험지";
                 this.renderModeButtons(subject);
                 this.showView('modeSelect');
+                renderTheologyModeHistoryList();
             },
             selectGrade(gradeKey) {
                 const meta = gradeMeta[gradeKey];
@@ -3677,7 +3806,9 @@
                     scoreLabelText = "최종 점수 (백분율 환산)";
                 }
 
-                els.scoreLabel.textContent = scoreLabelText; 
+                appState.lastScore = finalScore;
+                appState.lastScoreLabel = scoreLabelText;
+                els.scoreLabel.textContent = scoreLabelText;
                 els.resultScore.textContent = finalScore;
                 els.printScoreText.textContent = finalScore + " 점";
                 els.printNameText.textContent = appState.studentName || '____________________';
@@ -3727,6 +3858,27 @@
                 els.resultActionBtns.classList.remove('hidden'); els.resultActionBtns.classList.add('flex');
                 
                 this.renderReviewItems(false); this.showView('results'); window.scrollTo(0, 0);
+                this.saveTheologyHistoryEntryIfNeeded();
+            },
+
+            // "연습"(문항별 암기 연습) 모드와 "모의고사"(급수별 시험) 모드만 응시 기록으로 남긴다.
+            // (기록 불러오기로 예전 결과를 다시 열 때는 appState.isHistoryReplay가 true라 다시 저장하지 않는다.)
+            saveTheologyHistoryEntryIfNeeded() {
+                if (appState.isHistoryReplay) return;
+                const subject = appState.currentSubject;
+                const mode = appState.currentMode;
+                const isGradeMock = !!(subject && subject.startsWith('grade'));
+                if (mode !== 'practice' && !(mode === 'exam' && isGradeMock)) return;
+                const subjectLabel = isGradeMock ? ((gradeMeta[subject] && gradeMeta[subject].title) || subject) : (THEOLOGY_SUBJECT_LABELS[subject] || subject);
+                saveTheologyHistoryEntry({
+                    subject, subjectLabel, mode,
+                    questions: appState.questions, results: appState.results,
+                    studentName: appState.studentName, elapsedMs: appState.elapsedMs,
+                    score: appState.lastScore, scoreLabel: appState.lastScoreLabel,
+                    takenAt: theologyNowStr(), savedAt: Date.now()
+                });
+                renderTheologyModeHistoryList();
+                renderTheologyMockHistoryList();
             },
             
             renderReviewItems(showOnlyFailed) {

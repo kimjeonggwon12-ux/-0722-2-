@@ -556,12 +556,20 @@
             </div>
             <div class="flex-grow overflow-y-auto p-5">
                 <div class="max-w-xl mx-auto">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <button type="button" id="chapter-nav-prev-top" onclick="goToAdjacentChapter(-1)">◀ 이전 장</button>
+                        <button type="button" id="chapter-nav-next-top" onclick="goToAdjacentChapter(1)">다음 장 ▶</button>
+                    </div>
                     <div class="bg-[#e8eaf6] rounded-2xl p-1.5 flex gap-1.5 shadow-inner">
                         <button type="button" id="chapter-study-mode-answer" onclick="setChapterStudyMode('answer')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">계 1장 전체 문답</button>
                         <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">괄호 넣기</button>
                     </div>
                     <p class="text-center text-[13px] text-slate-400 font-bold mt-2.5 mb-4">괄호 넣기를 연습하며 모의고사를 준비하세요.</p>
                     <div id="chapter-study-container" class="space-y-4 pb-10"></div>
+                    <div class="flex items-center justify-between gap-2 mb-6">
+                        <button type="button" id="chapter-nav-prev-bottom" onclick="goToAdjacentChapter(-1)">◀ 이전 장</button>
+                        <button type="button" id="chapter-nav-next-bottom" onclick="goToAdjacentChapter(1)">다음 장 ▶</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -642,6 +650,14 @@
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
                 </button>
+
+                <div id="tongdal-mock-history-section" class="hidden mt-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[11px] font-black text-slate-400">📅 최근 응시 기록 (이 기기 기준)</p>
+                        <button onclick="clearTongdalMockHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                    </div>
+                    <div id="tongdal-mock-history-list" class="space-y-1.5"></div>
+                </div>
             </div>
         </div>
 
@@ -685,6 +701,14 @@
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
                 </button>
+
+                <div id="tongdal-exam-history-section" class="hidden mt-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[11px] font-black text-slate-400">📅 4급 전체 시험 응시 기록 (이 기기 기준)</p>
+                        <button onclick="clearTongdalExamHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                    </div>
+                    <div id="tongdal-exam-history-list" class="space-y-1.5"></div>
+                </div>
             </div>
         </div>
 
@@ -12060,6 +12084,7 @@
 
         function showGrade4Rooms() {
             showScreen('grade4Rooms');
+            renderTongdalExamHistoryList();
         }
 
         function escapeHtml(str) {
@@ -12523,7 +12548,13 @@
             g4ExamState.lastWrongItems = wrongIdxs.map(i => g4ExamState.items[i]);
             document.getElementById('g4-exam-print-btn').classList.remove('hidden');
             // 제출(채점)까지 마쳤으니 "이어서 하기" 저장은 정리한다 — 다음 진입은 새 시험으로 시작
-            if (g4ExamState.grouped) clearG4ExamProgress();
+            // (단, 기록 불러오기로 예전 결과를 다시 열 때는 저장/기록 추가를 건너뛴다 — 볼 때마다 기록이 중복 쌓이는 것을 막는다)
+            if (g4ExamState.grouped && !g4ExamState.isReplay) {
+                clearG4ExamProgress();
+                const values = Array.from(document.querySelectorAll('#grade4-exam-container .g4-blank')).map(inp => inp.value);
+                saveTongdalExamHistoryEntry({ takenAt: tongdalNowStr(), correct, total, values, savedAt: Date.now() });
+                renderTongdalExamHistoryList();
+            }
             const resumeBtn = document.getElementById('g4-exam-resume-btn');
             if (resumeBtn) resumeBtn.classList.add('hidden');
         }
@@ -12537,6 +12568,66 @@
         function resetGrade4Exam() {
             clearG4ExamProgress(); // 초기화는 저장된 이어서 하기 답안도 함께 비운다
             startGrade4Exam();
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 계시록 통달 "4급 전체 시험" 응시 기록 (이 기기의 localStorage에만 저장, 최근 50건까지 보관).
+        // 4급 전체 시험은 항상 같은 144문항(GRADE4_ALL_ITEMS)을 고정된 순서로 쓰므로, 문항 자체는
+        // 다시 저장할 필요 없이 그때 썼던 답(values)만 저장해두면 startGrade4Exam()으로 새로 그린
+        // 카드에 그대로 채워 넣고 다시 채점할 수 있다.
+        // ─────────────────────────────────────────────────────────
+        const TONGDAL_EXAM_HISTORY_KEY = 'sion_tongdal_examhistory';
+
+        function loadTongdalExamHistory() {
+            try { return JSON.parse(localStorage.getItem(TONGDAL_EXAM_HISTORY_KEY)) || []; } catch (e) { return []; }
+        }
+        function saveTongdalExamHistoryEntry(entry) {
+            try {
+                const list = loadTongdalExamHistory();
+                list.unshift(entry);
+                localStorage.setItem(TONGDAL_EXAM_HISTORY_KEY, JSON.stringify(list.slice(0, 50)));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+        function deleteTongdalExamHistoryEntry(idx) {
+            const list = loadTongdalExamHistory();
+            list.splice(idx, 1);
+            try { localStorage.setItem(TONGDAL_EXAM_HISTORY_KEY, JSON.stringify(list)); } catch (e) { /* 무시 */ }
+            renderTongdalExamHistoryList();
+        }
+        function clearTongdalExamHistory() {
+            try { localStorage.removeItem(TONGDAL_EXAM_HISTORY_KEY); } catch (e) { /* 무시 */ }
+            renderTongdalExamHistoryList();
+        }
+        function renderTongdalExamHistoryList() {
+            const section = document.getElementById('tongdal-exam-history-section');
+            const listEl = document.getElementById('tongdal-exam-history-list');
+            if (!section || !listEl) return;
+            const list = loadTongdalExamHistory();
+            if (!list.length) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            listEl.innerHTML = list.slice(0, 5).map((h, idx) => `
+                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                    <button onclick="loadTongdalExamHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                        <span class="text-slate-500 flex-shrink-0">${escapeHtml(h.takenAt || '')}</span>
+                        <span class="${(h.correct || 0) >= (h.total || 144) * 0.9 ? 'text-emerald-600' : 'text-rose-500'} flex-grow truncate">정답 ${h.correct}/${h.total}</span>
+                        <span class="text-fuchsia-400 flex-shrink-0">📂 불러오기</span>
+                    </button>
+                    <button onclick="deleteTongdalExamHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+                </div>
+            `).join('');
+        }
+        // "불러오기": 새로 144문항 카드를 그린 뒤(startGrade4Exam) 그때 썼던 답만 채워 넣고
+        // finishGrade4Exam()을 그대로 다시 호출해 채점·오답노트 화면을 재현한다.
+        // isReplay 플래그로 finishGrade4Exam 안의 기록 저장을 건너뛰어(볼 때마다 중복 저장 방지).
+        function loadTongdalExamHistoryEntry(idx) {
+            const list = loadTongdalExamHistory();
+            const entry = list[idx];
+            if (!entry) return;
+            startGrade4Exam();
+            g4ExamState.isReplay = true;
+            const inputs = document.querySelectorAll('#grade4-exam-container .g4-blank');
+            inputs.forEach((inp, i) => { if (entry.values && entry.values[i]) inp.value = entry.values[i]; });
+            finishGrade4Exam();
         }
 
         // ===== 방3: 급수별 모의고사 =====
@@ -12596,6 +12687,23 @@
             }
         }
 
+        // 모의고사 문항 카드 렌더링(장 구간 구분 배지 포함) — 새로 뽑은 문항(startGradeMock)과
+        // 기록 불러오기로 예전에 뽑혔던 문항 그대로(loadTongdalMockHistoryEntry) 양쪽에서 공유해서 쓴다.
+        function renderMockCards(items) {
+            let html = '';
+            let curGroup = null;
+            items.forEach((item, idx) => {
+                if (item._groupLabel && item._groupLabel !== curGroup) {
+                    curGroup = item._groupLabel;
+                    const groupCount = items.filter(it => it._groupLabel === curGroup).length;
+                    html += `<div class="bg-[#4f46e5] text-white text-xs font-black px-4 py-2.5 rounded-xl ${idx === 0 ? '' : 'mt-6'} mb-1 flex items-center justify-between shadow-sm"><span>📘 ${curGroup}</span><span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">${groupCount}문항</span></div>`;
+                }
+                html += buildG4CardHtml(item, 'mock', idx, `checkG4MockAnswer(${idx})`, false);
+            });
+            document.getElementById('grade4-mock-container').innerHTML = html;
+            items.forEach((_, idx) => bindG4Enter('mock', idx, items.length, checkG4MockAnswer, false));
+        }
+
         function startGradeMock(gradeKey = 'grade4') {
             let items, pointPer;
             if (gradeKey === 'grade4') {
@@ -12608,19 +12716,8 @@
             }
             const keepName = g4MockState.studentName || '';
             g4MockState = { items, results: new Map(), submitted: false, gradeKey, pointPer, studentName: keepName };
-            let html = '';
-            let curGroup = null;
-            items.forEach((item, idx) => {
-                if (item._groupLabel && item._groupLabel !== curGroup) {
-                    curGroup = item._groupLabel;
-                    const groupCount = items.filter(it => it._groupLabel === curGroup).length;
-                    html += `<div class="bg-[#4f46e5] text-white text-xs font-black px-4 py-2.5 rounded-xl ${idx === 0 ? '' : 'mt-6'} mb-1 flex items-center justify-between shadow-sm"><span>📘 ${curGroup}</span><span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">${groupCount}문항</span></div>`;
-                }
-                html += buildG4CardHtml(item, 'mock', idx, `checkG4MockAnswer(${idx})`, false);
-            });
-            document.getElementById('grade4-mock-container').innerHTML = html;
+            renderMockCards(items);
             items.forEach((_, idx) => {
-                bindG4Enter('mock', idx, items.length, checkG4MockAnswer, false);
                 const card = document.getElementById(`g4-card-mock-${idx}`);
                 card.querySelectorAll('.g4-blank').forEach(inp => inp.addEventListener('input', updateG4MockProgress));
             });
@@ -12661,19 +12758,10 @@
             if (live) live.textContent = `${answered}/${g4MockState.items.length}문항 작성`;
         }
 
-        function submitGradeMock() {
-            const nameInput = document.getElementById('g4-mock-name-input');
-            const name = nameInput ? nameInput.value.trim() : '';
-            if (!name) {
-                const nameError = document.getElementById('g4-mock-name-error');
-                if (nameError) nameError.classList.remove('hidden');
-                if (nameInput) { nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); nameInput.focus(); }
-                return;
-            }
-            const nameError = document.getElementById('g4-mock-name-error');
-            if (nameError) nameError.classList.add('hidden');
-            g4MockState.studentName = name;
-            stopG4MockTimer();
+        // 채점 + 결과 화면 렌더링 (제출하기로 새로 채점할 때와, 기록 불러오기로 예전 결과를 다시 열 때
+        // 공통으로 쓴다 — saveHistory가 true일 때만 이번 응시를 기록에 새로 저장한다. 불러오기 쪽에서
+        // 또 저장하면 볼 때마다 기록이 중복 쌓이므로, 그때는 false로 호출한다.)
+        function finalizeGradeMockResult(saveHistory) {
             g4MockState.items.forEach((_, idx) => checkG4MockAnswer(idx));
             g4MockState.submitted = true;
             const correct = [...g4MockState.results.values()].filter(Boolean).length;
@@ -12695,7 +12783,106 @@
             if (resultDesc) resultDesc.textContent = g4MockState.studentName ? `${g4MockState.studentName} · 수고하셨습니다! (${elapsedText})` : `수고하셨습니다! (${elapsedText})`;
             const resultBackBtn = document.getElementById('g4-mock-result-back-btn');
             if (resultBackBtn) resultBackBtn.setAttribute('onclick', "showScreen('gradeSelect')");
+            if (saveHistory) {
+                const values = Array.from(document.querySelectorAll('#grade4-mock-container .g4-blank')).map(inp => inp.value);
+                saveTongdalMockHistoryEntry({
+                    gradeKey: g4MockState.gradeKey, gradeLabel: cfg ? cfg.label : '4급', name: g4MockState.studentName,
+                    score, total, correct, takenAt: tongdalNowStr(), elapsedMs: g4MockState.elapsedMs || 0,
+                    pointPer, items: g4MockState.items, values, savedAt: Date.now()
+                });
+                renderTongdalMockHistoryList();
+            }
             showScreen('grade4MockResult');
+        }
+
+        function submitGradeMock() {
+            const nameInput = document.getElementById('g4-mock-name-input');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) {
+                const nameError = document.getElementById('g4-mock-name-error');
+                if (nameError) nameError.classList.remove('hidden');
+                if (nameInput) { nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); nameInput.focus(); }
+                return;
+            }
+            const nameError = document.getElementById('g4-mock-name-error');
+            if (nameError) nameError.classList.add('hidden');
+            g4MockState.studentName = name;
+            stopG4MockTimer();
+            finalizeGradeMockResult(true);
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 계시록 통달 "급수별 모의고사" 응시 기록 (이 기기의 localStorage에만 저장, 최근 50건까지 보관 —
+        // 계시록 암기 모의고사 기록과 같은 방식: 문항 자체가 매번 무작위로 뽑히므로 다시 볼 때를 대비해
+        // 그때 뽑힌 문항 목록(items)까지 통째로 저장해둔다.)
+        // ─────────────────────────────────────────────────────────
+        function tongdalNowStr() {
+            const d = new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        }
+
+        const TONGDAL_MOCK_HISTORY_KEY = 'sion_tongdal_mockhistory';
+
+        function loadTongdalMockHistory() {
+            try { return JSON.parse(localStorage.getItem(TONGDAL_MOCK_HISTORY_KEY)) || []; } catch (e) { return []; }
+        }
+        function saveTongdalMockHistoryEntry(entry) {
+            try {
+                const list = loadTongdalMockHistory();
+                list.unshift(entry);
+                localStorage.setItem(TONGDAL_MOCK_HISTORY_KEY, JSON.stringify(list.slice(0, 50)));
+            } catch (e) { /* 저장 실패는 무시 */ }
+        }
+        function deleteTongdalMockHistoryEntry(idx) {
+            const list = loadTongdalMockHistory();
+            list.splice(idx, 1);
+            try { localStorage.setItem(TONGDAL_MOCK_HISTORY_KEY, JSON.stringify(list)); } catch (e) { /* 무시 */ }
+            renderTongdalMockHistoryList();
+        }
+        function clearTongdalMockHistory() {
+            try { localStorage.removeItem(TONGDAL_MOCK_HISTORY_KEY); } catch (e) { /* 무시 */ }
+            renderTongdalMockHistoryList();
+        }
+        function renderTongdalMockHistoryList() {
+            const section = document.getElementById('tongdal-mock-history-section');
+            const listEl = document.getElementById('tongdal-mock-history-list');
+            if (!section || !listEl) return;
+            const list = loadTongdalMockHistory();
+            if (!list.length) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            listEl.innerHTML = list.slice(0, 5).map((h, idx) => `
+                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                    <button onclick="loadTongdalMockHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity">
+                        <span class="text-slate-500 flex-shrink-0">${escapeHtml(h.takenAt || '')}</span>
+                        <span class="text-slate-400 flex-grow truncate">${escapeHtml(h.gradeLabel || '')} · ${escapeHtml(h.name || '')}</span>
+                        <span class="${(h.score || 0) >= (h.total || 100) * 0.9 ? 'text-emerald-600' : 'text-rose-500'} flex-shrink-0">${h.score}/${h.total}점</span>
+                        <span class="text-fuchsia-400 flex-shrink-0">📂 불러오기</span>
+                    </button>
+                    <button onclick="deleteTongdalMockHistoryEntry(${idx})" class="text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0 px-2" aria-label="이 기록 삭제">✕</button>
+                </div>
+            `).join('');
+        }
+        // "불러오기": 그때 뽑혔던 문항(items)을 그대로 다시 카드로 그리고, 그때 썼던 답(values)을
+        // 채워 넣은 뒤 finalizeGradeMockResult(false)로 같은 채점·결과 화면을 다시 만든다(기록은 새로 안 쌓음).
+        function loadTongdalMockHistoryEntry(idx) {
+            const list = loadTongdalMockHistory();
+            const entry = list[idx];
+            if (!entry || !Array.isArray(entry.items)) {
+                alert('이 기록은 예전 버전에서 저장되어 다시 볼 수 있는 상세 내용이 없습니다.');
+                return;
+            }
+            const items = entry.items;
+            g4MockState = { items, results: new Map(), submitted: false, gradeKey: entry.gradeKey, pointPer: entry.pointPer || 2, studentName: entry.name || '', elapsedMs: entry.elapsedMs || 0 };
+            renderMockCards(items);
+            const inputs = document.querySelectorAll('#grade4-mock-container .g4-blank');
+            inputs.forEach((inp, i) => { if (entry.values && entry.values[i] !== undefined) inp.value = entry.values[i]; });
+            updateGradeMockHeader(entry.gradeKey);
+            const nameInput = document.getElementById('g4-mock-name-input');
+            if (nameInput) nameInput.value = entry.name || '';
+            document.getElementById('grade4-mock-wronglist').classList.add('hidden');
+            document.getElementById('g4-mock-print-btn').classList.add('hidden');
+            finalizeGradeMockResult(false);
         }
 
         function submitGrade4Mock() { submitGradeMock(); }
@@ -12995,6 +13182,7 @@
             const answerBtnLabel = document.getElementById('chapter-study-mode-answer');
             if (answerBtnLabel) answerBtnLabel.textContent = `계 ${chapterKey.replace('ch', '')}장 전체 문답`;
             renderChapterStudyModeButtons();
+            renderChapterNavButtons();
             renderChapterStudyItems();
             showScreen('chapterStudy');
             document.querySelector('#screen-chapter-study .overflow-y-auto').scrollTop = 0;
@@ -13015,6 +13203,37 @@
             const inactive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all chapter-switch-glow bg-transparent text-[#7986cb]';
             answerBtn.className = chapterStudyState.mode === 'answer' ? active : inactive;
             blankBtn.className = chapterStudyState.mode === 'blank' ? active : inactive;
+        }
+
+        // 장별 공부하기(전체 문답/괄호 넣기 공용) 맨 위·맨 아래의 "이전 장/다음 장" 버튼.
+        // 지금 보고 있는 모드(전체 문답/괄호 넣기)를 그대로 유지한 채 인접한 장으로 이동한다.
+        function goToAdjacentChapter(delta) {
+            const key = chapterStudyState.key;
+            if (!key) return;
+            const num = parseInt(key.replace('ch', ''), 10) + delta;
+            if (num < 1 || num > TONGDAL_TOTAL_CHAPTERS) return;
+            openChapterStudy('ch' + num, chapterStudyState.mode);
+        }
+
+        function renderChapterNavButtons() {
+            const key = chapterStudyState.key;
+            const num = key ? parseInt(key.replace('ch', ''), 10) : 1;
+            const prevNum = num - 1, nextNum = num + 1;
+            const activeTop = 'flex-1 bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-xl py-2.5 text-[13px] font-black shadow-sm active:scale-95 transition-transform';
+            const activeBottom = 'flex-1 bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-xl py-3 text-[14px] font-black shadow-sm active:scale-95 transition-transform';
+            const nextActiveBottom = 'flex-1 bg-[#4f46e5] text-white rounded-xl py-3 text-[14px] font-black shadow-md active:scale-95 transition-transform';
+            const disabledTop = 'flex-1 bg-slate-50 border-2 border-slate-100 text-slate-300 rounded-xl py-2.5 text-[13px] font-black pointer-events-none';
+            const disabledBottom = 'flex-1 bg-slate-50 border-2 border-slate-100 text-slate-300 rounded-xl py-3 text-[14px] font-black pointer-events-none';
+
+            const prevTop = document.getElementById('chapter-nav-prev-top');
+            const nextTop = document.getElementById('chapter-nav-next-top');
+            const prevBottom = document.getElementById('chapter-nav-prev-bottom');
+            const nextBottom = document.getElementById('chapter-nav-next-bottom');
+            const hasPrev = prevNum >= 1, hasNext = nextNum <= TONGDAL_TOTAL_CHAPTERS;
+            if (prevTop) { prevTop.className = hasPrev ? activeTop : disabledTop; prevTop.textContent = hasPrev ? `◀ 계 ${prevNum}장` : '◀ 이전 장 없음'; prevTop.disabled = !hasPrev; }
+            if (nextTop) { nextTop.className = hasNext ? activeTop : disabledTop; nextTop.textContent = hasNext ? `계 ${nextNum}장 ▶` : '다음 장 없음'; nextTop.disabled = !hasNext; }
+            if (prevBottom) { prevBottom.className = hasPrev ? activeBottom : disabledBottom; prevBottom.textContent = hasPrev ? `◀ 계 ${prevNum}장` : '◀ 이전 장 없음'; prevBottom.disabled = !hasPrev; }
+            if (nextBottom) { nextBottom.className = hasNext ? nextActiveBottom : disabledBottom; nextBottom.textContent = hasNext ? `계 ${nextNum}장 ▶` : '다음 장 없음'; nextBottom.disabled = !hasNext; }
         }
 
         function renderChapterStudyItems() {
@@ -13216,6 +13435,7 @@
             const fixedHomeNav = document.getElementById('fixed-home-nav');
             if (fixedHomeNav) fixedHomeNav.classList.toggle('hidden', screenName === 'gradeSelect');
             if (screenName === 'home') { renderTongdalBankProgressPanel(); }
+            if (screenName === 'gradeSelect') { renderTongdalMockHistoryList(); }
         }
 
         function updateNavButtons() {
