@@ -967,15 +967,13 @@
                     뒤로가기
                 </button>
                 <div class="text-center mb-4">
-                    <p class="text-[13px] font-black text-indigo-500 tracking-wide">🧩 시온 공부방 · 자격증 체험판</p>
-                    <h1 class="text-2xl font-black text-indigo-700 font-jua break-keep mt-1">문제 사전체험 (십자말풀이)</h1>
-                    <p class="text-[14px] text-slate-500 font-bold mt-2 break-keep">도전할 때마다 새 문제로 다시 조합됩니다</p>
+                    <h1 class="text-3xl font-black text-indigo-700 font-jua break-keep">자격증 체험판</h1>
                 </div>
 
-                <!-- 과목 탭: 계시록 통달 / 계시록 암기 (50~70대도 누르기 쉽게 큼직하게) -->
+                <!-- 과목 탭: 계시록 통달 / 계시록 암기 (50~70대도 누르기 쉽게 큼직하게, 비활성 상태도 과목별 색으로 구분) -->
                 <div class="bg-slate-100 p-1.5 rounded-2xl flex w-full mb-4 shadow-inner">
-                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-3.5 text-[16px] font-black rounded-xl transition-all">📖 계시록 통달</button>
-                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-3.5 text-[16px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
+                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-4 text-[19px] font-black rounded-xl transition-all">📖 계시록 통달</button>
+                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-4 text-[19px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
                 </div>
 
                 <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-sm mb-4 relative min-h-[220px]">
@@ -984,8 +982,7 @@
                         <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
                     </div>
 
-                    <p id="cw-mode-badge" class="text-center text-[13.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mx-auto mb-3" style="width:fit-content;">계시록 통달 랜덤 십자말풀이</p>
-                    <p class="text-center text-[13.5px] text-slate-500 font-bold mb-3">빈 칸을 탭하고 정답을 입력하세요</p>
+                    <p class="text-center text-[13.5px] text-slate-500 font-bold mb-3">눌러서 정답을 입력하세요.</p>
 
                     <div class="w-full overflow-x-auto">
                         <div id="cw-grid" class="cw-grid"></div>
@@ -2233,19 +2230,13 @@
             cwCurrentMode = mode;
             const tabTongdal = document.getElementById('cw-tab-tongdal');
             const tabAmgi = document.getElementById('cw-tab-amgi');
-            const badge = document.getElementById('cw-mode-badge');
+            // 비활성 탭도 각 과목 고유 색을 옅게 유지해서(회색으로 죽이지 않고) 둘 다 항상 잘 보이게 한다.
             if (mode === 'tongdal') {
-                tabTongdal.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-white bg-indigo-600 shadow-md';
-                tabAmgi.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-slate-500';
-                badge.className = 'text-center text-[11.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mx-auto mb-3';
-                badge.style.width = 'fit-content';
-                badge.textContent = '계시록 통달 랜덤 십자말풀이';
+                tabTongdal.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-white bg-indigo-600 shadow-md';
+                tabAmgi.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-fuchsia-400';
             } else {
-                tabTongdal.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-slate-500';
-                tabAmgi.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-white bg-fuchsia-600 shadow-md';
-                badge.className = 'text-center text-[11.5px] font-black text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-100 rounded-full px-3 py-1 mx-auto mb-3';
-                badge.style.width = 'fit-content';
-                badge.textContent = '계시록 암기 랜덤 십자말풀이';
+                tabTongdal.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-indigo-400';
+                tabAmgi.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-white bg-fuchsia-600 shadow-md';
             }
             cwInitGame();
         }
