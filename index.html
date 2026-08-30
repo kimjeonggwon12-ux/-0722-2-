@@ -962,39 +962,42 @@
 
         <!-- 계시록 통달 문제 사전체험 (십자말풀이) -->
         <div id="view-crossword-preview" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
-            <div class="w-full max-w-md px-2">
-                <!-- 탭+격자/버튼을 한 덩어리로 묶어 화면 진입 즉시 상단에 고정한다.
-                     아래로 스크롤해도 이 영역은 전혀 움직이지 않고, 가로/세로 천국 열쇠 문항만 스크롤된다.
-                     맨 위 "뒤로가기" 버튼은 공간 확보를 위해 없앰 — 화면 맨 아래 "홈으로" 버튼으로 나갈 수 있다. -->
-                <div style="position: sticky; top: 0; z-index: 30; background: #f8fafc;" class="pb-2 pt-1">
-                    <!-- 과목 탭: 계시록 통달 / 계시록 암기 (상단 고정 영역 공간 확보를 위해 작게, 비활성 상태도 과목별 색으로 구분) -->
-                    <div class="bg-slate-100 p-1 rounded-xl flex w-full mb-3 shadow-inner">
-                        <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">📖 계시록 통달</button>
-                        <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">✍️ 계시록 암기</button>
+            <!-- 탭+격자/버튼: position:fixed로 스크롤 위치와 완전히 무관하게 화면 상단에 고정한다
+                 (예전 sticky 방식은 부모의 justify-center 정렬과 얽혀 흔들리는 느낌이 있어 fixed로 교체).
+                 아래 spacer가 이 영역의 실제 높이만큼 자리를 비워줘서 내용이 가려지지 않게 한다. -->
+            <div id="cw-fixed-top" class="w-full px-2" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); max-width: 448px; z-index: 30; background: #f8fafc; padding-top: 8px; padding-bottom: 6px;">
+                <!-- 과목 탭: 계시록 통달 / 계시록 암기 (상단 고정 영역 공간 확보를 위해 작게, 비활성 상태도 과목별 색으로 구분) -->
+                <div class="bg-slate-100 p-1 rounded-xl flex w-full mb-2 shadow-inner">
+                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">📖 계시록 통달</button>
+                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">✍️ 계시록 암기</button>
+                </div>
+
+                <div class="bg-white border-2 border-indigo-100 rounded-2xl p-3 shadow-md relative min-h-[140px]">
+                    <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
+                        <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                        <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
                     </div>
 
-                    <div class="bg-white border-2 border-indigo-100 rounded-2xl p-3 shadow-md relative min-h-[140px]">
-                        <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
-                            <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-                            <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
-                        </div>
+                    <!-- 격자 칸 크기 자체를 화면 세로 예산에 맞춰 계산해서 그리므로(cwRenderGrid),
+                         여기서는 넘칠 때만 대비하는 안전망으로 가벼운 세로 스크롤만 남겨둔다. -->
+                    <div class="w-full overflow-auto" style="max-height: 30vh;">
+                        <div id="cw-grid" class="cw-grid"></div>
+                    </div>
 
-                        <!-- 격자 칸 크기 자체를 화면 세로 예산에 맞춰 계산해서 그리므로(cwRenderGrid),
-                             여기서는 넘칠 때만 대비하는 안전망으로 가벼운 세로 스크롤만 남겨둔다. -->
-                        <div class="w-full overflow-auto" style="max-height: 32vh;">
-                            <div id="cw-grid" class="cw-grid"></div>
-                        </div>
-
-                        <div class="flex flex-row gap-2 mt-3">
-                            <button id="cw-check-btn" type="button" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 text-[13px] font-black transition-colors">✔️ 채점하기</button>
-                            <button id="cw-new-btn" type="button" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-[13px] font-black transition-colors">🔄 또 풀기</button>
-                        </div>
-                        <div id="cw-result" class="hidden mt-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-3 text-center">
-                            <p id="cw-result-score" class="font-jua text-indigo-700 text-xl"></p>
-                            <p id="cw-result-msg" class="text-[14.5px] text-indigo-600 font-bold mt-1 break-keep"></p>
-                        </div>
+                    <div class="flex flex-row gap-1.5 mt-2">
+                        <button id="cw-check-btn" type="button" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-1.5 text-[12px] font-black transition-colors">✔️ 채점하기</button>
+                        <button id="cw-new-btn" type="button" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg py-1.5 text-[12px] font-black transition-colors">🔄 또 풀기</button>
+                    </div>
+                    <div id="cw-result" class="hidden mt-2 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-2.5 text-center">
+                        <p id="cw-result-score" class="font-jua text-indigo-700 text-lg"></p>
+                        <p id="cw-result-msg" class="text-[13.5px] text-indigo-600 font-bold mt-1 break-keep"></p>
                     </div>
                 </div>
+            </div>
+
+            <div class="w-full max-w-md px-2">
+                <!-- 위 고정 영역 높이만큼 빈 공간 (JS: cwSyncFixedOffset이 자동으로 채움) -->
+                <div id="cw-fixed-spacer"></div>
 
                 <!-- 가로/세로 문항은 버튼을 눌러야 펼쳐지는 아코디언 — 스크롤을 줄이고 원하는 방향만 골라 보게 한다 -->
                 <div class="mb-4">
@@ -2231,6 +2234,10 @@
         let cwCols = 0, cwRows = 0;
         let cwCurrentWordIdx = null;
         let cwCurrentMode = 'tongdal';
+        // 사용자가 마지막으로 고른 방향('H'/'V'). 교차 칸에서 다음 칸으로 넘어가거나
+        // 다시 포커스가 잡힐 때, 사용자가 고른 방향과 다른 단어로 엉뚱하게 튀지 않도록
+        // 이 방향과 같은 단어를 우선 선택한다.
+        let cwPreferredDir = null;
 
         // 가로/세로 천국 열쇠 아코디언 토글 (기본은 접힘 — 스크롤 줄이고 시인성 확보)
         function cwToggleClueSection(dir) {
@@ -2501,8 +2508,16 @@
                         input.addEventListener('focus', () => cwHandleFocus(r, c));
                         input.addEventListener('keyup', (e) => cwHandleKeyUp(e, r, c));
                         input.addEventListener('keydown', (e) => cwHandleKeyDown(e, r, c));
-                        // 모바일 가상 키보드 중에는 스페이스를 keydown/keyup으로 못 잡고 값으로만
-                        // 흘려보내는 경우가 있어, 실제 입력값에 공백이 들어오면 그것도 "다음 칸"으로 처리한다.
+                        // 스페이스로 다음 칸 이동을 최대한 확실히 잡기 위한 다중 방어:
+                        // 1) beforeinput: 값이 바뀌기 전에 가로채므로, 칸이 이미 한 글자 차 있어도
+                        //    (maxLength=1이라 keydown/keyup이 애매하게 동작하는 기기가 있음) 확실히 잡힌다.
+                        input.addEventListener('beforeinput', (e) => {
+                            if (e.data === ' ') {
+                                e.preventDefault();
+                                cwMoveToNextInput(r, c);
+                            }
+                        });
+                        // 2) input: beforeinput 미지원 브라우저나, 그래도 공백이 값에 실제로 들어온 경우의 보험.
                         input.addEventListener('input', (e) => {
                             if (input.value === ' ' || input.value.includes(' ')) {
                                 input.value = '';
@@ -2542,25 +2557,25 @@
                 if (isTongdal) {
                     clueHTML = `
                         <div class="flex items-start gap-3">
-                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[14px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[15px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
                             <div class="flex-1 min-w-0">
-                                <p class="font-black text-indigo-700 text-[15px] mb-1.5">[${w.originalObj.v}]</p>
-                                <p class="text-[15px] text-slate-600 mb-2.5 leading-relaxed break-keep">"${w.originalObj.text}"</p>
-                                <div class="p-3 bg-slate-50 border border-slate-100 rounded-lg text-[15px] break-keep leading-relaxed">
+                                <p class="font-black text-indigo-700 text-[17px] mb-1.5">[${w.originalObj.v}]</p>
+                                <p class="text-[17px] text-slate-600 mb-2.5 leading-relaxed break-keep">"${w.originalObj.text}"</p>
+                                <div class="p-3 bg-slate-50 border border-slate-100 rounded-lg text-[17px] break-keep leading-relaxed">
                                     <p><span class="font-black text-slate-500">▶ 문제:</span> <span class="font-bold text-slate-800">${w.originalObj.keyword}</span></p>
                                     <p class="mt-1.5"><span class="font-black text-slate-500">▶ 정답:</span> <span class="text-slate-700">${w.originalObj.meaningBefore}</span><span class="font-black text-indigo-600 tracking-[0.15em]">${circleHint}</span><span class="text-slate-700">${w.originalObj.meaningAfter}</span></p>
                                 </div>
-                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[15px] font-black text-rose-600">정답: ${w.word}</div>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[17px] font-black text-rose-600">정답: ${w.word}</div>
                             </div>
                         </div>`;
                 } else {
                     clueHTML = `
                         <div class="flex items-start gap-3">
-                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[14px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[15px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
                             <div class="flex-1 min-w-0">
-                                <p class="font-black text-fuchsia-700 text-[15px] mb-1.5">[${w.originalObj.v}]</p>
-                                <p class="text-[15px] text-slate-800 font-bold leading-relaxed break-keep">${w.originalObj.text}</p>
-                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[15px] font-black text-rose-600">정답: ${w.word}</div>
+                                <p class="font-black text-fuchsia-700 text-[17px] mb-1.5">[${w.originalObj.v}]</p>
+                                <p class="text-[17px] text-slate-800 font-bold leading-relaxed break-keep">${w.originalObj.text}</p>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[17px] font-black text-rose-600">정답: ${w.word}</div>
                             </div>
                         </div>`;
                 }
@@ -2575,7 +2590,12 @@
             });
         }
 
-        function cwSelectWord(idx) { cwCurrentWordIdx = idx; cwHighlightWord(idx); }
+        function cwSelectWord(idx) {
+            cwCurrentWordIdx = idx;
+            const w = cwWordsOnBoard[idx];
+            if (w) cwPreferredDir = w.type; // 이 방향을 "의도한 방향"으로 기억해둔다
+            cwHighlightWord(idx);
+        }
 
         function cwHighlightWord(idx) {
             document.querySelectorAll('#cw-grid .cw-input').forEach(el => el.classList.remove('cw-highlighted'));
@@ -2595,7 +2615,15 @@
         function cwHandleFocus(r, c) {
             const cell = cwGridState[r][c];
             if (!cell) return;
-            if (cwCurrentWordIdx === null || !cell.words.includes(cwCurrentWordIdx)) cwSelectWord(cell.words[0]);
+            // 지금 선택된 단어가 이 칸에서도 유효하면 그대로 유지(교차 칸에서 엉뚱한 방향으로 안 튀게).
+            if (cwCurrentWordIdx !== null && cell.words.includes(cwCurrentWordIdx)) return;
+            // 아니면, 사용자가 마지막으로 고른 방향(가로/세로)과 같은 단어가 이 칸에 있으면 그걸 우선 선택.
+            let chosen = cell.words[0];
+            if (cwPreferredDir) {
+                const sameDir = cell.words.find(idx => cwWordsOnBoard[idx] && cwWordsOnBoard[idx].type === cwPreferredDir);
+                if (sameDir !== undefined) chosen = sameDir;
+            }
+            cwSelectWord(chosen);
         }
 
         function cwHandleKeyUp(e, r, c) {
@@ -2693,6 +2721,7 @@
             if (resultEl) resultEl.classList.add('hidden');
             overlay.classList.remove('hidden');
             cwCurrentWordIdx = null;
+            cwPreferredDir = null;
 
             setTimeout(() => {
                 const result = cwGenerateCrossword();
@@ -2702,14 +2731,36 @@
                 cwRenderGrid();
                 cwRenderClues();
                 overlay.classList.add('hidden');
+                cwSyncFixedOffset();
             }, 30);
         }
+
+        // 상단 고정 영역(#cw-fixed-top)의 실제 높이만큼 그 아래 spacer의 높이를 맞춰서,
+        // 고정된 탭/격자/버튼에 내용이 가려지지 않게 한다. 격자 크기·결과창 표시 등으로
+        // 고정 영역 높이가 바뀔 때마다 ResizeObserver가 이 함수를 자동으로 다시 호출한다.
+        function cwSyncFixedOffset() {
+            const fixedEl = document.getElementById('cw-fixed-top');
+            const spacer = document.getElementById('cw-fixed-spacer');
+            if (!fixedEl || !spacer) return;
+            spacer.style.height = fixedEl.offsetHeight + 'px';
+        }
+
+        let cwFixedResizeObserver = null;
 
         function initCrosswordPreview() {
             // 화면에 들어올 때마다("도전"할 때마다) 항상 새 문제로 다시 조합한다.
             cwSetMode(cwCurrentMode);
             document.getElementById('cw-check-btn').onclick = cwCheckAnswers;
             document.getElementById('cw-new-btn').onclick = cwInitGame;
+
+            if (!cwFixedResizeObserver && window.ResizeObserver) {
+                const fixedEl = document.getElementById('cw-fixed-top');
+                if (fixedEl) {
+                    cwFixedResizeObserver = new ResizeObserver(cwSyncFixedOffset);
+                    cwFixedResizeObserver.observe(fixedEl);
+                }
+            }
+            cwSyncFixedOffset();
         }
 
         // ─────────────────────────────────────────────────────────
