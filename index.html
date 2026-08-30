@@ -228,9 +228,9 @@
         .suggest-badge .badge-icon { background: linear-gradient(160deg, #fde68a, #f59e0b); }
         .field-label {
             display: block;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
-            color: #64748b;
+            color: #475569;
             margin-bottom: 4px;
         }
         .field-input {
@@ -265,6 +265,49 @@
             vertical-align: baseline;
         }
         .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
+
+        /* 계시록 통달·계시록 암기 문제 사전체험(십자말풀이) — 도전마다 새로 조합되는 격자 */
+        .cw-grid {
+            display: grid;
+            gap: 3px;
+            width: 100%;
+            max-width: 340px;
+            margin: 0 auto;
+            padding: 8px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        .cw-cell { position: relative; aspect-ratio: 1 / 1; }
+        .cw-cell.cw-empty { background: transparent; pointer-events: none; }
+        .cw-input {
+            width: 100%; height: 100%;
+            text-align: center;
+            font-family: 'Jua', sans-serif;
+            font-weight: 900;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            background: #ffffff;
+            color: #1e293b;
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            appearance: none;
+            caret-color: transparent;
+            transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+        .cw-input:focus { border-color: #6366f1; background: #e0e7ff; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); z-index: 10; }
+        .cw-input.cw-highlighted { background: #fef9c3; border-color: #facc15; }
+        .cw-input.cw-correct { background: #dcfce7; border-color: #22c55e; color: #166534; }
+        .cw-input.cw-wrong { background: #ffe4e6; border-color: #f43f5e; color: #9f1239; }
+        .cw-label {
+            position: absolute; top: 1px; left: 2px;
+            font-size: 0.55rem; font-weight: 900; color: #64748b;
+            pointer-events: none; z-index: 5;
+        }
+        .cw-clue-item { cursor: pointer; padding: 12px; border-radius: 14px; border: 2px solid transparent; transition: all .15s ease; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .cw-clue-item:active { transform: scale(0.98); }
+        .cw-clue-item.cw-active { background: #fef9c3; border-color: #facc15; }
     </style>
 </head>
 <body class="antialiased">
@@ -287,12 +330,12 @@
 
             <div class="login-photo">
                 <div class="login-input-zone">
-                    <p id="login-error-msg" class="absolute bottom-full left-0 right-0 mb-2 text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-white/90 rounded-full px-3 py-1.5 shadow-sm">코드가 올바르지 않거나 조건에 맞지 않습니다.</p>
+                    <p id="login-error-msg" class="absolute bottom-full left-0 right-0 mb-2 text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-white/90 rounded-full px-3 py-1.5 shadow-sm">코드가 올바르지 않거나 조건에 맞지 않습니다.</p>
                     <div class="flex items-center bg-white rounded-full shadow-md p-2 w-full transition-shadow focus-within:shadow-lg">
                         <svg class="w-5 h-5 text-slate-500 flex-shrink-0 ml-2.5" fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
                         </svg>
-                        <input type="password" id="entry-code-input" autocomplete="current-password" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold tracking-[0.2em] placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal" placeholder="암호 입력" oninput="checkAutoLogin()" onchange="checkAutoLogin()" onkeydown="if(event.key==='Enter') checkLogin()" onanimationstart="handleEntryAutofillDetected(event)">
+                        <input type="password" id="entry-code-input" autocomplete="current-password" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold tracking-[0.2em] placeholder:text-slate-500 placeholder:font-normal placeholder:tracking-normal" placeholder="암호 입력" oninput="checkAutoLogin()" onchange="checkAutoLogin()" onkeydown="if(event.key==='Enter') checkLogin()" onanimationstart="handleEntryAutofillDetected(event)">
                         <button onclick="checkLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-black transition-colors flex-shrink-0">입장</button>
                     </div>
                 </div>
@@ -309,6 +352,21 @@
                     <span>🔔 계시록 통달 자격증 시험일정 · 신 43년 11월 15일(일) · <span class="led-highlight">등과 기름 준비하세요.</span> &nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <span aria-hidden="true">🔔 계시록 통달 자격증 시험일정 · 신 43년 11월 15일(일) · <span class="led-highlight">등과 기름 준비하세요.</span> &nbsp;&nbsp;&nbsp;&nbsp;</span>
                 </div>
+            </div>
+
+            <!-- "체험" 카드: 로그인 직후 가장 먼저 보이는 자리에서 부담 없이 문제를 먼저 풀어보게 유도 -->
+            <div class="w-full" style="max-width:420px; margin:0 auto;">
+                <button onclick="showCrosswordPreview()" class="w-full text-left bg-gradient-to-br from-violet-100 via-indigo-100 to-sky-100 border-2 border-indigo-200 rounded-2xl p-3.5 shadow-sm mb-3 flex items-center gap-3 active:scale-[0.98] transition-transform">
+                    <div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 flex items-center justify-center text-xl shadow-sm flex-shrink-0">🧩</div>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-[13px] font-black text-indigo-700 break-keep leading-snug">3분이면 충분해요 — 계시록 통달 문제, 지금 풀어보기</p>
+                        <p class="text-[11.5px] text-indigo-500 font-bold mt-0.5 break-keep">십자말풀이 체험판 · 진행 부담 없이 살짝 맛보기</p>
+                    </div>
+                    <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- 미니 학습 진행률: 실제 진행 기록이 있을 때만 표시(renderHomeProgressMini) -->
+                <div id="home-progress-mini" class="hidden"></div>
             </div>
 
             <div class="rooms-photo">
@@ -344,10 +402,10 @@
                 </button>
                 <div class="text-center mb-5">
                     <h1 class="text-2xl font-black text-amber-600 font-jua break-keep">💡 개선 사항 건의하기</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">더 좋은 시온 공부방을 위한 의견을 들려주세요</p>
+                    <p class="text-slate-500 text-[13px] mt-1 break-keep">더 좋은 시온 공부방을 위한 의견을 들려주세요</p>
                 </div>
                 <div id="suggest-form-section">
-                    <p id="suggest-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">건의 내용을 입력해주세요.</p>
+                    <p id="suggest-error-msg" class="text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">건의 내용을 입력해주세요.</p>
                     <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
                         <div>
                             <label class="field-label">이름 (선택)</label>
@@ -395,7 +453,7 @@
                 <div id="suggest-success-section" class="hidden bg-white border-2 border-emerald-200 rounded-2xl p-6 shadow-sm text-center space-y-3">
                     <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto">✅</div>
                     <h2 class="text-lg font-black text-slate-800">소중한 의견 감사합니다!</h2>
-                    <p class="text-slate-400 text-[11px]">더 좋은 시온 공부방을 만드는 데 참고하겠습니다</p>
+                    <p class="text-slate-500 text-[13px]">더 좋은 시온 공부방을 만드는 데 참고하겠습니다</p>
                     <button onclick="showRooms()" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 text-xs font-black transition-colors mt-2">방 선택으로</button>
                 </div>
             </div>
@@ -411,24 +469,30 @@
                 <div class="text-center mb-5">
                     <h1 class="text-xl font-black text-blue-700 font-jua break-keep">[신 43년 1차 계시록 통달 자격증]</h1>
                     <h2 class="text-lg font-black text-blue-700 font-jua break-keep -mt-1">시험 안내</h2>
-                    <p class="text-slate-400 text-[11px] mt-2 break-keep">계시록을 통달하여 걸어다니는 성경이 되고자 하는<br>성도님들의 많은 참여를 바랍니다</p>
+                    <p class="text-slate-500 text-[13px] mt-2 break-keep">계시록을 통달하여 걸어다니는 성경이 되고자 하는<br>성도님들의 많은 참여를 바랍니다</p>
                 </div>
+
+                <!-- 1차 CTA: 급한 분은 여기서 3초 안에 바로 신청으로. 아래 상세 안내는 스크롤해서 확인. -->
+                <button onclick="showApplyMenu()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl py-3.5 text-[15px] font-black shadow-md transition-colors mb-2 flex items-center justify-center gap-2">
+                    🎯 지금 바로 신청하기
+                </button>
+                <p class="text-center text-[11.5px] text-slate-400 font-bold mb-4">↓ 자세한 안내는 아래에서 확인하세요</p>
 
                 <div class="space-y-3">
                     <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-2.5">
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">📅</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">시험 일시</p>
+                                <p class="text-[13px] font-black text-slate-500">시험 일시</p>
                                 <p class="text-sm font-extrabold text-slate-800">신 43년 11월 15일(일)</p>
-                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">오전 09:30~10:30 또는 오후 15:00~16:00 중 택 1</p>
+                                <p class="text-[13px] text-slate-500 font-bold mt-0.5">오전 09:30~10:30 또는 오후 15:00~16:00 중 택 1</p>
                             </div>
                         </div>
                         <div class="border-t border-slate-100"></div>
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">📝</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">신청 기간</p>
+                                <p class="text-[13px] font-black text-slate-500">신청 기간</p>
                                 <p class="text-sm font-extrabold text-slate-800">8월 10일 ~ 10월 15일</p>
                             </div>
                         </div>
@@ -436,84 +500,96 @@
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">📖</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">신청 과목</p>
+                                <p class="text-[13px] font-black text-slate-500">신청 과목</p>
                                 <p class="text-sm font-extrabold text-slate-800 break-keep">세 과목 중 하나만 선택 (중복 신청 불가)</p>
-                                <p class="text-[11px] text-slate-500 font-bold mt-0.5">전 과목·전 급수 소문항 50개 출제</p>
+                                <p class="text-[13px] text-slate-500 font-bold mt-0.5">전 과목·전 급수 소문항 50개 출제</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
-                        <p class="text-[11px] font-black text-slate-400 mb-3">급수별 시험 범위</p>
-                        <div class="space-y-3">
-                            <div class="rounded-xl border-2 border-blue-100 bg-blue-50/60 p-3">
-                                <p class="text-[12px] font-black text-blue-700 mb-1.5">📘 초중고 신학</p>
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 제목, 초등 종강 시험</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 제목, 초등 종강 시험, 초등 비유의 의미와 핵심 성구</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중 제목, 초·중 종강 시험, 초등 비유의 의미와 핵심 성구</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중·고 제목, 초중등 종강 시험, 초등 비유의 의미와 핵심 성구, 수료 종합 시험</span></div>
-                                </div>
-                            </div>
-                            <div class="rounded-xl border-2 border-indigo-100 bg-indigo-50/60 p-3">
-                                <p class="text-[12px] font-black text-indigo-700 mb-1.5">📖 계시록 통달</p>
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장 중 144문항</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~7장</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~15장</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
-                                </div>
-                            </div>
-                            <div class="rounded-xl border-2 border-fuchsia-100 bg-fuchsia-50/60 p-3">
-                                <p class="text-[12px] font-black text-fuchsia-700 mb-1.5">✍️ 계시록 암기</p>
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~5장</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~10장</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~16장</span></div>
-                                    <div class="flex items-center gap-2"><span class="text-[10px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between mb-2.5">
+                            <p class="text-[13px] font-black text-slate-500">급수별 시험 범위</p>
+                            <p class="text-[11px] text-slate-400 font-bold">탭하여 펼치기</p>
                         </div>
-                    </div>
-
-                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
-                        <p class="text-[11px] font-black text-slate-400 mb-2">✅ 과목별 채점 기준</p>
                         <div class="space-y-2">
-                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-blue-700 flex-shrink-0 w-[62px]">초중고 신학</span><span class="text-[12px] text-slate-600 font-bold break-keep">토씨 오탈자 없이 정확히 기록하시기 바랍니다.</span></div>
-                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-indigo-700 flex-shrink-0 w-[62px]">계시록 통달</span><span class="text-[12px] text-slate-600 font-bold break-keep">조사(은/는/이/가/을/를 등)는 채점에 반영하지 않습니다.</span></div>
-                            <div class="flex items-start gap-2"><span class="text-[11px] font-black text-fuchsia-700 flex-shrink-0 w-[62px]">계시록 암기</span><span class="text-[12px] text-slate-600 font-bold break-keep">토씨 오탈자 없이 정확히 기록하시기 바랍니다.</span></div>
+                            <div class="rounded-xl border-2 border-blue-100 bg-blue-50/60 overflow-hidden">
+                                <button type="button" onclick="toggleExamRange('theo')" class="w-full flex items-center justify-between gap-2 p-3 text-left">
+                                    <span class="text-[12px] font-black text-blue-700">📘 초중고 신학</span>
+                                    <svg id="examinfo-range-theo-chevron" class="w-4 h-4 text-blue-400 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div id="examinfo-range-theo" class="hidden px-3 pb-3 space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 제목, 초등 종강 시험</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초등 제목, 초등 종강 시험, 초등 비유의 의미와 핵심 성구</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중 제목, 초·중 종강 시험, 초등 비유의 의미와 핵심 성구</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-blue-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">초·중·고 제목, 초·중·고 종강 시험, 초등 비유의 의미와 핵심 성구, 수료 종합 시험</span></div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border-2 border-indigo-100 bg-indigo-50/60 overflow-hidden">
+                                <button type="button" onclick="toggleExamRange('tongdal')" class="w-full flex items-center justify-between gap-2 p-3 text-left">
+                                    <span class="text-[12px] font-black text-indigo-700">📖 계시록 통달</span>
+                                    <svg id="examinfo-range-tongdal-chevron" class="w-4 h-4 text-indigo-400 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div id="examinfo-range-tongdal" class="hidden px-3 pb-3 space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장 중 144문항</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~7장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~15장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-indigo-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border-2 border-fuchsia-100 bg-fuchsia-50/60 overflow-hidden">
+                                <button type="button" onclick="toggleExamRange('amgi')" class="w-full flex items-center justify-between gap-2 p-3 text-left">
+                                    <span class="text-[12px] font-black text-fuchsia-700">✍️ 계시록 암기</span>
+                                    <svg id="examinfo-range-amgi-chevron" class="w-4 h-4 text-fuchsia-400 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div id="examinfo-range-amgi" class="hidden px-3 pb-3 space-y-1">
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">4급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~5장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">3급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~10장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">2급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~16장</span></div>
+                                    <div class="flex items-center gap-2"><span class="text-[12px] font-black text-white bg-fuchsia-600 rounded-full w-8 text-center py-0.5 flex-shrink-0">1급</span><span class="text-[12px] text-slate-700 font-bold break-keep">계 1~22장</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm">
+                        <p class="text-[13px] font-black text-slate-500 mb-2">✅ 과목별 채점 기준</p>
+                        <div class="space-y-2">
+                            <div class="flex items-start gap-2"><span class="text-[13px] font-black text-blue-700 flex-shrink-0 w-[62px]">초중고 신학</span><span class="text-[12px] text-slate-600 font-bold break-keep">조사(은/는/이/가/을/를 등)는 채점에 반영하지 않습니다.</span></div>
+                            <div class="flex items-start gap-2"><span class="text-[13px] font-black text-indigo-700 flex-shrink-0 w-[62px]">계시록 통달</span><span class="text-[12px] text-slate-600 font-bold break-keep">조사(은/는/이/가/을/를 등)는 채점에 반영하지 않습니다.</span></div>
+                            <div class="flex items-start gap-2"><span class="text-[13px] font-black text-fuchsia-700 flex-shrink-0 w-[62px]">계시록 암기</span><span class="text-[12px] text-slate-600 font-bold break-keep">토씨 오탈자 없이 정확히 기록하시기 바랍니다.</span></div>
                         </div>
                     </div>
 
                     <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4">
-                        <p class="text-[11px] font-black text-sky-700 mb-1">📋 시험 유형</p>
+                        <p class="text-[13px] font-black text-sky-700 mb-1">📋 시험 유형</p>
                         <p class="text-[12px] text-sky-900 font-bold break-keep">각 과목, 각 급수별 모의고사 참고 (동일한 유형으로 출제합니다.)</p>
                     </div>
 
                     <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
-                        <p class="text-[11px] font-black text-emerald-700 mb-1">🏅 합격 기준 및 혜택</p>
+                        <p class="text-[13px] font-black text-emerald-700 mb-1">🏅 합격 기준 및 혜택</p>
                         <p class="text-[12px] text-emerald-900 font-bold break-keep">각 과목 90점 이상 합격</p>
                         <p class="text-[12px] text-emerald-900 font-bold break-keep mt-1">합격 시 자격증서와 자격증 카드가 부여됩니다.</p>
                     </div>
 
                     <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
-                        <p class="text-[11px] font-black text-amber-700 mb-1">🌟 자문회 특별 전형 (계시록 통달 자격증에 한함)</p>
+                        <p class="text-[13px] font-black text-amber-700 mb-1">🌟 자문회 특별 전형 (계시록 통달 자격증에 한함)</p>
                         <p class="text-[12px] text-amber-900 font-bold break-keep">전장 144문항(일반 4급용)을 실시한 후 점수별로 급수가 정해집니다.</p>
                         <div class="grid grid-cols-2 gap-1.5 mt-2">
-                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">1급</span><span class="text-[11px] text-amber-900 font-bold">90점 이상</span></div>
-                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">2급</span><span class="text-[11px] text-amber-900 font-bold">80점 이상</span></div>
-                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">3급</span><span class="text-[11px] text-amber-900 font-bold">70점 이상</span></div>
-                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[11px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">4급</span><span class="text-[11px] text-amber-900 font-bold">60점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[13px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">1급</span><span class="text-[13px] text-amber-900 font-bold">90점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[13px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">2급</span><span class="text-[13px] text-amber-900 font-bold">80점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[13px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">3급</span><span class="text-[13px] text-amber-900 font-bold">70점 이상</span></div>
+                            <div class="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5"><span class="text-[13px] font-black text-white bg-amber-500 rounded-full px-2 py-0.5 flex-shrink-0">4급</span><span class="text-[13px] text-amber-900 font-bold">60점 이상</span></div>
                         </div>
-                        <p class="text-[11px] bg-yellow-200 text-yellow-900 font-bold rounded-lg px-2 py-1.5 mt-2 break-keep">※ 자문회 성도여도 희망자는 일반 성도와 동일하게 급수별 시험을 선택하여 치를 수 있음</p>
-                        <p class="text-[11px] text-amber-800 font-bold mt-1 break-keep">초중고 신학, 계시록 암기 자격증은 자문회도 일반 성도와 동일하게 응시</p>
+                        <p class="text-[13px] bg-yellow-200 text-yellow-900 font-bold rounded-lg px-2 py-1.5 mt-2 break-keep">※ 자문회 성도여도 희망자는 일반 성도와 동일하게 급수별 시험을 선택하여 치를 수 있음</p>
+                        <p class="text-[13px] text-amber-800 font-bold mt-1 break-keep">초중고 신학, 계시록 암기 자격증은 자문회도 일반 성도와 동일하게 응시</p>
                     </div>
 
                     <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-2.5">
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">✍️</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">신청 방법</p>
+                                <p class="text-[13px] font-black text-slate-500">신청 방법</p>
                                 <p class="text-sm font-extrabold text-slate-800 break-keep">[시험 신청]을 눌러 지파·교회·부서·이름·고유번호·전화번호 등 정보를 입력해 주세요</p>
                             </div>
                         </div>
@@ -521,7 +597,7 @@
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">⚠️</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">유의 사항</p>
+                                <p class="text-[13px] font-black text-slate-500">유의 사항</p>
                                 <ul class="text-[12px] text-slate-600 font-bold mt-0.5 space-y-1 list-disc pl-4 break-keep">
                                     <li>취소는 [시험 신청] 화면에서 이름·고유번호로 조회 후 직접 진행</li>
                                     <li>취소는 신청 기간 내에만 가능</li>
@@ -533,7 +609,7 @@
                         <div class="flex gap-3">
                             <span class="text-lg flex-shrink-0">📚</span>
                             <div class="min-w-0">
-                                <p class="text-[11px] font-black text-slate-400">시험 준비</p>
+                                <p class="text-[13px] font-black text-slate-500">시험 준비</p>
                                 <p class="text-[12px] text-slate-600 font-bold break-keep">시온 공부방의 각 과목 자격증 준비방에서 급수별 문항으로 미리 연습하실 수 있습니다</p>
                             </div>
                         </div>
@@ -566,7 +642,7 @@
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #e9a6f7, #a21caf);">4급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 4급</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">범위: 계 1~5장</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">범위: 계 1~5장</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -574,7 +650,7 @@
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #d68af0, #86198f);">3급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 3급</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">범위: 계 1~10장</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">범위: 계 1~10장</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -582,16 +658,16 @@
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #c26beb, #701a75);">2급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 2급</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">범위: 계 1~16장</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">범위: 계 1~16장</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
                     <button onclick="startMemoExamSheet('grade1')" class="w-full bg-white hover:bg-fuchsia-50 border-2 border-amber-300 transition-all rounded-2xl p-4 text-left shadow-sm shadow-amber-200/40 flex items-center gap-4 group relative overflow-hidden min-h-[92px]">
-                        <span class="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">최고 급수 👑</span>
+                        <span class="absolute -top-1 -right-1 bg-amber-400 text-white text-[12px] font-black px-2.5 py-1 rounded-bl-xl shadow-sm">최고 급수 👑</span>
                         <div class="w-12 h-12 rounded-2xl text-white flex items-center justify-center font-black text-lg shadow-md flex-shrink-0" style="background: linear-gradient(135deg, #4c1d95, #1e1b4b);">1급</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">계시록 암기 1급</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">범위: 계 1~22장</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">범위: 계 1~22장</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -599,8 +675,8 @@
 
                 <div id="memo-history-section" class="hidden mt-5">
                     <div class="flex items-center justify-between mb-2">
-                        <p class="text-[11px] font-black text-slate-400">📅 최근 응시 기록 (이 기기 기준)</p>
-                        <button onclick="clearMemoHistory()" class="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">전체 삭제</button>
+                        <p class="text-[13px] font-black text-slate-500">📅 최근 응시 기록 (이 기기 기준)</p>
+                        <button onclick="clearMemoHistory()" class="text-[12px] font-bold text-slate-500 hover:text-rose-500 transition-colors">전체 삭제</button>
                     </div>
                     <div id="memo-history-list" class="space-y-1.5"></div>
                 </div>
@@ -620,9 +696,9 @@
                             <img src="assets/memo-logo-woman.jpg" alt="새 노래를 부르는 여인" class="w-full h-full object-cover">
                         </div>
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
-                        <p id="memo-exam-range" class="text-slate-400 text-[11px] mt-1 font-bold break-keep"><span class="block">📚 출제 범위: 계 1~5장</span><span class="block mt-1">📝 총 25문항 · ✏️ 문항당 2점</span></p>
-                        <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[11px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
-                        <p class="inline-block bg-slate-100 text-slate-600 text-[11px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
+                        <p id="memo-exam-range" class="text-slate-500 text-[13px] mt-1 font-bold break-keep"><span class="block">📚 출제 범위: 계 1~5장</span><span class="block mt-1">📝 총 25문항 · ✏️ 문항당 2점</span></p>
+                        <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[13px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
+                        <p class="inline-block bg-slate-100 text-slate-600 text-[13px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
                     </div>
                     <div class="flex gap-2 items-end">
                         <div class="flex-1 min-w-0">
@@ -631,8 +707,8 @@
                         </div>
                         <button onclick="memoSubmitExam()" class="flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 h-[42px] text-[13px] font-black transition-colors">제출하기</button>
                     </div>
-                    <p id="memo-exam-name-error" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mt-2">이름을 입력해주세요.</p>
-                    <p class="text-[10px] text-slate-400 font-bold mt-2 text-center break-keep">문항을 쓰고 Enter를 누르면 다음 문항으로 이동합니다 · 띄어쓰기·기호는 채점에서 무시됩니다</p>
+                    <p id="memo-exam-name-error" class="text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mt-2">이름을 입력해주세요.</p>
+                    <p class="text-[12px] text-slate-500 font-bold mt-2 text-center break-keep">문항을 쓰고 Enter를 누르면 다음 문항으로 이동합니다 · 띄어쓰기·기호는 채점에서 무시됩니다</p>
                 </div>
                 <div id="memo-exam-container" class="space-y-3"></div>
                 <button id="memo-exam-submit-btn" onclick="memoSubmitExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3.5 text-sm font-black transition-colors mt-4 mb-10">작성 후 제출하고 채점하기</button>
@@ -654,8 +730,8 @@
                     </div>
                     <h1 id="memo-result-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사 결과</h1>
                     <p id="memo-result-name" class="text-slate-500 text-[12px] font-bold mt-1"></p>
-                    <p id="memo-result-taken-at" class="text-slate-400 text-[11px] font-bold mt-0.5">📅 응시일시: -</p>
-                    <p id="memo-result-elapsed" class="text-slate-400 text-[11px] font-bold mt-0.5">⏱ 소요 시간: -</p>
+                    <p id="memo-result-taken-at" class="text-slate-500 text-[13px] font-bold mt-0.5">📅 응시일시: -</p>
+                    <p id="memo-result-elapsed" class="text-slate-500 text-[13px] font-bold mt-0.5">⏱ 소요 시간: -</p>
                 </div>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 shadow-sm text-center mb-4">
                     <span id="memo-result-score" class="text-5xl font-black tracking-tighter text-fuchsia-600">0</span>
@@ -663,7 +739,7 @@
                     <p id="memo-result-message" class="text-sm font-black mt-2 break-keep"></p>
                 </div>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm mb-4">
-                    <p class="text-[11px] font-black text-slate-400 mb-2">본문 채점 결과 (괄호 안 = 내가 쓴 답, 틀린 경우 밑에 정답 표시)</p>
+                    <p class="text-[13px] font-black text-slate-500 mb-2">본문 채점 결과 (괄호 안 = 내가 쓴 답, 틀린 경우 밑에 정답 표시)</p>
                     <div id="memo-result-passage"></div>
                 </div>
                 <h3 class="text-[13px] font-black text-fuchsia-700 mb-2">구절 전체 쓰기 채점 결과</h3>
@@ -686,14 +762,14 @@
                 </button>
                 <div class="text-center mb-6">
                     <h1 class="text-2xl font-black text-blue-700 font-jua break-keep">시험 신청</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">원하시는 항목을 선택해주세요</p>
+                    <p class="text-slate-500 text-[13px] mt-1 break-keep">원하시는 항목을 선택해주세요</p>
                 </div>
                 <div class="space-y-3">
                     <button onclick="showApply()" class="w-full bg-white hover:bg-blue-50 border-2 border-slate-100 hover:border-blue-400 transition-all rounded-2xl p-4 text-left shadow-sm flex items-center gap-4 group">
                         <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">✍️</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">신청하기</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">새로 시험을 신청합니다</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">새로 시험을 신청합니다</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -701,7 +777,7 @@
                         <div class="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-md flex-shrink-0">🔍</div>
                         <div class="flex-grow">
                             <h3 class="font-extrabold text-slate-800 text-base">신청 조회 및 변경</h3>
-                            <p class="text-slate-400 text-[11px] font-bold mt-0.5">이전에 넣은 신청 내역을 확인하고 변경하거나 취소합니다</p>
+                            <p class="text-slate-500 text-[13px] font-bold mt-0.5">이전에 넣은 신청 내역을 확인하고 변경하거나 취소합니다</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -721,9 +797,9 @@
                 <div id="apply-form-section">
                     <div class="text-center mb-5">
                         <h1 id="apply-form-title" class="text-3xl font-black text-blue-700 break-keep">시험 신청서</h1>
-                        <p class="text-slate-400 text-[11px] mt-1 break-keep">아래 정보를 입력하고 신청하기를 눌러주세요</p>
+                        <p class="text-slate-500 text-[13px] mt-1 break-keep">아래 정보를 입력하고 신청하기를 눌러주세요</p>
                     </div>
-                    <p id="apply-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">모든 항목을 입력(선택)해주세요.</p>
+                    <p id="apply-error-msg" class="text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">모든 항목을 입력(선택)해주세요.</p>
                     <form id="apply-form" onsubmit="event.preventDefault(); submitApplication();" class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
                         <div>
                             <label class="field-label">지파</label>
@@ -805,8 +881,8 @@
                                 <option value="2급">2급</option>
                                 <option value="1급">1급</option>
                             </select>
-                            <p id="apply-grade-advisory-note" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 자문회 특별 전형은 급수를 직접 선택하지 않고, 시험 점수로 급수가 자동 결정됩니다.<br>1급 - 90점 이상<br>2급 - 80점 이상<br>3급 - 70점 이상<br>4급 - 60점 이상</p>
-                            <p id="apply-grade-range-note" class="hidden text-[11px] text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep"></p>
+                            <p id="apply-grade-advisory-note" class="hidden text-[13px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep">※ 자문회 특별 전형은 급수를 직접 선택하지 않고, 시험 점수로 급수가 자동 결정됩니다.<br>1급 - 90점 이상<br>2급 - 80점 이상<br>3급 - 70점 이상<br>4급 - 60점 이상</p>
+                            <p id="apply-grade-range-note" class="hidden text-[13px] text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mt-2 font-bold leading-relaxed break-keep"></p>
                         </div>
                         <div>
                             <label class="field-label">시험 시간</label>
@@ -825,10 +901,10 @@
                 <div id="apply-success-section" class="hidden bg-white border-2 border-emerald-200 rounded-2xl p-6 shadow-sm text-center space-y-3">
                     <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto">✅</div>
                     <h2 id="apply-success-heading" class="text-lg font-black text-slate-800">신청이 접수되었습니다</h2>
-                    <p class="text-slate-400 text-[11px]">접수번호</p>
+                    <p class="text-slate-500 text-[13px]">접수번호</p>
                     <p id="apply-success-id" class="text-violet-700 font-black text-sm break-all"></p>
                     <p id="apply-success-detail" class="text-slate-500 text-[12px] font-bold"></p>
-                    <p id="apply-success-sync" class="text-slate-400 text-[10px]"></p>
+                    <p id="apply-success-sync" class="text-slate-500 text-[12px]"></p>
                     <button onclick="resetApplyForm()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-xs font-black transition-colors mt-2">새로 신청하기</button>
                     <button onclick="backToRooms()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-xs font-black transition-colors">뒤로가기</button>
                 </div>
@@ -844,10 +920,10 @@
                 </button>
                 <div class="text-center mb-5">
                     <h1 class="text-2xl font-black text-rose-600 font-jua break-keep">신청 조회 및 변경</h1>
-                    <p class="text-slate-400 text-[11px] mt-1 break-keep">이름으로 신청 내역을 조회하세요</p>
+                    <p class="text-slate-500 text-[13px] mt-1 break-keep">이름으로 신청 내역을 조회하세요</p>
                 </div>
-                <p id="cancel-error-msg" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">이름을 입력해주세요.</p>
-                <p id="cancel-lookup-msg" class="hidden text-blue-700 text-[11px] font-bold text-center bg-blue-50 rounded-full px-3 py-1.5 mb-3"></p>
+                <p id="cancel-error-msg" class="text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">이름을 입력해주세요.</p>
+                <p id="cancel-lookup-msg" class="hidden text-blue-700 text-[13px] font-bold text-center bg-blue-50 rounded-full px-3 py-1.5 mb-3"></p>
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-3 mb-4">
                     <div>
                         <label class="field-label">이름</label>
@@ -867,7 +943,7 @@
             <div class="w-full max-w-3xl mx-auto px-3">
                 <div id="admin-suggest-login" class="max-w-sm mx-auto mt-10">
                     <h1 class="text-xl font-black text-slate-800 text-center mb-4">🔐 건의사항 관리자</h1>
-                    <p id="admin-suggest-login-err" class="text-rose-600 text-[11px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">비밀번호가 올바르지 않습니다.</p>
+                    <p id="admin-suggest-login-err" class="text-rose-600 text-[13px] font-bold opacity-0 transition-opacity text-center bg-rose-50 rounded-full px-3 py-1.5 mb-3">비밀번호가 올바르지 않습니다.</p>
                     <div class="flex items-center bg-white border-2 border-slate-200 rounded-full p-2 shadow-sm">
                         <input type="password" id="admin-suggest-key-input" class="flex-grow min-w-0 bg-transparent border-none outline-none px-3 py-2 text-slate-700 font-bold" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter') adminSuggestLogin()">
                         <button onclick="adminSuggestLogin()" class="bg-slate-800 hover:bg-black text-white rounded-full px-4 py-2 text-sm font-black transition-colors flex-shrink-0">확인</button>
@@ -879,11 +955,11 @@
                         <h1 class="text-xl font-black text-slate-800">💡 건의사항 대시보드</h1>
                         <button onclick="loadAdminSuggestions()" class="text-[12px] font-bold text-slate-500 hover:text-slate-800 transition-colors">🔄 새로고침</button>
                     </div>
-                    <p id="admin-suggest-status" class="text-[12px] text-slate-400 font-bold mb-3"></p>
+                    <p id="admin-suggest-status" class="text-[12px] text-slate-500 font-bold mb-3"></p>
                     <div class="overflow-x-auto bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
                         <table class="w-full text-left border-collapse text-[12px] min-w-[720px]">
                             <thead>
-                                <tr class="border-b-2 border-slate-100 text-slate-400">
+                                <tr class="border-b-2 border-slate-100 text-slate-500">
                                     <th class="py-2.5 pl-4 pr-3 font-black whitespace-nowrap">접수일시</th>
                                     <th class="py-2.5 pr-3 font-black whitespace-nowrap">이름</th>
                                     <th class="py-2.5 pr-3 font-black whitespace-nowrap">교회</th>
@@ -900,6 +976,60 @@
                 </div>
             </div>
         </div>
+
+        <!-- 계시록 통달 문제 사전체험 (십자말풀이) -->
+        <div id="view-crossword-preview" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
+            <div class="w-full max-w-md px-2">
+                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-indigo-700 text-[13px] font-black transition-colors mb-4">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <div class="text-center mb-4">
+                    <p class="text-[12px] font-black text-indigo-500 tracking-wide">🧩 시온 공부방 · 자격증 체험판</p>
+                    <h1 class="text-xl font-black text-indigo-700 font-jua break-keep mt-1">문제 사전체험 (십자말풀이)</h1>
+                    <p class="text-[12px] text-slate-500 font-bold mt-2 break-keep">도전할 때마다 새 문제로 다시 조합됩니다</p>
+                </div>
+
+                <!-- 과목 탭: 계시록 통달 / 계시록 암기 -->
+                <div class="bg-slate-100 p-1.5 rounded-2xl flex w-full mb-4 shadow-inner">
+                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all">📖 계시록 통달</button>
+                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
+                </div>
+
+                <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-sm mb-4 relative min-h-[220px]">
+                    <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
+                        <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+                        <p class="font-black text-indigo-700 text-[13px]">새로운 문제를 조합 중입니다...</p>
+                    </div>
+
+                    <p id="cw-mode-badge" class="text-center text-[11.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mx-auto mb-3" style="width:fit-content;">계시록 통달 랜덤 십자말풀이</p>
+                    <p class="text-center text-[11.5px] text-slate-400 font-bold mb-3">빈 칸을 탭하고 정답을 입력하세요</p>
+
+                    <div class="w-full overflow-x-auto">
+                        <div id="cw-grid" class="cw-grid"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-4">
+                        <button id="cw-check-btn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 text-[13px] font-black transition-colors">✔️ 정답 제출하고 채점하기</button>
+                        <button id="cw-new-btn" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-[13px] font-black transition-colors">🔄 또 풀기 (새로운 문제)</button>
+                    </div>
+                    <div id="cw-result" class="hidden mt-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-3 text-center">
+                        <p id="cw-result-score" class="font-jua text-indigo-700 text-base"></p>
+                        <p id="cw-result-msg" class="text-[12px] text-indigo-600 font-bold mt-1 break-keep"></p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-[12px] font-black text-blue-600 mb-2 pl-1">➡️ 가로 열쇠</p>
+                    <div id="cw-clues-h" class="space-y-2 mb-3"></div>
+                    <p class="text-[12px] font-black text-rose-500 mb-2 pl-1">⬇️ 세로 열쇠</p>
+                    <div id="cw-clues-v" class="space-y-2"></div>
+                </div>
+
+                <button onclick="showApplyMenu()" class="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white rounded-xl py-3 text-sm font-black transition-colors mb-2">🎯 진짜 시험도 신청해볼까요?</button>
+                <button onclick="backToRooms()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-[13px] font-black transition-colors">홈으로</button>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -909,7 +1039,7 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbwbXTWcmb4hWpB1MZYLfRpBb_mCpmqgvg3oRav5Kt8C_rdBy_w75jDYE5DC_d8WjwknyQ/exec';
 
         const AUTH_KEY = 'sion_auth';
-        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel', 'view-admin-suggest'];
+        const ALL_VIEWS = ['view-login', 'view-rooms', 'view-examinfo', 'view-memorize-grade', 'view-memo-exam', 'view-memo-result', 'view-suggest', 'view-apply-menu', 'view-apply', 'view-applycancel', 'view-admin-suggest', 'view-crossword-preview'];
         const MEMO_VERSES = {
  "ch1": {
   "1": "예수 그리스도의 계시라 이는 하나님이 그에게 주사 반드시 속히 될 일을 그 종들에게 보이시려고 그 천사를 그 종 요한에게 보내어 지시하신 것이라",
@@ -1626,9 +1756,9 @@
                     const q = memoState.questions[idx];
                     // 괄호 폭을 정답 글자수(띄어쓰기 포함)에 비례하게 넓혀 글자가 가리지 않도록 함
                     const blankWidth = Math.min(Math.max(q.answer.length * 0.95 + 1.4, 4), 32).toFixed(1) + 'em';
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" style="width:${blankWidth}" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-500">${v.v}.</b> ${escapeHtml(q.before)} <input type="text" id="memo-ans-${idx}" data-idx="${idx}" class="memo-inline-input" style="width:${blankWidth}" autocomplete="off" spellcheck="false" lang="ko"><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${escapeHtml(q.after)}</p>`;
                 } else {
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-500">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
                 }
             });
 
@@ -1639,7 +1769,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-2">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-7 h-7 rounded-full bg-fuchsia-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">${idx + 1}</span>
-                        <span class="text-[11px] font-black text-slate-400">${escapeHtml(q.address)} 전체 쓰기</span>
+                        <span class="text-[13px] font-black text-slate-500">${escapeHtml(q.address)} 전체 쓰기</span>
                     </div>
                     <textarea id="memo-ans-${idx}" data-idx="${idx}" class="field-input memo-answer-input" rows="2" placeholder="구절을 그대로 써보세요" spellcheck="false" lang="ko"></textarea>
                     
@@ -1762,7 +1892,7 @@
         // 사용자가 쓴 답을 채점 결과(맞음/틀림 색)로 표시하고, 틀린 경우 그 밑에 정답을 작게 덧붙인다.
         function buildMemoResultPassageHtml(passage, perQ) {
             if (!passage || !passage.length) {
-                return '<p class="text-[12px] text-slate-400 font-bold text-center py-4">이 기록은 예전 버전에서 저장되어 본문을 다시 보여줄 수 없습니다.</p>';
+                return '<p class="text-[12px] text-slate-500 font-bold text-center py-4">이 기록은 예전 버전에서 저장되어 본문을 다시 보여줄 수 없습니다.</p>';
             }
             const blankByKey = {};
             perQ.forEach(p => { if (p.q.type === 'blank') blankByKey[p.q.ch + ':' + p.q.v] = p; });
@@ -1780,10 +1910,10 @@
                     const ansCls = correct ? 'text-emerald-700 font-black' : 'text-rose-600 font-black underline decoration-rose-400 decoration-2';
                     const mark = correct ? '<span class="text-emerald-600 font-black">◯</span>' : '<span class="text-rose-500 font-black">／</span>';
                     const shown = userInput ? escapeHtml(userInput) : '(빈칸)';
-                    const hint = correct ? '' : `<br><span class="text-[10px] text-rose-400 font-bold">↳ 정답: ${escapeHtml(q.answer)}</span>`;
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(q.before)} <span class="${ansCls}">${shown}</span><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${mark} ${escapeHtml(q.after)}${hint}</p>`;
+                    const hint = correct ? '' : `<br><span class="text-[12px] text-rose-400 font-bold">↳ 정답: ${escapeHtml(q.answer)}</span>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-500">${v.v}.</b> ${escapeHtml(q.before)} <span class="${ansCls}">${shown}</span><sup class="text-fuchsia-500 font-black">${idx + 1}</sup> ${mark} ${escapeHtml(q.after)}${hint}</p>`;
                 } else {
-                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-400">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
+                    html += `<p class="text-[13px] leading-relaxed text-slate-800 break-keep mb-1.5"><b class="text-slate-500">${v.v}.</b> ${escapeHtml(v.text)}</p>`;
                 }
             });
             return html;
@@ -1817,11 +1947,11 @@
                 <div class="bg-white rounded-2xl shadow-sm border-2 ${correct ? 'border-emerald-200' : 'border-rose-200'} p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-7 h-7 rounded-full ${correct ? 'bg-emerald-600' : 'bg-rose-500'} text-white text-xs font-black flex items-center justify-center flex-shrink-0">${idx + 1}</span>
-                        <span class="text-[11px] font-black text-slate-400 flex-grow">${escapeHtml(q.address)} 전체 쓰기</span>
+                        <span class="text-[13px] font-black text-slate-500 flex-grow">${escapeHtml(q.address)} 전체 쓰기</span>
                         <span class="text-lg font-black ${correct ? 'text-emerald-500' : 'text-rose-500'}">${correct ? '◯' : '／'}</span>
                     </div>
                     <p class="text-[13px] leading-relaxed text-slate-800 break-keep">${escapeHtml(userInput) || '(빈칸)'}</p>
-                    ${correct ? '' : `<p class="text-[11px] text-rose-400 font-bold mt-2 pt-2 border-t border-rose-100">↳ 정답: ${escapeHtml(q.answer)}</p>`}
+                    ${correct ? '' : `<p class="text-[13px] text-rose-400 font-bold mt-2 pt-2 border-t border-rose-100">↳ 정답: ${escapeHtml(q.answer)}</p>`}
                 </div>
             `).join('');
 
@@ -1831,7 +1961,7 @@
                 guideEl.innerHTML = `<p class="text-[12px] font-black text-amber-700 mb-1.5">🌟 완벽 암기 가이드</p><p class="text-[12px] text-amber-800 font-bold break-keep leading-relaxed">모든 문항을 정확히 암기하셨습니다! 지금처럼 소리 내어 <b>반복 암송</b>하고, 며칠 간격을 두고 다시 써보는 <b>간헐적 복습</b>을 계속 병행하면 시험 때까지 흔들림 없이 기억할 수 있습니다.</p>`;
             } else {
                 guideEl.innerHTML = `<p class="text-[12px] font-black text-amber-700 mb-1.5">🌟 완벽 암기 가이드</p>` +
-                    `<p class="text-[11px] text-amber-800 font-bold mb-3 break-keep leading-relaxed">${MEMO_GUIDE_STRATEGY_INTRO}</p>` +
+                    `<p class="text-[13px] text-amber-800 font-bold mb-3 break-keep leading-relaxed">${MEMO_GUIDE_STRATEGY_INTRO}</p>` +
                     cats.map(([cat, cnt]) => `<div class="mb-3 last:mb-0"><p class="text-[12px] text-amber-900 font-black mb-1">▸ ${MEMO_GUIDE_LABEL[cat]} 오류 ${cnt}건</p><p class="text-[12px] text-amber-800 font-bold break-keep leading-relaxed">${MEMO_GUIDE_TEXT[cat]}</p></div>`).join('');
             }
         }
@@ -1913,10 +2043,10 @@
             }
             section.classList.remove('hidden');
             listEl.innerHTML = list.slice(0, 5).map((h, idx) => `
-                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[11px] font-bold gap-2">
+                <div class="flex items-center bg-white border border-slate-100 rounded-xl pl-3 pr-1 py-1 text-[13px] font-bold gap-2">
                     <button onclick="loadMemoHistoryEntry(${idx})" class="flex items-center gap-2 flex-grow min-w-0 text-left py-1.5 hover:opacity-70 transition-opacity" ${h.perQ ? '' : 'title="예전 기록은 상세 내용이 없어 불러올 수 없습니다"'}>
                         <span class="text-slate-500 flex-shrink-0">${escapeHtml(h.takenAt || '')}</span>
-                        <span class="text-slate-400 flex-grow truncate">${escapeHtml(h.gradeLabel || '')} · ${escapeHtml(h.name || '')}</span>
+                        <span class="text-slate-500 flex-grow truncate">${escapeHtml(h.gradeLabel || '')} · ${escapeHtml(h.name || '')}</span>
                         <span class="${(h.score || 0) >= 90 ? 'text-emerald-600' : 'text-rose-500'} flex-shrink-0">${h.score}점</span>
                         <span class="text-fuchsia-400 flex-shrink-0">📂 불러오기</span>
                     </button>
@@ -1980,12 +2110,659 @@
             el.classList.add('flex');
         }
 
-        function showRooms() { showView('view-rooms'); logVisit(); }
-        function showExamInfo() { showView('view-examinfo'); }
+        function showRooms() { showView('view-rooms'); logVisit(); renderHomeProgressMini(); }
+        function showExamInfo() { showView('view-examinfo'); initExamInfoAccordion(); }
+
+        // "급수별 시험 범위" 아코디언: 기본은 3과목 모두 접어두되, 이 기기에서 최근에
+        // 신청한(취소되지 않은) 과목이 있으면 그 과목만 펼쳐서 보여준다.
+        function toggleExamRange(key) {
+            const body = document.getElementById('examinfo-range-' + key);
+            const chevron = document.getElementById('examinfo-range-' + key + '-chevron');
+            if (!body) return;
+            const wasHidden = body.classList.contains('hidden');
+            body.classList.toggle('hidden');
+            if (chevron) chevron.style.transform = wasHidden ? 'rotate(180deg)' : '';
+        }
+
+        function initExamInfoAccordion() {
+            const keys = ['theo', 'tongdal', 'amgi'];
+            keys.forEach(key => {
+                const body = document.getElementById('examinfo-range-' + key);
+                const chevron = document.getElementById('examinfo-range-' + key + '-chevron');
+                if (body) body.classList.add('hidden');
+                if (chevron) chevron.style.transform = '';
+            });
+
+            const SUBJECT_KEY_MAP = { '초중고 신학': 'theo', '계시록 통달': 'tongdal', '계시록 암기': 'amgi' };
+            let apps = [];
+            try { apps = loadApplications(); } catch (e) { apps = []; }
+            const active = [...apps].reverse().find(a => a.status !== '취소') || apps[apps.length - 1];
+            const key = active ? SUBJECT_KEY_MAP[active.subject] : null;
+            if (key) toggleExamRange(key);
+        }
         function showMemorizeGrade() { showView('view-memorize-grade'); renderMemoHistoryList(); }
         function showApplyMenu() { showView('view-apply-menu'); }
         function showApply() { resetApplyForm(); showView('view-apply'); }
         function showApplyCancel() { showView('view-applycancel'); }
+        function showCrosswordPreview() { showView('view-crossword-preview'); initCrosswordPreview(); }
+
+        // ─────────────────────────────────────────────────────────
+        // 계시록 통달 / 계시록 암기 문제 사전체험(십자말풀이)
+        // 도전(진입 또는 "또 풀기")할 때마다 문제 은행에서 무작위로 골라 새 격자를
+        // 그때그때 조합해서 보여준다(고정된 10문제가 아님). 채점 후에는 틀린 문제마다
+        // 정답을 알려준다. 문제 은행 자체는 사용자가 제공한 참고 코딩의 데이터를 그대로 사용.
+        // ─────────────────────────────────────────────────────────
+        const CW_TONGDAL_POOL = [
+            { word: "사명자", keyword: "두 증인", v: "계 11:3", text: "내가 나의 두 증인에게 권세를 주리니 저희가 굵은 베옷을 입고 일천 이백 육십 일을 예언하리라", meaningBefore: "요한과 지팡이 같은 갈대로 비유한 육체 [실상] 새요한과 그를 돕는 ", meaningAfter: "" },
+            { word: "말씀", keyword: "철장", v: "계 12:5", text: "여자가 아들을 낳으니 이는 장차 철장으로 만국을 다스릴 남자라 그 아이를 하나님 앞과 그 보좌 앞으로 올려가더라", meaningBefore: "영원한 치리권 진리의 ", meaningAfter: "" },
+            { word: "사단", keyword: "큰 붉은 용", v: "계 12:3", text: "하늘에 또 다른 이적이 보이니 보라 한 큰 붉은 용이 있어 머리가 일곱이요 뿔이 열이라...", meaningBefore: "에덴동산의 뱀, 마귀요 ", meaningAfter: " (계 12:9, 계 20:2)" },
+            { word: "바벨론", keyword: "바다", v: "계 13:1", text: "내가 보니 바다에서 한 짐승이 나오는데 뿔이 열이요 머리가 일곱이라...", meaningBefore: "세상, ", meaningAfter: " (단 7:3)" },
+            { word: "지혜", keyword: "무저갱 열쇠", v: "계 20:1", text: "또 내가 보매 천사가 무저갱 열쇠와 큰 쇠사슬을 그 손에 가지고 하늘로서 내려와서", meaningBefore: "사단의 비밀을 아는 ", meaningAfter: "" },
+            { word: "신천지", keyword: "새 하늘과 새 땅", v: "계 21:1", text: "또 내가 새 하늘과 새 땅을 보니 처음 하늘과 처음 땅이 없어졌고 바다도 다시 있지 않더라", meaningBefore: "새 나라 새 민족, 증거장막 성전과 성도 [실상] ", meaningAfter: "와 성도들" },
+            { word: "천국열쇠", keyword: "다윗의 열쇠", v: "계 3:7", text: "거룩하고 진실하사 다윗의 열쇠를 가지신 이 곧 열면 닫을 사람이 없고 닫으면 열 사람이 없는 그이가 가라사대", meaningBefore: "예언의 말씀과 실상을 여닫는 지혜, ", meaningAfter: "" },
+            { word: "이긴자", keyword: "흰 돌", v: "계 2:17", text: "이기는 그에게는 내가 감추었던 만나를 주고 또 흰 돌을 줄터인데 그 돌 위에 새 이름을 기록한 것이 있나니...", meaningBefore: "심판하는 말씀과 ", meaningAfter: "" },
+            { word: "비밀", keyword: "감추었던", v: "계 2:17", text: "이기는 그에게는 내가 감추었던 만나를 주고...", meaningBefore: "비유와 일곱 인으로 봉하였던 천국 ", meaningAfter: "" },
+            { word: "예수님", keyword: "새벽별", v: "계 2:28", text: "내가 또 그에게 새벽 별을 주리라", meaningBefore: "신랑 ", meaningAfter: "" },
+            { word: "천국호적", keyword: "생명책", v: "계 3:5", text: "내가 그 이름을 생명책에서 반드시 흐리지 아니하고 그 이름을 내 아버지 앞과 그 천사들 앞에서 시인하리라", meaningBefore: "", meaningAfter: ", 이긴자가 인도하는 교회의 교적부" },
+            { word: "목자", keyword: "해", v: "계 6:12", text: "내가 보니 여섯째 인을 떼실 때에 큰 지진이 나며 해가 총담 같이 검어지고...", meaningBefore: "선민 장막 ", meaningAfter: "" },
+            { word: "전도자", keyword: "달", v: "계 6:12", text: "내가 보니 여섯째 인을 떼실 때에 큰 지진이 나며 해가 총담 같이 검어지고 온 달이 피 같이 되며", meaningBefore: "선민 장막 ", meaningAfter: "" },
+            { word: "성도들", keyword: "별들", v: "계 6:13", text: "하늘의 별들이 무화과나무가 대풍에 흔들려 선 과실이 떨어지는 것같이 땅에 떨어지며", meaningBefore: "선민 장막 ", meaningAfter: "" },
+            { word: "멸망자", keyword: "황충", v: "계 9:3", text: "또 황충이 연기 가운데로부터 땅 위에 나오매 저희가 땅에 있는 전갈의 권세와 같은 권세를 받았더라", meaningBefore: "", meaningAfter: ", 0지기교육원 소속 이방 일곱 목자" },
+            { word: "교리", keyword: "음행의 포도주", v: "계 17:2", text: "땅에 거하는 자들도 그 음행의 포도주에 취하였다 하고", meaningBefore: "사단의 ", meaningAfter: ", 예수님의 말씀에 귀신의 교리가 섞인 것" },
+            { word: "거짓목자", keyword: "우상", v: "계 13:15", text: "저가 권세를 받아 그 짐승의 우상에게 생기를 주어 그 짐승의 우상으로 말하게 하고 또 짐승의 우상에게 경배하지 아니하는 자는 몇이든지 다 죽이게 하더라", meaningBefore: "", meaningAfter: ", [실상] 목사 안수 받은 장막성전 전도사 17명" },
+            { word: "불", keyword: "불", v: "계 8:5", text: "천사가 향로를 가지고 단 위의 불을 담아다가 땅에 쏟으매...", meaningBefore: "심판의 ", meaningAfter: "" },
+            { word: "계시록", keyword: "펴 놓인 작은 책", v: "계 10:2", text: "그 손에 펴 놓인 작은 책을 들고 그 오른발은 바다를 밟고 왼발은 땅을 밟고", meaningBefore: "열린 ", meaningAfter: ", 새 유월절 양식" },
+            { word: "장막성전", keyword: "하늘", v: "계 12:1", text: "하늘에 큰 이적이 보이니 해를 입은 한 여자가 있는데 그 발 아래는 달이 있고 그 머리에는 열 두 별의 면류관을 썼더라", meaningBefore: "일곱 금 촛대 장막, [실상] ", meaningAfter: "" },
+            { word: "성경책", keyword: "하나님의 거문고", v: "계 15:2", text: "짐승과 그의 우상과 그의 이름의 수를 이기고 벗어난 자들이 유리바다 가에 서서 하나님의 거문고를 가지고", meaningBefore: "", meaningAfter: "" },
+            { word: "영생", keyword: "생명의 면류관", v: "계 2:10", text: "네가 죽도록 충성하라 그리하면 내가 생명의 면류관을 네게 주리라", meaningBefore: "", meaningAfter: "" },
+            { word: "무저갱", keyword: "옥", v: "계 20:7", text: "천년이 차매 사단이 그 옥에서 놓여", meaningBefore: "음부 곧 지옥, ", meaningAfter: "" },
+            { word: "십사만사천", keyword: "십사만 사천", v: "계 7:4", text: "내가 인맞은 자의 수를 들으니 이스라엘 자손의 각 지파 중에서 인맞은 자들이 십사만 사천이니", meaningBefore: "영적 새 이스라엘의 제사장, 추수하고 인쳐서 모은 첫 열매 (", meaningAfter: "명)" },
+            { word: "흰옷", keyword: "흰 옷", v: "계 7:9", text: "아무라도 능히 셀 수 없는 큰 무리가 흰 옷을 입고 손에 종려 가지를 들고 보좌 앞과 어린 양 앞에 서서", meaningBefore: "말씀을 깨닫고 각 교단에서 나오는 많은 사람들, 영적 새 이스라엘 백성 (", meaningAfter: " 입은 자들)" },
+            { word: "계시록", keyword: "속히 될 일", v: "계 1:1", text: "반드시 속히 될 일을 그 종들에게 보이시려고", meaningBefore: "", meaningAfter: " 전장 사건" },
+            { word: "새요한", keyword: "요한", v: "계 1:2", text: "요한은 하나님의 말씀과 예수 그리스도의 증거 곧 자기의 본 것을 다 증거하였느니라", meaningBefore: "[실상] 열린 책을 받아먹은 ", meaningAfter: "" },
+            { word: "장막성전", keyword: "일곱 금 촛대", v: "계 1:20", text: "네 본 것은 내 오른손에 일곱 별의 비밀과 일곱 금 촛대라", meaningBefore: "일곱 등불의 영이 있는 곳, [실상] ", meaningAfter: "" },
+            { word: "니골라당", keyword: "자칭 사도라 하되 아닌 자들", v: "계 2:2", text: "자칭 사도라 하되 아닌 자들을 시험하여 그 거짓된 것을 네가 드러낸 것과", meaningBefore: "배도하고 당을 지어 성도를 미혹한 ", meaningAfter: "" },
+            { word: "일곱교육장", keyword: "하나님의 일곱 영", v: "계 4:5", text: "보좌 앞에 일곱 등불 켠 것이 있으니 이는 하나님의 일곱 영이더라", meaningBefore: "하나님의 말씀을 대언하는 일곱 사자, [실상] 총회 소속 ", meaningAfter: "" },
+            { word: "말씀", keyword: "유리바다", v: "계 4:6", text: "보좌 앞에 수정과 같은 유리바다가 있고", meaningBefore: "속사람을 씻어 주는, 보좌 앞 열린 책의 ", meaningAfter: "" },
+            { word: "예수님", keyword: "다윗의 뿌리", v: "계 5:5", text: "유대 지파의 사자 다윗의 뿌리가 이기었으니 이 책과 그 일곱 인을 떼시리라", meaningBefore: "이기신 ", meaningAfter: "" },
+            { word: "장막성전", keyword: "큰 산", v: "계 8:8", text: "불붙는 큰 산과 같은 것이 바다에 던지우매", meaningBefore: "배도한 일곱 금촛대 장막, [실상] 배도한 ", meaningAfter: " 본부" },
+            { word: "사명자", keyword: "갈대", v: "계 11:1", text: "또 내게 지팡이 같은 갈대를 주며 말하기를", meaningBefore: "척량의 도구, 믿음이 연약한 자, [실상] 새요한을 돕는 ", meaningAfter: "" },
+            { word: "열장로", keyword: "뿔이 열", v: "계 12:3", text: "큰 붉은 용이 있어 머리가 일곱이요 뿔이 열이라", meaningBefore: "열 권세자, [실상] 장로교 교법으로 다시 세운 장막성전 ", meaningAfter: "" },
+            { word: "비진리", keyword: "바다가 피 같이 되니", v: "계 16:3", text: "둘째가 그 대접을 바다에 쏟으매 바다가 곧 죽은 자의 피 같이 되니", meaningBefore: "사단의 교리가 생명이 없는 ", meaningAfter: "로 드러남" },
+            { word: "아마겟돈", keyword: "아마겟돈", v: "계 16:16", text: "세 영이 히브리 음으로 아마겟돈이라 하는 곳으로 왕들을 모으더라", meaningBefore: "전쟁 마당, 영적 전쟁터, ", meaningAfter: "" },
+            { word: "바벨론", keyword: "큰 성", v: "계 18:2", text: "무너졌도다 무너졌도다 큰 성 바벨론이여", meaningBefore: "각종 악령들의 연합 교단, 선악나무, 음녀와 일곱 머리와 열 뿔가진 짐승의 조직, ", meaningAfter: "" },
+            { word: "예수님", keyword: "백마 탄 자", v: "계 19:11", text: "보라 백마와 탄 자가 있으니 그 이름은 충신과 진실이라", meaningBefore: "만왕의 왕이요 만주의 주이신 ", meaningAfter: "" },
+            { word: "진리", keyword: "생명수", v: "계 22:1", text: "수정 같이 맑은 생명수의 강을 내게 보이니", meaningBefore: "흠 없이 완전한 ", meaningAfter: "의 계시 말씀" },
+            { word: "순교자", keyword: "제단 아래 영혼들", v: "계 6:9", text: "하나님의 말씀과 저희의 가진 증거를 인하여 죽임을 당한 영혼들이 제단 아래 있어", meaningBefore: "하나님의 말씀을 인하여 목 베임을 받은 ", meaningAfter: "들" },
+            { word: "추수", keyword: "낫을 휘둘러 거두라", v: "계 14:15", text: "네 낫을 휘둘러 거두라 거둘 때가 이르러 땅에 곡식이 다 익었음이로다", meaningBefore: "하나님의 씨로 난자를 계시 말씀으로 ", meaningAfter: "함" }
+        ];
+        const CW_AMGI_POOL = [
+            { word: "예언", v: "계 1:3", text: "이 〇〇의 말씀을 읽는 자와 듣는 자들과 그 가운데 기록한 것을 지키는 자들이 복이 있나니" },
+            { word: "성령", v: "계 1:10", text: "주의 날에 내가 〇〇에 감동하여 내 뒤에서 나는 나팔 소리 같은 큰 음성을 들으니" },
+            { word: "처음사랑", v: "계 2:4", text: "그러나 너를 책망할 것이 있나니 너의 〇〇〇〇을 버렸느니라" },
+            { word: "생명의면류관", v: "계 2:10", text: "네가 죽도록 충성하라 그리하면 내가 〇〇〇〇〇〇을 네게 주리라" },
+            { word: "새벽별", v: "계 2:28", text: "내가 또 그에게 〇〇〇을 주리라" },
+            { word: "안약", v: "계 3:18", text: "벌거벗은 수치를 보이지 않게 하고 〇〇을 사서 눈에 발라 보게 하라" },
+            { word: "어린양", v: "계 5:6", text: "내가 또 보니 보좌와 네 생물과 장로들 사이에 〇〇〇이 섰는데 일찍 죽임을 당한것 같더라" },
+            { word: "십사만사천", v: "계 7:4", text: "내가 인맞은 자의 수를 들으니 이스라엘 자손의 각 지파 중에서 인맞은 자들이 〇〇〇〇〇이니" },
+            { word: "흰옷", v: "계 7:9", text: "각 나라와 족속과 백성과 방언에서 아무라도 능히 셀 수 없는 큰 무리가 〇〇을 입고" },
+            { word: "황충", v: "계 9:3", text: "또 〇〇이 연기 가운데로부터 땅 위에 나오매 저희가 땅에 있는 전갈의 권세와 같은 권세를 받았더라" },
+            { word: "일곱우뢰", v: "계 10:3", text: "사자의 부르짖는것 같이 큰 소리로 외치니 외칠 때에 〇〇〇〇가 그 소리를 발하더라" },
+            { word: "아마겟돈", v: "계 16:16", text: "세 영이 히브리 음으로 〇〇〇〇이라 하는 곳으로 왕들을 모으더라" },
+            { word: "바벨론", v: "계 18:2", text: "무너졌도다 무너졌도다 큰 성 〇〇〇이여 귀신의 처소와 각종 더러운 영의 모이는 곳..." },
+            { word: "새예루살렘", v: "계 21:2", text: "거룩한 성 〇〇〇〇〇이 하나님께로부터 하늘에서 내려오니" },
+            { word: "새하늘과새땅", v: "계 21:1", text: "또 내가 〇〇〇〇〇〇을 보니 처음 하늘과 처음 땅이 없어졌고" },
+            { word: "무저갱", v: "계 9:1", text: "다섯째 천사가 나팔을 불매 내가 보니 하늘에서 땅에 떨어진 별 하나가 있는데 저가 〇〇〇의 열쇠를 받았더라" },
+            { word: "철장", v: "계 12:5", text: "여자가 아들을 낳으니 이는 장차 〇〇으로 만국을 다스릴 남자라 그 아이를 하나님 앞과 그 보좌 앞으로 올려가더라" },
+            { word: "생명나무", v: "계 2:7", text: "이기는 그에게는 내가 하나님의 낙원에 있는 〇〇〇〇의 과실을 주어 먹게 하리라" },
+            { word: "이마", v: "계 7:3", text: "가로되 우리가 우리 하나님의 종들의 〇〇에 인치기까지 땅이나 바다나 나무나 해하지 말라 하더라" },
+            { word: "유리바다", v: "계 15:2", text: "또 내가 보니 불이 섞인 〇〇〇〇 같은 것이 있고 짐승과 그의 우상과 그의 이름의 수를 이기고 벗어난 자들이 〇〇〇〇 가에 서서 하나님의 거문고를 가지고" },
+            { word: "감추었던", v: "계 2:17", text: "이기는 그에게는 내가 〇〇〇〇 만나를 주고 또 흰 돌을 줄터인데 그 돌 위에 새 이름을 기록한 것이 있나니..." },
+            { word: "생명책", v: "계 3:5", text: "이기는 자는 이와 같이 흰 옷을 입을 것이요 내가 그 이름을 〇〇〇에서 반드시 흐리지 아니하고..." },
+            { word: "보좌", v: "계 4:2", text: "내가 곧 성령에 감동하였더니 보라 하늘에 〇〇를 베풀었고 그 〇〇 위에 앉으신 이가 있는데" },
+            { word: "이십사장로", v: "계 4:4", text: "또 보좌에 둘려 이십 사 보좌들이 있고 그 보좌들 위에 〇〇〇〇〇들이 흰 옷을 입고 머리에 금 면류관을 쓰고 앉았더라" },
+            { word: "거문고", v: "계 5:8", text: "책을 취하시매 네 생물과 이십사 장로들이 어린양 앞에 엎드려 각각 〇〇〇와 향이 가득한 금 대접을 가졌으니" },
+            { word: "무지개", v: "계 10:1", text: "천사가 구름을 입고 하늘에서 내려 오는데 그 머리 위에 〇〇〇가 있고 그 얼굴은 해 같고" },
+            { word: "지팡이", v: "계 11:1", text: "또 내게 〇〇〇 같은 갈대를 주며 말하기를 일어나서 하나님의 성전과 제단과 그 안에서 경배하는 자들을 척량하되" },
+            { word: "두증인", v: "계 11:3", text: "내가 나의 〇〇〇에게 권세를 주리니 저희가 굵은 베옷을 입고 일천 이백 육십 일을 예언하리라" },
+            { word: "감람나무", v: "계 11:4", text: "이는 이 땅의 주 앞에 섰는 두 〇〇〇〇와 두 촛대니" },
+            { word: "일천이백육십일", v: "계 12:6", text: "그 여자가 광야로 도망하매 거기서 〇〇〇〇〇〇〇 동안 저를 양육하기 위하여 하나님의 예비하신 곳이 있더라" },
+            { word: "마흔두달", v: "계 13:5", text: "또 짐승이 큰 말과 참람된 말 하는 입을 받고 또 〇〇〇〇 일할 권세를 받으니라" },
+            { word: "붉은용", v: "계 12:3", text: "하늘에 또 다른 이적이 보이니 보라 한 큰 〇〇〇이 있어 머리가 일곱이요 뿔이 열이라" },
+            { word: "미가엘", v: "계 12:7", text: "하늘에 전쟁이 있으니 〇〇〇과 그의 사자들이 용으로 더불어 싸울쌔" },
+            { word: "짐승", v: "계 13:1", text: "내가 보니 바다에서 한 〇〇이 나오는데 뿔이 열이요 머리가 일곱이라" },
+            { word: "육백육십육", v: "계 13:18", text: "지혜가 여기 있으니 총명 있는 자는 그 짐승의 수를 세어 보라 그 수는 사람의 수니 〇〇〇〇〇이니라" },
+            { word: "시온산", v: "계 14:1", text: "또 내가 보니 보라 어린 양이 〇〇〇에 섰고 그와 함께 십 사만 사천이 섰는데" },
+            { word: "새노래", v: "계 14:3", text: "저희가 보좌와 네 생물과 장로들 앞에서 〇〇〇를 부르니 땅에서 구속함을 얻은 십 사만 사천인 밖에는 능히 이 노래를 배울 자가 없더라" },
+            { word: "영원한복음", v: "계 14:6", text: "또 보니 다른 천사가 공중에 날아가는데 땅에 거하는 자들 곧 여러 나라와 족속과 방언과 백성에게 전할 〇〇〇〇〇을 가졌더라" },
+            { word: "포도주", v: "계 14:8", text: "모든 나라를 그 음행으로 인하여 진노의 〇〇〇로 먹이던 자로다 하더라" },
+            { word: "유브라데", v: "계 16:12", text: "또 여섯째가 그 대접을 큰 강 〇〇〇〇에 쏟으매 강물이 말라서 동방에서 오는 왕들의 길이 예비되더라" },
+            { word: "음녀", v: "계 17:1", text: "또 일곱 대접을 가진 일곱 천사 중 하나가 와서 내게 말하여 가로되 이리 오라 많은 물위에 앉은 큰 〇〇의 받을 심판을 네게 보이리라" },
+            { word: "생명수", v: "계 22:1", text: "또 저가 수정 같이 맑은 〇〇〇의 강을 내게 보이니 하나님과 및 어린 양의 보좌로부터 나서" }
+        ];
+
+        let cwWordsOnBoard = [];
+        let cwGridState = [];
+        let cwCols = 0, cwRows = 0;
+        let cwCurrentWordIdx = null;
+        let cwCurrentMode = 'tongdal';
+
+        function cwSetMode(mode) {
+            cwCurrentMode = mode;
+            const tabTongdal = document.getElementById('cw-tab-tongdal');
+            const tabAmgi = document.getElementById('cw-tab-amgi');
+            const badge = document.getElementById('cw-mode-badge');
+            if (mode === 'tongdal') {
+                tabTongdal.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-white bg-indigo-600 shadow-md';
+                tabAmgi.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-slate-500';
+                badge.className = 'text-center text-[11.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mx-auto mb-3';
+                badge.style.width = 'fit-content';
+                badge.textContent = '계시록 통달 랜덤 십자말풀이';
+            } else {
+                tabTongdal.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-slate-500';
+                tabAmgi.className = 'flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all text-white bg-fuchsia-600 shadow-md';
+                badge.className = 'text-center text-[11.5px] font-black text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-100 rounded-full px-3 py-1 mx-auto mb-3';
+                badge.style.width = 'fit-content';
+                badge.textContent = '계시록 암기 랜덤 십자말풀이';
+            }
+            cwInitGame();
+        }
+
+        function cwShuffleArray(array) {
+            let arr = array.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function cwGenerateCrossword() {
+            const TARGET_WORDS = 10;
+            const MAX_BOARD_SIZE = 11; // 모바일에서 너무 커지지 않도록 11x11 이하로 제한
+
+            let overallBestResult = null;
+            let overallBestCount = 0;
+            const pool = cwCurrentMode === 'tongdal' ? CW_TONGDAL_POOL : CW_AMGI_POOL;
+
+            for (let grandAttempt = 0; grandAttempt < 5; grandAttempt++) {
+                let bestResult = null;
+                let bestCount = 0;
+
+                for (let attempt = 0; attempt < 250; attempt++) {
+                    let shuffledPool = cwShuffleArray(pool).slice(0, 30).map(x => ({ ...x }));
+                    const TEMP_SIZE = 30;
+                    let tempGrid = Array(TEMP_SIZE).fill(null).map(() => Array(TEMP_SIZE).fill(null));
+                    let placedWords = [];
+
+                    let first = shuffledPool[0];
+                    let sr = Math.floor(TEMP_SIZE / 2);
+                    let sc = Math.floor((TEMP_SIZE - first.word.length) / 2);
+                    for (let i = 0; i < first.word.length; i++) tempGrid[sr][sc + i] = first.word[i];
+                    placedWords.push({ id: 1, type: 'H', x: sc, y: sr, word: first.word, originalObj: first });
+
+                    let remainingWords = shuffledPool.slice(1);
+
+                    function getBounds(placedList) {
+                        let minR = 999, maxR = -1, minC = 999, maxC = -1;
+                        placedList.forEach(w => {
+                            if (w.type === 'H') {
+                                minR = Math.min(minR, w.y); maxR = Math.max(maxR, w.y);
+                                minC = Math.min(minC, w.x); maxC = Math.max(maxC, w.x + w.word.length - 1);
+                            } else {
+                                minR = Math.min(minR, w.y); maxR = Math.max(maxR, w.y + w.word.length - 1);
+                                minC = Math.min(minC, w.x); maxC = Math.max(maxC, w.x);
+                            }
+                        });
+                        return { minR, maxR, minC, maxC };
+                    }
+
+                    function solve(grid, placed, remaining) {
+                        if (placed.length >= TARGET_WORDS) return true;
+                        if (remaining.length === 0) return false;
+
+                        let wordObj = remaining[0];
+                        let nextRemaining = remaining.slice(1);
+                        let placements = cwFindPlacements(grid, wordObj.word);
+                        let currentBounds = getBounds(placed);
+
+                        let validPlacements = [];
+                        placements.forEach(p => {
+                            let newMinR = Math.min(currentBounds.minR, p.dir === 'V' ? p.r : p.r);
+                            let newMaxR = Math.max(currentBounds.maxR, p.dir === 'V' ? p.r + wordObj.word.length - 1 : p.r);
+                            let newMinC = Math.min(currentBounds.minC, p.dir === 'H' ? p.c : p.c);
+                            let newMaxC = Math.max(currentBounds.maxC, p.dir === 'H' ? p.c + wordObj.word.length - 1 : p.c);
+                            let width = newMaxC - newMinC + 1;
+                            let height = newMaxR - newMinR + 1;
+
+                            if (width <= MAX_BOARD_SIZE && height <= MAX_BOARD_SIZE) {
+                                let intersections = 0;
+                                for (let j = 0; j < wordObj.word.length; j++) {
+                                    let r = p.dir === 'H' ? p.r : p.r + j;
+                                    let c = p.dir === 'H' ? p.c + j : p.c;
+                                    if (grid[r][c] === wordObj.word[j]) intersections++;
+                                }
+                                validPlacements.push({ ...p, area: width * height, intersections });
+                            }
+                        });
+
+                        validPlacements.sort((a, b) => (a.area - b.area) - (a.intersections * 8 - b.intersections * 8) + (Math.random() * 10 - 5));
+
+                        for (let p of validPlacements) {
+                            let newGrid = grid.map(r => r.slice());
+                            let newPlaced = [...placed];
+                            for (let j = 0; j < wordObj.word.length; j++) {
+                                if (p.dir === 'H') newGrid[p.r][p.c + j] = wordObj.word[j];
+                                else newGrid[p.r + j][p.c] = wordObj.word[j];
+                            }
+                            newPlaced.push({ id: newPlaced.length + 1, type: p.dir, x: p.c, y: p.r, word: wordObj.word, originalObj: wordObj });
+
+                            if (solve(newGrid, newPlaced, nextRemaining)) {
+                                tempGrid = newGrid;
+                                placedWords = newPlaced;
+                                return true;
+                            }
+                            if (newPlaced.length > bestCount) {
+                                bestCount = newPlaced.length;
+                                bestResult = cwShrinkGrid(newGrid, newPlaced);
+                            }
+                        }
+                        if (solve(grid, placed, nextRemaining)) return true;
+                        return false;
+                    }
+
+                    if (solve(tempGrid, placedWords, remainingWords)) {
+                        return cwShrinkGrid(tempGrid, placedWords);
+                    }
+                }
+
+                if (bestCount === TARGET_WORDS) return bestResult;
+                if (bestCount > overallBestCount) { overallBestCount = bestCount; overallBestResult = bestResult; }
+                if (overallBestCount >= TARGET_WORDS) break;
+            }
+            return overallBestResult;
+        }
+
+        function cwFindPlacements(grid, word) {
+            let placements = [];
+            for (let i = 0; i < word.length; i++) {
+                let char = word[i];
+                for (let r = 0; r < grid.length; r++) {
+                    for (let c = 0; c < grid[0].length; c++) {
+                        if (grid[r][c] === char) {
+                            if (cwCanPlace(grid, word, r, c - i, 'H')) placements.push({ r: r, c: c - i, dir: 'H' });
+                            if (cwCanPlace(grid, word, r - i, c, 'V')) placements.push({ r: r - i, c: c, dir: 'V' });
+                        }
+                    }
+                }
+            }
+            return placements;
+        }
+
+        function cwCanPlace(grid, word, r, c, dir) {
+            let len = word.length;
+            if (dir === 'H') {
+                if (c < 0 || c + len > grid[0].length) return false;
+                if (c - 1 >= 0 && grid[r][c - 1] !== null) return false;
+                if (c + len < grid[0].length && grid[r][c + len] !== null) return false;
+                for (let i = 0; i < len; i++) {
+                    if (grid[r][c + i] === word[i]) continue;
+                    if (grid[r][c + i] !== null) return false;
+                    if (r - 1 >= 0 && grid[r - 1][c + i] !== null) return false;
+                    if (r + 1 < grid.length && grid[r + 1][c + i] !== null) return false;
+                }
+                return true;
+            } else {
+                if (r < 0 || r + len > grid.length) return false;
+                if (r - 1 >= 0 && grid[r - 1][c] !== null) return false;
+                if (r + len < grid.length && grid[r + len][c] !== null) return false;
+                for (let i = 0; i < len; i++) {
+                    if (grid[r + i][c] === word[i]) continue;
+                    if (grid[r + i][c] !== null) return false;
+                    if (c - 1 >= 0 && grid[r + i][c - 1] !== null) return false;
+                    if (c + 1 < grid[0].length && grid[r + i][c + 1] !== null) return false;
+                }
+                return true;
+            }
+        }
+
+        function cwShrinkGrid(grid, placedWords) {
+            let minR = 999, maxR = -1, minC = 999, maxC = -1;
+            placedWords.forEach(w => {
+                if (w.type === 'H') {
+                    minR = Math.min(minR, w.y); maxR = Math.max(maxR, w.y);
+                    minC = Math.min(minC, w.x); maxC = Math.max(maxC, w.x + w.word.length - 1);
+                } else {
+                    minR = Math.min(minR, w.y); maxR = Math.max(maxR, w.y + w.word.length - 1);
+                    minC = Math.min(minC, w.x); maxC = Math.max(maxC, w.x);
+                }
+            });
+
+            let newPlaced = placedWords.map(w => ({ ...w, x: w.x - minC, y: w.y - minR }));
+            newPlaced.sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
+
+            let currentId = 1;
+            let idMap = {};
+            newPlaced.forEach(w => {
+                let key = `${w.x},${w.y}`;
+                if (idMap[key]) { w.displayId = idMap[key]; }
+                else { idMap[key] = currentId; w.displayId = currentId; currentId++; }
+            });
+
+            return { rows: maxR - minR + 1, cols: maxC - minC + 1, placedWords: newPlaced };
+        }
+
+        function cwBuildGridState() {
+            cwGridState = [];
+            for (let r = 0; r < cwRows; r++) {
+                cwGridState[r] = [];
+                for (let c = 0; c < cwCols; c++) cwGridState[r][c] = null;
+            }
+            cwWordsOnBoard.forEach((w, idx) => {
+                w.idx = idx;
+                for (let i = 0; i < w.word.length; i++) {
+                    let r = w.type === 'V' ? w.y + i : w.y;
+                    let c = w.type === 'H' ? w.x + i : w.x;
+                    if (!cwGridState[r][c]) cwGridState[r][c] = { answer: w.word[i], labels: [], words: [] };
+                    if (i === 0 && !cwGridState[r][c].labels.includes(w.displayId)) cwGridState[r][c].labels.push(w.displayId);
+                    cwGridState[r][c].words.push(idx);
+                }
+            });
+        }
+
+        function cwGetInput(r, c) { return document.querySelector(`#cw-grid .cw-input[data-r="${r}"][data-c="${c}"]`); }
+
+        function cwRenderGrid() {
+            const container = document.getElementById('cw-grid');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${cwCols}, minmax(0, 1fr))`;
+            const dynamicFontSize = Math.max(0.8, Math.min(1.2, 12 / cwCols));
+
+            for (let r = 0; r < cwRows; r++) {
+                for (let c = 0; c < cwCols; c++) {
+                    const cell = cwGridState[r][c];
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cw-cell';
+                    if (cell) {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'cw-input';
+                        input.dataset.r = r; input.dataset.c = c;
+                        input.dataset.words = JSON.stringify(cell.words);
+                        input.lang = 'ko';
+                        input.spellcheck = false;
+                        input.maxLength = 1;
+                        input.autocomplete = 'off';
+                        input.style.fontSize = `${dynamicFontSize}rem`;
+                        input.addEventListener('focus', () => cwHandleFocus(r, c));
+                        input.addEventListener('keyup', (e) => cwHandleKeyUp(e, r, c));
+                        input.addEventListener('keydown', (e) => cwHandleKeyDown(e, r, c));
+                        input.addEventListener('click', () => cwHandleFocus(r, c));
+                        cellDiv.appendChild(input);
+                        if (cell.labels.length > 0) {
+                            const labelSpan = document.createElement('span');
+                            labelSpan.className = 'cw-label';
+                            labelSpan.textContent = cell.labels.join(',');
+                            cellDiv.appendChild(labelSpan);
+                        }
+                    } else {
+                        cellDiv.classList.add('cw-empty');
+                    }
+                    container.appendChild(cellDiv);
+                }
+            }
+        }
+
+        function cwRenderClues() {
+            const hz = document.getElementById('cw-clues-h');
+            const vt = document.getElementById('cw-clues-v');
+            hz.innerHTML = ''; vt.innerHTML = '';
+
+            cwWordsOnBoard.forEach((w) => {
+                const item = document.createElement('div');
+                item.className = 'cw-clue-item';
+                item.id = `cw-clue-${w.idx}`;
+                const isTongdal = cwCurrentMode === 'tongdal';
+                const badgeColor = w.type === 'H' ? 'bg-blue-100 text-blue-800' : 'bg-rose-100 text-rose-800';
+                const circleHint = '〇'.repeat(w.word.length);
+
+                let clueHTML;
+                if (isTongdal) {
+                    clueHTML = `
+                        <div class="flex items-start gap-3">
+                            <span class="w-7 h-7 rounded-full ${badgeColor} text-[12px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-black text-indigo-700 text-[12px] mb-1">[${w.originalObj.v}]</p>
+                                <p class="text-[12px] text-slate-500 mb-2 leading-relaxed break-keep">"${w.originalObj.text}"</p>
+                                <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] break-keep leading-relaxed">
+                                    <p><span class="font-black text-slate-500">▶ 문제:</span> <span class="font-bold text-slate-800">${w.originalObj.keyword}</span></p>
+                                    <p class="mt-1"><span class="font-black text-slate-500">▶ 정답:</span> <span class="text-slate-700">${w.originalObj.meaningBefore}</span><span class="font-black text-indigo-600 tracking-[0.15em]">${circleHint}</span><span class="text-slate-700">${w.originalObj.meaningAfter}</span></p>
+                                </div>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 text-[12px] font-black text-rose-600">정답: ${w.word}</div>
+                            </div>
+                        </div>`;
+                } else {
+                    clueHTML = `
+                        <div class="flex items-start gap-3">
+                            <span class="w-7 h-7 rounded-full ${badgeColor} text-[12px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-black text-fuchsia-700 text-[12px] mb-1">[${w.originalObj.v}]</p>
+                                <p class="text-[12px] text-slate-800 font-bold leading-relaxed break-keep">${w.originalObj.text}</p>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 text-[12px] font-black text-rose-600">정답: ${w.word}</div>
+                            </div>
+                        </div>`;
+                }
+
+                item.innerHTML = clueHTML;
+                item.addEventListener('click', () => {
+                    cwSelectWord(w.idx);
+                    const input = cwGetInput(w.y, w.x);
+                    if (input) { input.focus(); setTimeout(() => input.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }
+                });
+                (w.type === 'H' ? hz : vt).appendChild(item);
+            });
+        }
+
+        function cwSelectWord(idx) { cwCurrentWordIdx = idx; cwHighlightWord(idx); }
+
+        function cwHighlightWord(idx) {
+            document.querySelectorAll('#cw-grid .cw-input').forEach(el => el.classList.remove('cw-highlighted'));
+            document.querySelectorAll('.cw-clue-item').forEach(el => el.classList.remove('cw-active'));
+            const w = cwWordsOnBoard[idx];
+            if (!w) return;
+            for (let i = 0; i < w.word.length; i++) {
+                let r = w.type === 'V' ? w.y + i : w.y;
+                let c = w.type === 'H' ? w.x + i : w.x;
+                const input = cwGetInput(r, c);
+                if (input) input.classList.add('cw-highlighted');
+            }
+            const clueEl = document.getElementById(`cw-clue-${idx}`);
+            if (clueEl) clueEl.classList.add('cw-active');
+        }
+
+        function cwHandleFocus(r, c) {
+            const cell = cwGridState[r][c];
+            if (!cell) return;
+            if (cwCurrentWordIdx === null || !cell.words.includes(cwCurrentWordIdx)) cwSelectWord(cell.words[0]);
+        }
+
+        function cwHandleKeyUp(e, r, c) {
+            if (e.code === 'Space' || e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 32) {
+                e.preventDefault();
+                cwMoveToNextInput(r, c);
+            }
+        }
+
+        function cwHandleKeyDown(e, r, c) {
+            const input = e.target;
+            if (e.code === 'Space' || e.keyCode === 32 || e.key === ' ') e.preventDefault();
+
+            if (e.key === 'Backspace' && input.value === '' && cwCurrentWordIdx !== null) {
+                const w = cwWordsOnBoard[cwCurrentWordIdx];
+                const isH = w.type === 'H';
+                const prevR = isH ? r : r - 1;
+                const prevC = isH ? c - 1 : c;
+                const prevInput = cwGetInput(prevR, prevC);
+                if (prevInput && JSON.parse(prevInput.dataset.words).includes(cwCurrentWordIdx)) {
+                    e.preventDefault();
+                    prevInput.focus();
+                    prevInput.value = '';
+                }
+            }
+        }
+
+        function cwMoveToNextInput(r, c) {
+            if (cwCurrentWordIdx === null) return;
+            const w = cwWordsOnBoard[cwCurrentWordIdx];
+            const isH = w.type === 'H';
+            const nextR = isH ? r : r + 1;
+            const nextC = isH ? c + 1 : c;
+            const nextInput = cwGetInput(nextR, nextC);
+            if (nextInput && JSON.parse(nextInput.dataset.words).includes(cwCurrentWordIdx)) {
+                setTimeout(() => nextInput.focus(), 10);
+            } else {
+                cwCheckCompletion();
+            }
+        }
+
+        function cwCheckCompletion() {
+            const allInputs = Array.from(document.querySelectorAll('#cw-grid .cw-input'));
+            if (allInputs.length > 0 && allInputs.every(inp => inp.value.trim() !== '')) cwCheckAnswers();
+        }
+
+        // 채점 후 틀린 문제는 정답을 바로 알려준다(cw-reveal-* 슬롯을 펼침) —
+        // 칸 색으로 맞았는지만 표시하고 끝나던 것을 보완.
+        function cwCheckAnswers() {
+            let filledCount = 0;
+            document.querySelectorAll('#cw-grid .cw-input').forEach(input => {
+                const r = Number(input.dataset.r), c = Number(input.dataset.c);
+                const cell = cwGridState[r][c];
+                if (!cell) return;
+                const val = (input.value || '').trim();
+                if (val === '') { input.classList.remove('cw-correct', 'cw-wrong'); return; }
+                filledCount++;
+                if (val === cell.answer) { input.classList.add('cw-correct'); input.classList.remove('cw-wrong'); }
+                else { input.classList.add('cw-wrong'); input.classList.remove('cw-correct'); }
+            });
+
+            let correctWords = 0;
+            cwWordsOnBoard.forEach(w => {
+                let allOk = true;
+                for (let i = 0; i < w.word.length; i++) {
+                    const r = w.type === 'V' ? w.y + i : w.y;
+                    const c = w.type === 'H' ? w.x + i : w.x;
+                    const input = cwGetInput(r, c);
+                    if (!input || (input.value || '').trim() !== w.word[i]) { allOk = false; break; }
+                }
+                const reveal = document.getElementById(`cw-reveal-${w.idx}`);
+                if (reveal) reveal.classList.toggle('hidden', allOk);
+                if (allOk) correctWords++;
+            });
+
+            const total = cwWordsOnBoard.length;
+            const resultEl = document.getElementById('cw-result');
+            const scoreEl = document.getElementById('cw-result-score');
+            const msgEl = document.getElementById('cw-result-msg');
+
+            let msg;
+            if (filledCount === 0) msg = '빈 칸을 탭하고 정답을 입력해주세요.';
+            else if (correctWords === total) msg = `${total}문제를 모두 맞히셨습니다! 계시록, 이미 통달하셨네요. 🕊️`;
+            else msg = '틀린 문제는 빨갛게 표시했어요. 아래 문제 목록에서 정답을 바로 확인하세요.';
+
+            scoreEl.textContent = `${correctWords} / ${total} 정답`;
+            msgEl.textContent = msg;
+            resultEl.classList.remove('hidden');
+            resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function cwInitGame() {
+            const overlay = document.getElementById('cw-loading');
+            const resultEl = document.getElementById('cw-result');
+            if (resultEl) resultEl.classList.add('hidden');
+            overlay.classList.remove('hidden');
+            cwCurrentWordIdx = null;
+
+            setTimeout(() => {
+                const result = cwGenerateCrossword();
+                cwCols = result.cols; cwRows = result.rows;
+                cwWordsOnBoard = result.placedWords;
+                cwBuildGridState();
+                cwRenderGrid();
+                cwRenderClues();
+                overlay.classList.add('hidden');
+            }, 30);
+        }
+
+        function initCrosswordPreview() {
+            // 화면에 들어올 때마다("도전"할 때마다) 항상 새 문제로 다시 조합한다.
+            cwSetMode(cwCurrentMode);
+            document.getElementById('cw-check-btn').onclick = cwCheckAnswers;
+            document.getElementById('cw-new-btn').onclick = cwInitGame;
+        }
+
+        // ─────────────────────────────────────────────────────────
+        // 홈 화면 "나의 학습 현황" 미니 패널 — 로그인 직후 바로 보이는 자리에서
+        // 각 과목의 실제 진행 흔적(같은 브라우저 localStorage, 동일 출처라 하위 폴더 앱과 공유됨)을
+        // 가볍게 요약해 동기를 자극한다. 기록이 하나도 없으면 통째로 숨긴다(빈 상태 노출 방지).
+        // ─────────────────────────────────────────────────────────
+        function homeTongdalBankProgress() {
+            const TOTAL = 22;
+            try {
+                const all = JSON.parse(localStorage.getItem('sion_tongdal_bank_answers')) || {};
+                let done = 0;
+                for (let i = 1; i <= TOTAL; i++) {
+                    const saved = all['ch' + i];
+                    if (saved && Array.isArray(saved.marks) && saved.marks.length > 0 && saved.marks.every(m => m === 'correct')) done++;
+                }
+                return { done, total: TOTAL };
+            } catch (e) { return { done: 0, total: TOTAL }; }
+        }
+        function homeTheologyHistoryCount() {
+            try { return (JSON.parse(localStorage.getItem('sion_theology_history')) || []).length; } catch (e) { return 0; }
+        }
+
+        function renderHomeProgressMini() {
+            const panel = document.getElementById('home-progress-mini');
+            if (!panel) return;
+
+            const tongdal = homeTongdalBankProgress();
+            const theoCount = homeTheologyHistoryCount();
+            const memoCount = loadMemoHistory().length;
+            const hasAny = tongdal.done > 0 || theoCount > 0 || memoCount > 0;
+
+            if (!hasAny) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            panel.classList.remove('hidden');
+
+            const percent = Math.round((tongdal.done / tongdal.total) * 100);
+            const tongdalMsg = tongdal.done <= 0
+                ? '아직 시작 전이에요, 괄호 넣기로 첫 장을 열어보세요!'
+                : (tongdal.done >= tongdal.total ? '🎉 22장을 모두 완주하셨습니다!' : `${tongdal.total - tongdal.done}장만 더 풀면 완주예요!`);
+
+            panel.innerHTML = `
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border-2 border-slate-100 mb-3">
+                    <p class="text-[12px] font-black text-slate-500 mb-2.5">📊 나의 학습 현황</p>
+                    <div class="space-y-2">
+                        <div>
+                            <div class="flex items-center justify-between text-[12px] font-bold text-slate-600 mb-1">
+                                <span class="break-keep">📖 계시록 통달 · 괄호 넣기</span>
+                                <span class="text-indigo-600 font-black flex-shrink-0">${tongdal.done}/${tongdal.total}장</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all" style="width:${percent}%"></div>
+                            </div>
+                            <p class="text-[11px] text-indigo-500 font-bold mt-1 break-keep">${tongdalMsg}</p>
+                        </div>
+                        <div class="flex items-center justify-between bg-blue-50 rounded-xl px-3 py-2">
+                            <span class="text-[12px] font-bold text-blue-700">📘 초중고 신학 학습</span>
+                            <span class="text-[12px] font-black text-blue-700 flex-shrink-0">${theoCount > 0 ? theoCount + '회 진행' : '아직 시작 전'}</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-fuchsia-50 rounded-xl px-3 py-2">
+                            <span class="text-[12px] font-bold text-fuchsia-700">✍️ 계시록 암기 모의고사</span>
+                            <span class="text-[12px] font-black text-fuchsia-700 flex-shrink-0">${memoCount > 0 ? memoCount + '회 진행' : '아직 시작 전'}</span>
+                        </div>
+                    </div>
+                </div>`;
+        }
 
         function showSuggest() {
             document.getElementById('suggest-form-section').classList.remove('hidden');
@@ -2460,7 +3237,7 @@
                 '4급': '초등 제목, 초등 종강 시험',
                 '3급': '초등 제목, 초등 종강 시험, 초등 비유의 의미와 핵심 성구',
                 '2급': '초·중 제목, 초·중 종강 시험, 초등 비유의 의미와 핵심 성구',
-                '1급': '초·중·고 제목, 초중등 종강 시험, 초등 비유의 의미와 핵심 성구, 수료 종합 시험'
+                '1급': '초·중·고 제목, 초·중·고 종강 시험, 초등 비유의 의미와 핵심 성구, 수료 종합 시험'
             },
             '계시록 통달': {
                 '4급': '계 1~22장 중 144문항',
@@ -2695,7 +3472,7 @@
         function renderApplicantList(rows, uniqueIds) {
             const el = document.getElementById('cancel-results');
             if (!rows || rows.length === 0) {
-                el.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
+                el.innerHTML = '<p class="text-center text-slate-500 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
                 return;
             }
             const introText = uniqueIds.length > 1
@@ -2708,7 +3485,7 @@
                     return `
                         <button onclick="selectApplicant('${mid}')" class="w-full bg-white border-2 border-slate-100 hover:border-blue-400 rounded-2xl p-4 shadow-sm text-left transition-colors">
                             <p class="font-black text-slate-800 text-sm">${r.name}</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5 break-keep">${label || '소속 정보 없음'}</p>
+                            <p class="text-[13px] text-slate-500 mt-0.5 break-keep">${label || '소속 정보 없음'}</p>
                         </button>
                     `;
                 }).join('');
@@ -2722,33 +3499,33 @@
         function renderCancelResults(rows, { showBackToList = false } = {}) {
             const el = document.getElementById('cancel-results');
             if (!rows || rows.length === 0) {
-                el.innerHTML = '<p class="text-center text-slate-400 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
+                el.innerHTML = '<p class="text-center text-slate-500 text-xs py-6">일치하는 신청 내역이 없습니다.</p>';
                 return;
             }
             const backLink = showBackToList
-                ? `<button onclick="renderApplicantList(lastLookupAllRows, lastLookupUniqueIds)" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 underline">← 다른 사람 선택</button>`
+                ? `<button onclick="renderApplicantList(lastLookupAllRows, lastLookupUniqueIds)" class="text-[13px] font-bold text-slate-500 hover:text-slate-600 underline">← 다른 사람 선택</button>`
                 : '';
             const reasonOptions = CANCEL_REASONS.map(r => `<option value="${r}">${r}</option>`).join('');
             el.innerHTML = backLink + rows.map(r => `
                 <div class="bg-white border-2 border-slate-100 rounded-2xl p-4 shadow-sm space-y-1.5">
                     <div class="flex items-center justify-between gap-2">
                         <span class="font-black text-slate-800 text-sm break-keep">${r.subject} · ${r.grade}</span>
-                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === '취소' ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-700'}">${r.status}</span>
+                        <span class="text-[12px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${r.status === '취소' ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-700'}">${r.status}</span>
                     </div>
-                    <p class="text-[11px] text-slate-400">접수번호 ${r.id || ''}</p>
-                    <p class="text-[11px] text-slate-400">접수일시 ${r.appliedAt || ''}</p>
-                    ${r.examTime ? `<p class="text-[11px] text-slate-400">시험 시간 ${r.examTime}</p>` : ''}
+                    <p class="text-[13px] text-slate-500">접수번호 ${r.id || ''}</p>
+                    <p class="text-[13px] text-slate-500">접수일시 ${r.appliedAt || ''}</p>
+                    ${r.examTime ? `<p class="text-[13px] text-slate-500">시험 시간 ${r.examTime}</p>` : ''}
                     ${r.status === '취소'
-                        ? `<p class="text-[11px] text-slate-400">취소일시 ${r.cancelledAt || ''}</p>
-                           ${r.reason ? `<p class="text-[11px] text-slate-400">취소 사유 ${r.reason}</p>` : ''}`
+                        ? `<p class="text-[13px] text-slate-500">취소일시 ${r.cancelledAt || ''}</p>
+                           ${r.reason ? `<p class="text-[13px] text-slate-500">취소 사유 ${r.reason}</p>` : ''}`
                         : `<button onclick="startApplyEdit('${r.id}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-black py-2.5 rounded-xl transition-colors">✏️ 신청 변경</button>
-                           <p class="text-[10px] text-slate-400 break-keep">※ 급수·과목·부서 등만 바꾸려면 취소하지 말고 위 버튼으로 변경해주세요.</p>
+                           <p class="text-[12px] text-slate-500 break-keep">※ 급수·과목·부서 등만 바꾸려면 취소하지 말고 위 버튼으로 변경해주세요.</p>
                            <select id="cancel-reason-${r.id}" class="field-input mt-1" onchange="onCancelReasonChange('${r.id}')">
                                <option value="">취소 사유를 선택하세요</option>
                                ${reasonOptions}
                            </select>
                            <input type="text" id="cancel-reason-etc-${r.id}" class="field-input mt-1 hidden" placeholder="사유를 직접 입력하세요" oninput="updateCancelBtnState('${r.id}')">
-                           <button id="cancel-btn-${r.id}" disabled onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-slate-200 text-slate-400 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed">취소하기</button>`
+                           <button id="cancel-btn-${r.id}" disabled onclick="cancelApplication('${r.id}')" class="mt-1 w-full bg-slate-200 text-slate-500 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed">취소하기</button>`
                     }
                 </div>
             `).join('');
@@ -2778,7 +3555,7 @@
             btn.disabled = !reason;
             btn.className = reason
                 ? 'mt-1 w-full bg-rose-500 hover:bg-rose-600 text-white text-sm font-black py-2.5 rounded-xl transition-colors'
-                : 'mt-1 w-full bg-slate-200 text-slate-400 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed';
+                : 'mt-1 w-full bg-slate-200 text-slate-500 text-sm font-black py-2.5 rounded-xl transition-colors cursor-not-allowed';
         }
 
         async function cancelApplication(id) {
@@ -2847,6 +3624,8 @@
                 showRooms(); showApply(); showApplyCancel();
             } else if (hash === '#examinfo') {
                 showRooms(); showExamInfo();
+            } else if (hash === '#crossword') {
+                showRooms(); showCrosswordPreview();
             } else {
                 showRooms();
             }
