@@ -2275,8 +2275,8 @@
         }
 
         function cwGenerateCrossword() {
-            const TARGET_WORDS = 10;
-            const MAX_BOARD_SIZE = 11; // 모바일에서 너무 커지지 않도록 11x11 이하로 제한
+            const TARGET_WORDS = 6; // 문항 수를 줄여 퍼즐을 더 작고 아담하게 유지
+            const MAX_BOARD_SIZE = 9; // 모바일에서 너무 커지지 않도록 9x9 이하로 제한
 
             let overallBestResult = null;
             let overallBestCount = 0;
@@ -2332,7 +2332,9 @@
                             let width = newMaxC - newMinC + 1;
                             let height = newMaxR - newMinR + 1;
 
-                            if (width <= MAX_BOARD_SIZE && height <= MAX_BOARD_SIZE) {
+                            // 세로로 긴 모양(계시록 암기에서 특히 자주 나옴)은 격자가 화면을 다 차지해
+                            // 버리므로, 정사각형이거나 가로로 퍼진 모양(width >= height)만 허용한다.
+                            if (width <= MAX_BOARD_SIZE && height <= MAX_BOARD_SIZE && width >= height) {
                                 let intersections = 0;
                                 for (let j = 0; j < wordObj.word.length; j++) {
                                     let r = p.dir === 'H' ? p.r : p.r + j;
