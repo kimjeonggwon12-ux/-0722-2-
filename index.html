@@ -976,7 +976,9 @@
                     <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-4 text-[19px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
                 </div>
 
-                <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-sm mb-4 relative min-h-[220px]">
+                <!-- 십자말풀이 격자+버튼은 화면 상단에 고정하고, 아래 가로/세로 문항만 스크롤되도록 한다
+                     (문항 읽으러 스크롤할 때마다 격자가 같이 밀려 올라갔다 내려갔다 하지 않게). -->
+                <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-md mb-4 relative min-h-[220px]" style="position: sticky; top: 0; z-index: 30;">
                     <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
                         <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
                         <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
