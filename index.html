@@ -2504,26 +2504,25 @@
                         input.dataset.words = JSON.stringify(cell.words);
                         input.lang = 'ko';
                         input.spellcheck = false;
-                        input.maxLength = 1;
+                        // maxLength를 네이티브로 걸면 일부 모바일 가상 키보드가 "이미 한 글자 찬 칸에서
+                        // 스페이스"를 아예 이벤트조차 안 쏘고 조용히 막아버리는 경우가 있다(기기별로 다름).
+                        // 그래서 maxLength 속성은 빼고, 길이 제한과 스페이스 처리를 전부 JS(input 이벤트)에서
+                        // 직접 해서 어떤 기기에서도 스페이스 입력이 항상 이벤트로 잡히게 한다.
                         input.autocomplete = 'off';
                         input.style.fontSize = `${dynamicFontSize}rem`;
                         input.addEventListener('focus', () => cwHandleFocus(r, c));
                         input.addEventListener('keyup', (e) => cwHandleKeyUp(e, r, c));
                         input.addEventListener('keydown', (e) => cwHandleKeyDown(e, r, c));
-                        // 스페이스로 다음 칸 이동을 최대한 확실히 잡기 위한 다중 방어:
-                        // 1) beforeinput: 값이 바뀌기 전에 가로채므로, 칸이 이미 한 글자 차 있어도
-                        //    (maxLength=1이라 keydown/keyup이 애매하게 동작하는 기기가 있음) 확실히 잡힌다.
-                        input.addEventListener('beforeinput', (e) => {
-                            if (e.data === ' ') {
-                                e.preventDefault();
-                                cwMoveToNextInput(r, c);
-                            }
-                        });
-                        // 2) input: beforeinput 미지원 브라우저나, 그래도 공백이 값에 실제로 들어온 경우의 보험.
                         input.addEventListener('input', (e) => {
-                            if (input.value === ' ' || input.value.includes(' ')) {
-                                input.value = '';
+                            const val = input.value;
+                            if (val.includes(' ') || val.includes('　')) {
+                                // 한 글자를 쓴 뒤 스페이스를 누르면(칸에 이미 글자가 있어도) 다음 칸으로 이동.
+                                input.value = val.replace(/[ 　]/g, '');
                                 cwMoveToNextInput(r, c);
+                                return;
+                            }
+                            if (val.length > 1) {
+                                input.value = val.slice(-1); // 실제로는 한 글자만 담는다(마지막 입력 글자 유지)
                             }
                         });
                         input.addEventListener('click', () => cwHandleFocus(r, c));
