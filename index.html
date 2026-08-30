@@ -269,13 +269,13 @@
         /* 계시록 통달·계시록 암기 문제 사전체험(십자말풀이) — 도전마다 새로 조합되는 격자 */
         .cw-grid {
             display: grid;
-            gap: 4px;
-            width: 100%;
-            max-width: 400px;
+            gap: 3px;
+            width: fit-content;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 8px;
+            padding: 6px;
             background: #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
         }
         .cw-cell { position: relative; aspect-ratio: 1 / 1; }
@@ -301,9 +301,10 @@
         .cw-input.cw-correct { background: #dcfce7; border-color: #22c55e; color: #166534; }
         .cw-input.cw-wrong { background: #ffe4e6; border-color: #f43f5e; color: #9f1239; }
         .cw-label {
-            position: absolute; top: 1px; left: 2px;
-            font-size: 0.65rem; font-weight: 900; color: #475569;
+            position: absolute; top: 0; left: 1px;
+            font-size: 0.5rem; font-weight: 900; color: #475569;
             pointer-events: none; z-index: 5;
+            line-height: 1;
         }
         .cw-clue-item { cursor: pointer; padding: 14px; border-radius: 14px; border: 2px solid transparent; transition: all .15s ease; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .cw-clue-item:active { transform: scale(0.98); }
@@ -972,17 +973,15 @@
                         <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">✍️ 계시록 암기</button>
                     </div>
 
-                    <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-md relative min-h-[220px]">
+                    <div class="bg-white border-2 border-indigo-100 rounded-2xl p-3 shadow-md relative min-h-[140px]">
                         <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
                             <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
                             <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
                         </div>
 
-                        <p class="text-center text-[13.5px] text-slate-500 font-bold mb-3">눌러서 정답을 입력하세요.</p>
-
-                        <!-- 문항이 세로로 길게 나오면 격자가 화면을 다 차지해 가로/세로 열쇠가 안 보이던 문제 방지:
-                             격자 높이를 화면 비율로 제한하고, 그보다 크면 격자 안에서만 세로 스크롤되게 한다. -->
-                        <div class="w-full overflow-auto" style="max-height: 42vh;">
+                        <!-- 격자 칸 크기 자체를 화면 세로 예산에 맞춰 계산해서 그리므로(cwRenderGrid),
+                             여기서는 넘칠 때만 대비하는 안전망으로 가벼운 세로 스크롤만 남겨둔다. -->
+                        <div class="w-full overflow-auto" style="max-height: 32vh;">
                             <div id="cw-grid" class="cw-grid"></div>
                         </div>
 
@@ -2466,9 +2465,22 @@
         function cwRenderGrid() {
             const container = document.getElementById('cw-grid');
             container.innerHTML = '';
-            container.style.gridTemplateColumns = `repeat(${cwCols}, minmax(0, 1fr))`;
-            // 50~70대 사용자가 많아 칸 글씨를 핸드폰에서 가능한 한 크게 (격자가 작을수록 더 크게)
-            const dynamicFontSize = Math.max(1.05, Math.min(1.7, 15 / cwCols));
+
+            // 칸 크기를 "가로 폭"뿐 아니라 "세로 높이 예산"까지 함께 고려해서 계산한다.
+            // 계시록 암기는 세로로 긴 격자가 자주 나오므로 예산을 더 빡빡하게 잡아, 격자가
+            // 화면을 다 차지하지 않고 아래 가로/세로 천국 열쇠까지 늘 잘 보이게 한다.
+            const heightBudget = window.innerHeight * (cwCurrentMode === 'amgi' ? 0.20 : 0.24);
+            const wrapEl = container.parentElement;
+            const widthBudget = Math.min((wrapEl && wrapEl.clientWidth) || 340, 360);
+            const gap = 3;
+            const cellFromWidth = (widthBudget - gap * (cwCols - 1)) / cwCols;
+            const cellFromHeight = (heightBudget - gap * (cwRows - 1)) / cwRows;
+            const cellSize = Math.max(16, Math.min(cellFromWidth, cellFromHeight, 36));
+            const dynamicFontSize = Math.max(0.68, Math.min(1.5, cellSize / 24));
+
+            container.style.gridTemplateColumns = `repeat(${cwCols}, ${cellSize}px)`;
+            container.style.gridTemplateRows = `repeat(${cwRows}, ${cellSize}px)`;
+            container.style.gap = gap + 'px';
 
             for (let r = 0; r < cwRows; r++) {
                 for (let c = 0; c < cwCols; c++) {
@@ -2489,6 +2501,14 @@
                         input.addEventListener('focus', () => cwHandleFocus(r, c));
                         input.addEventListener('keyup', (e) => cwHandleKeyUp(e, r, c));
                         input.addEventListener('keydown', (e) => cwHandleKeyDown(e, r, c));
+                        // 모바일 가상 키보드 중에는 스페이스를 keydown/keyup으로 못 잡고 값으로만
+                        // 흘려보내는 경우가 있어, 실제 입력값에 공백이 들어오면 그것도 "다음 칸"으로 처리한다.
+                        input.addEventListener('input', (e) => {
+                            if (input.value === ' ' || input.value.includes(' ')) {
+                                input.value = '';
+                                cwMoveToNextInput(r, c);
+                            }
+                        });
                         input.addEventListener('click', () => cwHandleFocus(r, c));
                         cellDiv.appendChild(input);
                         if (cell.labels.length > 0) {
