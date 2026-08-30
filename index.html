@@ -269,9 +269,9 @@
         /* 계시록 통달·계시록 암기 문제 사전체험(십자말풀이) — 도전마다 새로 조합되는 격자 */
         .cw-grid {
             display: grid;
-            gap: 3px;
+            gap: 4px;
             width: 100%;
-            max-width: 340px;
+            max-width: 400px;
             margin: 0 auto;
             padding: 8px;
             background: #e2e8f0;
@@ -302,10 +302,10 @@
         .cw-input.cw-wrong { background: #ffe4e6; border-color: #f43f5e; color: #9f1239; }
         .cw-label {
             position: absolute; top: 1px; left: 2px;
-            font-size: 0.55rem; font-weight: 900; color: #64748b;
+            font-size: 0.65rem; font-weight: 900; color: #475569;
             pointer-events: none; z-index: 5;
         }
-        .cw-clue-item { cursor: pointer; padding: 12px; border-radius: 14px; border: 2px solid transparent; transition: all .15s ease; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .cw-clue-item { cursor: pointer; padding: 14px; border-radius: 14px; border: 2px solid transparent; transition: all .15s ease; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .cw-clue-item:active { transform: scale(0.98); }
         .cw-clue-item.cw-active { background: #fef9c3; border-color: #facc15; }
     </style>
@@ -355,11 +355,11 @@
                 <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
             </div>
 
-            <!-- 십자말풀이 체험 이벤트 코너: 공부방 그림 아래 별도 배너 -->
-            <div class="w-full relative" style="max-width:420px; margin:14px auto 0;">
-                <span class="absolute -top-2 -left-2 z-10 bg-rose-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md" style="transform:rotate(-8deg);">🎉 이벤트</span>
-                <button onclick="showCrosswordPreview()" class="w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 hover:from-violet-600 hover:via-indigo-600 hover:to-sky-600 text-white rounded-2xl py-4 px-4 shadow-lg active:scale-[0.98] transition-transform font-black text-[14px]">
-                    자격증 시험 문제 체험하기 (십자말풀이)
+            <!-- 십자말풀이 체험 이벤트 코너: 공부방 그림 아래 별도 배너 (50~70대 사용자가 많아 큼직하게) -->
+            <div class="w-full relative" style="max-width:420px; margin:20px auto 0;">
+                <span class="absolute -top-3.5 -left-2 z-10 bg-rose-500 text-white text-[15px] font-black px-3.5 py-1.5 rounded-full shadow-md" style="transform:rotate(-8deg);">🎉 이벤트</span>
+                <button onclick="showCrosswordPreview()" class="w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 hover:from-violet-600 hover:via-indigo-600 hover:to-sky-600 text-white rounded-2xl py-6 px-4 shadow-lg active:scale-[0.98] transition-transform font-black text-[22px] leading-snug break-keep">
+                    자격증 시험 3분 체험(십자말풀이)
                 </button>
             </div>
 
@@ -962,54 +962,54 @@
         <!-- 계시록 통달 문제 사전체험 (십자말풀이) -->
         <div id="view-crossword-preview" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in w-full">
             <div class="w-full max-w-md px-2">
-                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-indigo-700 text-[13px] font-black transition-colors mb-4">
+                <button onclick="backToRooms()" class="nav-back-glow flex items-center gap-1.5 text-indigo-700 text-[15px] font-black transition-colors mb-4">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     뒤로가기
                 </button>
                 <div class="text-center mb-4">
-                    <p class="text-[12px] font-black text-indigo-500 tracking-wide">🧩 시온 공부방 · 자격증 체험판</p>
-                    <h1 class="text-xl font-black text-indigo-700 font-jua break-keep mt-1">문제 사전체험 (십자말풀이)</h1>
-                    <p class="text-[12px] text-slate-500 font-bold mt-2 break-keep">도전할 때마다 새 문제로 다시 조합됩니다</p>
+                    <p class="text-[13px] font-black text-indigo-500 tracking-wide">🧩 시온 공부방 · 자격증 체험판</p>
+                    <h1 class="text-2xl font-black text-indigo-700 font-jua break-keep mt-1">문제 사전체험 (십자말풀이)</h1>
+                    <p class="text-[14px] text-slate-500 font-bold mt-2 break-keep">도전할 때마다 새 문제로 다시 조합됩니다</p>
                 </div>
 
-                <!-- 과목 탭: 계시록 통달 / 계시록 암기 -->
+                <!-- 과목 탭: 계시록 통달 / 계시록 암기 (50~70대도 누르기 쉽게 큼직하게) -->
                 <div class="bg-slate-100 p-1.5 rounded-2xl flex w-full mb-4 shadow-inner">
-                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all">📖 계시록 통달</button>
-                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-2.5 text-[13px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
+                    <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-3.5 text-[16px] font-black rounded-xl transition-all">📖 계시록 통달</button>
+                    <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-3.5 text-[16px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
                 </div>
 
                 <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-sm mb-4 relative min-h-[220px]">
                     <div id="cw-loading" class="hidden absolute inset-0 bg-white/95 z-20 rounded-2xl flex flex-col items-center justify-center">
                         <div class="w-9 h-9 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-                        <p class="font-black text-indigo-700 text-[13px]">새로운 문제를 조합 중입니다...</p>
+                        <p class="font-black text-indigo-700 text-[15px]">새로운 문제를 조합 중입니다...</p>
                     </div>
 
-                    <p id="cw-mode-badge" class="text-center text-[11.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1 mx-auto mb-3" style="width:fit-content;">계시록 통달 랜덤 십자말풀이</p>
-                    <p class="text-center text-[11.5px] text-slate-400 font-bold mb-3">빈 칸을 탭하고 정답을 입력하세요</p>
+                    <p id="cw-mode-badge" class="text-center text-[13.5px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 mx-auto mb-3" style="width:fit-content;">계시록 통달 랜덤 십자말풀이</p>
+                    <p class="text-center text-[13.5px] text-slate-500 font-bold mb-3">빈 칸을 탭하고 정답을 입력하세요</p>
 
                     <div class="w-full overflow-x-auto">
                         <div id="cw-grid" class="cw-grid"></div>
                     </div>
 
                     <div class="flex flex-col gap-2 mt-4">
-                        <button id="cw-check-btn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 text-[13px] font-black transition-colors">✔️ 정답 제출하고 채점하기</button>
-                        <button id="cw-new-btn" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-[13px] font-black transition-colors">🔄 또 풀기 (새로운 문제)</button>
+                        <button id="cw-check-btn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-4 text-[17px] font-black transition-colors">✔️ 정답 제출하고 채점하기</button>
+                        <button id="cw-new-btn" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-3.5 text-[16px] font-black transition-colors">🔄 또 풀기 (새로운 문제)</button>
                     </div>
                     <div id="cw-result" class="hidden mt-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-3 text-center">
-                        <p id="cw-result-score" class="font-jua text-indigo-700 text-base"></p>
-                        <p id="cw-result-msg" class="text-[12px] text-indigo-600 font-bold mt-1 break-keep"></p>
+                        <p id="cw-result-score" class="font-jua text-indigo-700 text-xl"></p>
+                        <p id="cw-result-msg" class="text-[14.5px] text-indigo-600 font-bold mt-1 break-keep"></p>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <p class="text-[12px] font-black text-blue-600 mb-2 pl-1">➡️ 가로 열쇠</p>
+                    <p class="text-[15px] font-black text-blue-600 mb-2 pl-1">➡️ 가로 열쇠</p>
                     <div id="cw-clues-h" class="space-y-2 mb-3"></div>
-                    <p class="text-[12px] font-black text-rose-500 mb-2 pl-1">⬇️ 세로 열쇠</p>
+                    <p class="text-[15px] font-black text-rose-500 mb-2 pl-1">⬇️ 세로 열쇠</p>
                     <div id="cw-clues-v" class="space-y-2"></div>
                 </div>
 
-                <button onclick="showApplyMenu()" class="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white rounded-xl py-3 text-sm font-black transition-colors mb-2">🎯 진짜 시험도 신청해볼까요?</button>
-                <button onclick="backToRooms()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-2.5 text-[13px] font-black transition-colors">홈으로</button>
+                <button onclick="showApplyMenu()" class="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white rounded-xl py-3.5 text-[16px] font-black transition-colors mb-2">🎯 진짜 시험도 신청해볼까요?</button>
+                <button onclick="backToRooms()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl py-3 text-[15px] font-black transition-colors">홈으로</button>
             </div>
         </div>
     </main>
@@ -2458,7 +2458,8 @@
             const container = document.getElementById('cw-grid');
             container.innerHTML = '';
             container.style.gridTemplateColumns = `repeat(${cwCols}, minmax(0, 1fr))`;
-            const dynamicFontSize = Math.max(0.8, Math.min(1.2, 12 / cwCols));
+            // 50~70대 사용자가 많아 칸 글씨를 핸드폰에서 가능한 한 크게 (격자가 작을수록 더 크게)
+            const dynamicFontSize = Math.max(1.05, Math.min(1.7, 15 / cwCols));
 
             for (let r = 0; r < cwRows; r++) {
                 for (let c = 0; c < cwCols; c++) {
@@ -2512,25 +2513,25 @@
                 if (isTongdal) {
                     clueHTML = `
                         <div class="flex items-start gap-3">
-                            <span class="w-7 h-7 rounded-full ${badgeColor} text-[12px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[14px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
                             <div class="flex-1 min-w-0">
-                                <p class="font-black text-indigo-700 text-[12px] mb-1">[${w.originalObj.v}]</p>
-                                <p class="text-[12px] text-slate-500 mb-2 leading-relaxed break-keep">"${w.originalObj.text}"</p>
-                                <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] break-keep leading-relaxed">
+                                <p class="font-black text-indigo-700 text-[15px] mb-1.5">[${w.originalObj.v}]</p>
+                                <p class="text-[15px] text-slate-600 mb-2.5 leading-relaxed break-keep">"${w.originalObj.text}"</p>
+                                <div class="p-3 bg-slate-50 border border-slate-100 rounded-lg text-[15px] break-keep leading-relaxed">
                                     <p><span class="font-black text-slate-500">▶ 문제:</span> <span class="font-bold text-slate-800">${w.originalObj.keyword}</span></p>
-                                    <p class="mt-1"><span class="font-black text-slate-500">▶ 정답:</span> <span class="text-slate-700">${w.originalObj.meaningBefore}</span><span class="font-black text-indigo-600 tracking-[0.15em]">${circleHint}</span><span class="text-slate-700">${w.originalObj.meaningAfter}</span></p>
+                                    <p class="mt-1.5"><span class="font-black text-slate-500">▶ 정답:</span> <span class="text-slate-700">${w.originalObj.meaningBefore}</span><span class="font-black text-indigo-600 tracking-[0.15em]">${circleHint}</span><span class="text-slate-700">${w.originalObj.meaningAfter}</span></p>
                                 </div>
-                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 text-[12px] font-black text-rose-600">정답: ${w.word}</div>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[15px] font-black text-rose-600">정답: ${w.word}</div>
                             </div>
                         </div>`;
                 } else {
                     clueHTML = `
                         <div class="flex items-start gap-3">
-                            <span class="w-7 h-7 rounded-full ${badgeColor} text-[12px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
+                            <span class="w-8 h-8 rounded-full ${badgeColor} text-[14px] font-black flex items-center justify-center flex-shrink-0">${w.displayId}</span>
                             <div class="flex-1 min-w-0">
-                                <p class="font-black text-fuchsia-700 text-[12px] mb-1">[${w.originalObj.v}]</p>
-                                <p class="text-[12px] text-slate-800 font-bold leading-relaxed break-keep">${w.originalObj.text}</p>
-                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 text-[12px] font-black text-rose-600">정답: ${w.word}</div>
+                                <p class="font-black text-fuchsia-700 text-[15px] mb-1.5">[${w.originalObj.v}]</p>
+                                <p class="text-[15px] text-slate-800 font-bold leading-relaxed break-keep">${w.originalObj.text}</p>
+                                <div id="cw-reveal-${w.idx}" class="hidden mt-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 text-[15px] font-black text-rose-600">정답: ${w.word}</div>
                             </div>
                         </div>`;
                 }
