@@ -970,10 +970,10 @@
                         뒤로가기
                     </button>
 
-                    <!-- 과목 탭: 계시록 통달 / 계시록 암기 (50~70대도 누르기 쉽게 큼직하게, 비활성 상태도 과목별 색으로 구분) -->
-                    <div class="bg-slate-100 p-1.5 rounded-2xl flex w-full mb-3 shadow-inner">
-                        <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-4 text-[19px] font-black rounded-xl transition-all">📖 계시록 통달</button>
-                        <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-4 text-[19px] font-black rounded-xl transition-all">✍️ 계시록 암기</button>
+                    <!-- 과목 탭: 계시록 통달 / 계시록 암기 (상단 고정 영역 공간 확보를 위해 작게, 비활성 상태도 과목별 색으로 구분) -->
+                    <div class="bg-slate-100 p-1 rounded-xl flex w-full mb-3 shadow-inner">
+                        <button id="cw-tab-tongdal" type="button" onclick="cwSetMode('tongdal')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">📖 계시록 통달</button>
+                        <button id="cw-tab-amgi" type="button" onclick="cwSetMode('amgi')" class="flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all">✍️ 계시록 암기</button>
                     </div>
 
                     <div class="bg-white border-2 border-indigo-100 rounded-2xl p-4 shadow-md relative min-h-[220px]">
@@ -984,7 +984,9 @@
 
                         <p class="text-center text-[13.5px] text-slate-500 font-bold mb-3">눌러서 정답을 입력하세요.</p>
 
-                        <div class="w-full overflow-x-auto">
+                        <!-- 문항이 세로로 길게 나오면 격자가 화면을 다 차지해 가로/세로 열쇠가 안 보이던 문제 방지:
+                             격자 높이를 화면 비율로 제한하고, 그보다 크면 격자 안에서만 세로 스크롤되게 한다. -->
+                        <div class="w-full overflow-auto" style="max-height: 42vh;">
                             <div id="cw-grid" class="cw-grid"></div>
                         </div>
 
@@ -2250,12 +2252,13 @@
             const tabTongdal = document.getElementById('cw-tab-tongdal');
             const tabAmgi = document.getElementById('cw-tab-amgi');
             // 비활성 탭도 각 과목 고유 색을 옅게 유지해서(회색으로 죽이지 않고) 둘 다 항상 잘 보이게 한다.
+            // (상단 고정 영역 공간 확보를 위해 탭 자체는 작게 유지)
             if (mode === 'tongdal') {
-                tabTongdal.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-white bg-indigo-600 shadow-md';
-                tabAmgi.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-fuchsia-400';
+                tabTongdal.className = 'flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all text-white bg-indigo-600 shadow-md';
+                tabAmgi.className = 'flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all text-fuchsia-400';
             } else {
-                tabTongdal.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-indigo-400';
-                tabAmgi.className = 'flex-1 py-4 text-[19px] font-black rounded-xl transition-all text-white bg-fuchsia-600 shadow-md';
+                tabTongdal.className = 'flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all text-indigo-400';
+                tabAmgi.className = 'flex-1 py-1.5 text-[13px] font-black rounded-lg transition-all text-white bg-fuchsia-600 shadow-md';
             }
             cwInitGame();
         }
