@@ -491,6 +491,10 @@
                     <p class="text-slate-500 text-[13px] mt-1 break-keep">성도님들의 자유 대화 공간. 응원, 격려, 공부 노하우 등을 서로 나눠요.</p>
                 </div>
 
+                <!-- 서버(Apps Script)가 아직 옛 버전이라 수정토큰을 못 받아서 수정/삭제 버튼이 하나도
+                     안 뜰 때만(communityPost 성공 응답에 editToken이 없을 때) 보여주는 안내. -->
+                <p id="community-server-outdated-notice" class="hidden text-[12.5px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3 font-bold leading-relaxed break-keep">⚠️ 지금 연결된 서버가 이전 버전이라 글 수정·삭제 기능이 아직 켜지지 않았어요. 구글 Apps Script를 "새 버전"으로 다시 배포하면 바로 활성화됩니다.</p>
+
                 <!-- 글쓰기 -->
                 <div class="bg-white border-2 border-pink-100 rounded-2xl p-4 shadow-sm space-y-2.5 mb-5">
                     <p id="community-post-error" class="hidden text-rose-600 text-[13px] font-bold text-center bg-rose-50 rounded-full px-3 py-1.5">내용을 입력해주세요.</p>
@@ -501,7 +505,10 @@
 
                 <div class="flex items-center justify-between mb-2 px-1">
                     <p class="text-[13px] font-black text-slate-500">💬 이야기 <span id="community-post-count" class="text-pink-600"></span></p>
-                    <button onclick="loadCommunityPosts()" class="text-[12px] font-bold text-slate-400 hover:text-pink-600 transition-colors">🔄 새로고침</button>
+                    <div class="flex items-center gap-3">
+                        <button id="community-admin-btn" onclick="communityAdminLogin()" class="text-[12px] font-bold text-slate-400 hover:text-amber-600 transition-colors">🔑 관리자</button>
+                        <button onclick="loadCommunityPosts()" class="text-[12px] font-bold text-slate-400 hover:text-pink-600 transition-colors">🔄 새로고침</button>
+                    </div>
                 </div>
                 <div id="community-feed" class="space-y-3 pb-10">
                     <p class="community-empty">불러오는 중...</p>
@@ -3129,6 +3136,48 @@
             return !!getCommunityMyTokens()[id];
         }
 
+        // communityPost 성공 응답인데 editToken이 없으면(서버가 아직 구버전 Apps Script라
+        // 수정토큰을 발급 못 해주는 경우) 수정·삭제 버튼이 영영 안 뜰 수밖에 없다 — 이걸 조용히
+        // 넘기지 않고 화면에 바로 알려준다("적용이 안 된 것 같다"고 다시 물어볼 필요 없게).
+        function communityCheckServerOutdated(result) {
+            const notice = document.getElementById('community-server-outdated-notice');
+            if (!notice) return;
+            if (result && result.success && !result.editToken) notice.classList.remove('hidden');
+        }
+
+        // 글 고정(📌)은 관리자만 할 수 있다. 별도 로그인 화면을 새로 만들지 않고, 건의사항
+        // 관리자 대시보드(index.html#admin-suggest)와 같은 비밀번호(ADMIN_KEY)·같은 저장소
+        // (ADMIN_SUGGEST_KEY_STORAGE, sessionStorage)를 재사용한다 — 이미 그 대시보드에
+        // 로그인해 있었다면 커뮤니티에서도 바로 관리자로 인식된다. 실제 권한 확인은 항상 서버
+        // (communityPin 액션)가 ADMIN_KEY와 대조해서 하므로, 여기 sessionStorage 값은
+        // "버튼을 보여줄지" 판단에만 쓰이고 그 자체로 권한을 주지는 않는다.
+        function isCommunityAdmin() {
+            try { return !!sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE); } catch (e) { return false; }
+        }
+        function communityAdminLogin() {
+            if (isCommunityAdmin()) {
+                // 이미 로그인된 상태에서 다시 누르면 로그아웃(관리자 버튼들을 다시 숨김)한다.
+                try { sessionStorage.removeItem(ADMIN_SUGGEST_KEY_STORAGE); } catch (e) { /* 무시 */ }
+                renderCommunityFeed();
+                return;
+            }
+            const key = prompt('관리자 비밀번호를 입력하세요 (글 고정 권한)');
+            if (key === null || !key.trim()) return; // 취소 또는 빈 값
+            try { sessionStorage.setItem(ADMIN_SUGGEST_KEY_STORAGE, key.trim()); } catch (e) { /* 무시 */ }
+            // 비밀번호가 실제로 맞는지는 첫 고정 시도 때 서버가 확인한다(여기서는 버튼만 보여줌).
+            renderCommunityFeed();
+        }
+        async function toggleCommunityPin(id, pinned) {
+            const adminKey = (() => { try { return sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE) || ''; } catch (e) { return ''; } })();
+            if (!adminKey) { alert('관리자 로그인이 필요합니다.'); return; }
+            const result = await gasCall({ action: 'communityPin', id, pinned, adminKey });
+            if (result && result.success) {
+                await loadCommunityPosts();
+            } else {
+                alert((result && result.message) || '고정 처리에 실패했습니다.');
+            }
+        }
+
         let communityPosts = []; // 서버에서 불러온 글+댓글 평면 목록(parentId로 댓글을 구분)
         let communityPollHandle = null;
         let communityEditingId = null; // 지금 인라인으로 수정 중인 글/댓글 id(한 번에 하나만)
@@ -3239,11 +3288,29 @@
                 </div>` : ''}`;
         }
 
+        // 상위 글 정렬: ①관리자가 고정한 글(항상 맨 위, 최신순) → ②고정 안 된 글 중 답글이 많은
+        // "인기" 글 최대 10개(답글 수 내림차순, 동률이면 최신순) → ③나머지는 최신순.
+        // "인기"의 기준은 답글 수(반응이 있었다는 신호)를 쓴다 — 별도 좋아요 기능은 아직 없음.
+        function sortCommunityTopPosts() {
+            const all = communityPosts.filter(p => !p.parentId);
+            const replyCountOf = id => communityPosts.filter(p => p.parentId === id).length;
+            const pinned = all.filter(p => p.pinned).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const rest = all.filter(p => !p.pinned);
+            const popular = rest.filter(p => replyCountOf(p.id) > 0)
+                .sort((a, b) => replyCountOf(b.id) - replyCountOf(a.id) || new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 10);
+            const popularIds = new Set(popular.map(p => p.id));
+            const others = rest.filter(p => !popularIds.has(p.id)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            return { pinned, popular, others, all: [...pinned, ...popular, ...others] };
+        }
+
         function renderCommunityFeed() {
             const feedEl = document.getElementById('community-feed');
             const countEl = document.getElementById('community-post-count');
+            const adminBtn = document.getElementById('community-admin-btn');
+            if (adminBtn) adminBtn.textContent = isCommunityAdmin() ? '🔑 관리자(로그인됨)' : '🔑 관리자';
             if (!feedEl) return;
-            const topPosts = communityPosts.filter(p => !p.parentId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const { pinned, popular, others, all: topPosts } = sortCommunityTopPosts();
             if (countEl) countEl.textContent = topPosts.length ? `(${topPosts.length})` : '';
 
             if (topPosts.length === 0) {
@@ -3259,8 +3326,9 @@
                 const el = document.getElementById(`community-replies-${post.id}`);
                 if (el && el.classList.contains('hidden')) closedIds.add(post.id);
             });
+            const isAdmin = isCommunityAdmin();
 
-            feedEl.innerHTML = topPosts.map(post => {
+            const renderPostCard = post => {
                 const replies = communityPosts.filter(p => p.parentId === post.id).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 const repliesHtml = replies.map(r => `
                     <div class="flex gap-2 mt-3">
@@ -3272,15 +3340,19 @@
                     </div>
                 `).join('');
                 const isOpen = !closedIds.has(post.id) || replies.some(r => r.id === communityEditingId);
+                const pinBtn = isAdmin
+                    ? `<button onclick="toggleCommunityPin('${post.id}', ${!post.pinned})" class="text-[11px] font-black ${post.pinned ? 'text-amber-600' : 'text-slate-300 hover:text-amber-500'} transition-colors">📌 ${post.pinned ? '고정 해제' : '고정'}</button>`
+                    : '';
                 return `
-                <div class="community-post-card">
+                <div class="community-post-card${post.pinned ? ' !border-amber-300 !bg-amber-50' : ''}">
                     <div class="flex gap-2.5">
                         <div class="community-avatar" style="${communityAvatarStyle(post.name)}">${escapeHtml(communityAvatarLetter(post.name))}</div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-[13px]"><span class="font-black text-slate-800">${escapeHtml(post.name || '익명')}</span> <span class="text-slate-400 font-bold text-[12px]">· ${communityRelativeTime(post.createdAt)}</span></p>
+                            <p class="text-[13px] flex items-center gap-1.5 flex-wrap">${post.pinned ? '<span class="text-amber-500">📌</span>' : ''}<span class="font-black text-slate-800">${escapeHtml(post.name || '익명')}</span> <span class="text-slate-400 font-bold text-[12px]">· ${communityRelativeTime(post.createdAt)}</span></p>
                             ${renderCommunityItemContent(post, false)}
                             <div class="flex items-center gap-3 mt-2">
                                 <button class="community-reply-btn" onclick="toggleCommunityReplies('${post.id}')">${replies.length > 0 ? `답글 ${replies.length}개` : '답글 달기'}</button>
+                                ${pinBtn}
                             </div>
                             <div id="community-replies-${post.id}" class="${isOpen ? '' : 'hidden'} community-replies-box rounded-xl px-2.5 py-2 ml-1">
                                 ${repliesHtml}
@@ -3292,7 +3364,27 @@
                         </div>
                     </div>
                 </div>`;
-            }).join('');
+            };
+
+            // 고정/인기/최신 구간이 두 개 이상 실제로 있을 때만 작은 구간 표시를 붙인다
+            // (한 구간만 있으면 굳이 이름표를 붙일 필요가 없음).
+            const sectionLabel = (text, colorClass) => `<p class="text-[11.5px] font-black ${colorClass} px-1 pt-1 first:pt-0">${text}</p>`;
+            const nonEmptyGroupCount = [pinned.length > 0, popular.length > 0, others.length > 0].filter(Boolean).length;
+            const showLabels = nonEmptyGroupCount >= 2;
+            let html = '';
+            if (pinned.length > 0) {
+                if (showLabels) html += sectionLabel('📌 고정된 글', 'text-amber-600');
+                html += pinned.map(renderPostCard).join('');
+            }
+            if (popular.length > 0) {
+                if (showLabels) html += sectionLabel('🔥 인기 이야기', 'text-rose-500');
+                html += popular.map(renderPostCard).join('');
+            }
+            if (others.length > 0) {
+                if (showLabels) html += sectionLabel('🕒 최신 이야기', 'text-slate-400');
+                html += others.map(renderPostCard).join('');
+            }
+            feedEl.innerHTML = html;
         }
 
         function toggleCommunityReplies(postId) {
@@ -3380,6 +3472,7 @@
                 const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId: '', createdAt: nowStr() });
                 if (result && result.success) {
                     saveCommunityMyToken(result.id, result.editToken);
+                    communityCheckServerOutdated(result);
                     contentEl.value = '';
                     await loadCommunityPosts();
                 } else {
@@ -3409,6 +3502,7 @@
                 const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId, createdAt: nowStr() });
                 if (result && result.success) {
                     saveCommunityMyToken(result.id, result.editToken);
+                    communityCheckServerOutdated(result);
                     input.value = '';
                     await loadCommunityPosts();
                     const el = document.getElementById(`community-replies-${parentId}`);
