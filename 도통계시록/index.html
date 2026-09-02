@@ -596,10 +596,8 @@
 
         <!-- View 1a-2: 장별 공부하기 (전체 절 스크롤 보기) -->
         <div id="screen-chapter-study" class="hidden flex-col h-full bg-slate-50 z-10 relative">
-            <div class="bg-white px-3 py-2 flex items-center gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <div class="w-[100px] flex-shrink-0"></div>
-                <span id="chapter-study-title" class="flex-grow min-w-0 text-left text-black font-black leading-tight">계 1장</span>
-                <button type="button" id="chapter-study-layout-toggle" onclick="toggleChapterStudyLayout()" class="bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2.5 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="chapter-study-layout-toggle-icon">🖥️</span><span id="chapter-study-layout-toggle-label" class="chapter-study-layout-toggle-label"> 노트북 화면</span></button>
+            <div class="bg-white px-3 py-2 flex items-center justify-end gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
+                <button type="button" id="chapter-study-layout-toggle" onclick="toggleChapterStudyLayout()" class="bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2.5 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="chapter-study-layout-toggle-icon">🖥️</span><span id="chapter-study-layout-toggle-label" class="chapter-study-layout-toggle-label"> 큰 화면</span></button>
                 <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
@@ -13243,7 +13241,7 @@
             // 앱 전체를 감싸는 #app-main(max-w-md 폰 프레임)도 이 화면이 떠 있는 동안만 함께 넓힌다.
             if (mainEl) mainEl.classList.toggle('tongdal-wide-main', mode === 'desktop');
             if (icon) icon.textContent = mode === 'desktop' ? '📱' : '🖥️';
-            if (label) label.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 노트북 화면';
+            if (label) label.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 큰 화면';
         }
         window.toggleChapterStudyLayout = function() {
             const next = getChapterStudyLayout() === 'desktop' ? 'mobile' : 'desktop';
@@ -13254,9 +13252,7 @@
         window.openChapterStudy = function(chapterKey, mode) {
             chapterStudyState.key = chapterKey;
             if (mode) chapterStudyState.mode = mode;
-            const titles = chapterTitles[chapterKey];
-            const titleEl = document.getElementById('chapter-study-title');
-            fitHeaderTitle(titleEl, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`);
+            // 헤더의 장 제목(계 N장 부제)은 삭제됨 — 헤더에는 "큰 화면"/"뒤로가기" 버튼만 남는다.
             const answerBtnLabel = document.getElementById('chapter-study-mode-answer');
             if (answerBtnLabel) answerBtnLabel.textContent = `계 ${chapterKey.replace('ch', '')}장 전체 문답`;
             applyChapterStudyLayout(getChapterStudyLayout());
