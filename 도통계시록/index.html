@@ -299,6 +299,18 @@
         }
         .chapter-switch-glow { animation: chapterSwitchGlow 1.8s ease-in-out infinite; }
 
+        /* "괄호 넣기" 탭을 확실히 눈에 띄게(전체 문답과 다른 색+펄스로 전환을 유도) */
+        @keyframes blankModeGlowActive {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.45), 0 4px 12px rgba(225, 29, 72, 0.2); }
+            50% { box-shadow: 0 0 0 9px rgba(225, 29, 72, 0), 0 4px 12px rgba(225, 29, 72, 0.2); }
+        }
+        @keyframes blankModeGlowInvite {
+            0%, 100% { box-shadow: 0 0 8px 1px rgba(244, 63, 94, 0.55), 0 4px 12px rgba(225, 29, 72, 0.25); }
+            50% { box-shadow: 0 0 18px 6px rgba(244, 63, 94, 0.9), 0 4px 12px rgba(225, 29, 72, 0.25); }
+        }
+        .blank-mode-glow-active { animation: blankModeGlowActive 1.8s ease-in-out infinite; }
+        .blank-mode-glow-invite { animation: blankModeGlowInvite 1.5s ease-in-out infinite; }
+
         /* 계시록 통달 "장별 공부하기"(screen-chapter-study) 노트북/가로형 레이아웃 스위치.
            기존 세로형(모바일) 레이아웃 클래스(max-w-md, max-w-xl, space-y-4 등)는 그대로 두고,
            layout-desktop 클래스가 붙었을 때만 더 높은 우선순위(!important)로 덮어쓰는
@@ -626,7 +638,7 @@
                     </div>
                     <div class="bg-[#e8eaf6] rounded-2xl p-1.5 flex gap-1.5 shadow-inner">
                         <button type="button" id="chapter-study-mode-answer" onclick="setChapterStudyMode('answer')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">계 1장 전체 문답</button>
-                        <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">괄호 넣기</button>
+                        <button type="button" id="chapter-study-mode-blank" onclick="setChapterStudyMode('blank')" class="flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all">✏️ 괄호 넣기</button>
                     </div>
                     <p class="text-center text-[13px] text-slate-400 font-bold mt-2.5 mb-4">괄호 넣기를 연습하며 모의고사를 준비하세요.</p>
                     <div id="chapter-study-container" class="space-y-4 pb-10"></div>
@@ -13285,14 +13297,19 @@
             renderChapterStudyItems();
         };
 
+        // "괄호 넣기"(실제 암송 연습)는 그냥 읽기만 하는 "전체 문답"과 달리 항상 눈에 띄는 색(로즈)과
+        // 펄스를 줘서, 선택돼 있지 않을 때는 "여기 눌러서 연습해보세요"라고 유도하는 느낌을 주고,
+        // 선택돼 있을 때도 여전히 로즈 톤을 유지해서 지금 연습 모드에 있다는 게 확실히 보이게 한다.
         function renderChapterStudyModeButtons() {
             const answerBtn = document.getElementById('chapter-study-mode-answer');
             const blankBtn = document.getElementById('chapter-study-mode-blank');
             if (!answerBtn || !blankBtn) return;
-            const active = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all chapter-switch-glow bg-white text-[#4f46e5] shadow-md scale-[1.02]';
-            const inactive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all chapter-switch-glow bg-transparent text-[#7986cb]';
-            answerBtn.className = chapterStudyState.mode === 'answer' ? active : inactive;
-            blankBtn.className = chapterStudyState.mode === 'blank' ? active : inactive;
+            const answerActive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all chapter-switch-glow bg-white text-[#4f46e5] shadow-md scale-[1.02]';
+            const answerInactive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all bg-transparent text-[#7986cb]';
+            const blankActive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all blank-mode-glow-active bg-white text-[#e11d48] shadow-md scale-[1.02] border-2 border-rose-200';
+            const blankInactive = 'flex-1 py-3.5 rounded-xl text-[16px] font-black transition-all blank-mode-glow-invite bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md';
+            answerBtn.className = chapterStudyState.mode === 'answer' ? answerActive : answerInactive;
+            blankBtn.className = chapterStudyState.mode === 'blank' ? blankActive : blankInactive;
         }
 
         // 장별 공부하기(전체 문답/괄호 넣기 공용) 맨 위·맨 아래의 "이전 장/다음 장" 버튼.
