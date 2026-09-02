@@ -3339,7 +3339,8 @@
         // 다른 과목이면 급수 select를 다시 활성화하고 안내문을 숨긴다.
         // 부서가 자문회·장로회이고 과목이 "계시록 통달"이면, 그 부서의 4급은 특별 전형과 동일하므로
         // 급수 선택지에서 4급 옵션은 보여주되 disabled 처리하고 라벨을 바꿔 선택하지 못하게 하며,
-        // "과목을 특별 전형으로 선택하세요"라고 바로 옆에 안내한다.
+        // "계시록 통달 4급은 특별 전형으로 선택하세요"라고 바로 옆에 안내한다(이 안내가 실제로
+        // 필요한 상황은 4급을 고르려다 막힌 경우이므로, 문구에 "4급"을 명시해 헷갈리지 않게 한다).
         function syncApplyGradeToSubject() {
             const deptEl = document.getElementById('apply-dept');
             const subjectEl = document.getElementById('apply-subject');
@@ -3377,7 +3378,7 @@
             if (isSpecial) gradeEl.value = '';
             noteEl.classList.toggle('hidden', !isSpecial);
             if (switchNoteEl) {
-                switchNoteEl.textContent = isSpecialTrackRevelation ? `※ 과목을 "${specialValue}"으로 선택하세요.` : '';
+                switchNoteEl.textContent = isSpecialTrackRevelation ? `※ 계시록 통달 4급은 "${specialValue}"으로 선택하세요.` : '';
                 switchNoteEl.classList.toggle('hidden', !isSpecialTrackRevelation);
             }
             updateApplyGradeRangeNote();
