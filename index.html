@@ -2535,7 +2535,15 @@
                             }
                         };
                         input.addEventListener('input', (e) => {
-                            if (e.isComposing) return;
+                            if (e.isComposing) {
+                                // 아직 조합 중이라도(받침이 안 붙었어도) 지금까지 조합된 글자가 이미
+                                // 정답 글자와 같으면 바로 다음 칸으로 넘어간다. 다음 칸으로 포커스를
+                                // 옮기면 지금 조합 중이던 글자는 그 상태로 자동 확정된다.
+                                if (cell.answer && input.value === cell.answer) {
+                                    cwMoveToNextInput(r, c);
+                                }
+                                return;
+                            }
                             handleCwCellInput();
                         });
                         input.addEventListener('compositionend', () => handleCwCellInput());
