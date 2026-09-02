@@ -52,6 +52,21 @@
             0%, 100% { box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 0 rgba(79,70,229,0.5); }
             50% { box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 7px rgba(79,70,229,0); }
         }
+
+        /* "큰 화면" 전환 버튼 전용 네온 펄스(위의 은은한 뒤로가기 펄스보다 더 진하고 빛나는 느낌) */
+        .layout-toggle-neon-pulse {
+            animation: layoutToggleNeonPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes layoutToggleNeonPulse {
+            0%, 100% {
+                box-shadow: 0 0 6px 1px rgba(79,70,229,0.6), 0 0 0 0 rgba(79,70,229,0.55);
+                border-color: #a5b4fc;
+            }
+            50% {
+                box-shadow: 0 0 18px 5px rgba(129,140,248,0.95), 0 0 0 9px rgba(79,70,229,0);
+                border-color: #818cf8;
+            }
+        }
         @font-face {
             font-family: 'Jalnan';
             src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff') format('woff');
@@ -597,8 +612,8 @@
         <!-- View 1a-2: 장별 공부하기 (전체 절 스크롤 보기) -->
         <div id="screen-chapter-study" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <div class="bg-white px-3 py-2 flex items-center justify-end gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
-                <button type="button" id="chapter-study-layout-toggle" onclick="toggleChapterStudyLayout()" class="bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2.5 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="chapter-study-layout-toggle-icon">🖥️</span><span id="chapter-study-layout-toggle-label" class="chapter-study-layout-toggle-label"> 큰 화면</span></button>
-                <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
+                <button type="button" id="chapter-study-layout-toggle" onclick="toggleChapterStudyLayout()" class="layout-toggle-neon-pulse bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2.5 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="chapter-study-layout-toggle-icon">🖥️</span><span id="chapter-study-layout-toggle-label" class="chapter-study-layout-toggle-label"> 큰 화면</span></button>
+                <button onclick="showScreen('home')" class="bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
                 </button>
