@@ -12317,7 +12317,9 @@
         }
 
         function normalizeG4Answer(s) {
-            return s.replace(/[^0-9A-Za-z가-힣]/g, '').toLowerCase();
+            // 자소가 분리된(NFD) 한글 입력을 먼저 완성형(NFC)으로 합친다 — 안 그러면 [가-힣] 범위에
+            // 안 걸려서 분리된 자모가 통째로 지워지고, 눈으로는 똑같아 보이는 답이 오답 처리된다.
+            return s.normalize('NFC').replace(/[^0-9A-Za-z가-힣]/g, '').toLowerCase();
         }
 
         // 같은 대상을 가리키는 표현은 서로 바꿔 써도 정답으로 인정

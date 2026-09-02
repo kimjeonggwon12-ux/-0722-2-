@@ -339,10 +339,35 @@
         /* 답글(댓글) 영역은 게시글의 로즈 톤과 구분되도록 인디고 계열로 다르게 준다 */
         .community-replies-box { background: #eef2ff; border-left: 2px solid #c7d2fe; }
         .community-empty { text-align: center; color: #94a3b8; font-weight: 700; font-size: 13px; padding: 40px 20px; }
+
+        /* 계시록 암기 모의고사/결과 화면 노트북/가로형 레이아웃 스위치 — 계시록 통달/초중고 신학/
+           계시록암기 앱과 같은 목적. 기존 세로형(모바일) 레이아웃 클래스(max-w-2xl, max-w-md 등)는
+           그대로 두고, memo-layout-desktop 클래스가 붙었을 때만 !important로 덮어써서 기존
+           모바일 레이아웃 코드는 건드리지 않는다. showView()에서 이 두 화면을 벗어나면 자동으로
+           원래 폭으로 되돌아간다(다른 화면들의 기존 레이아웃은 영향 없음). */
+        .layout-toggle-neon-pulse { animation: layoutToggleNeonPulse 1.6s ease-in-out infinite; }
+        @keyframes layoutToggleNeonPulse {
+            0%, 100% { box-shadow: 0 0 6px 1px rgba(217,70,239,0.55), 0 0 0 0 rgba(217,70,239,0.5); border-color: #f0abfc; }
+            50% { box-shadow: 0 0 18px 5px rgba(232,121,249,0.9), 0 0 0 9px rgba(217,70,239,0); border-color: #e879f9; }
+        }
+        #root-app-main.memo-layout-desktop {
+            max-width: min(1800px, 92vw) !important;
+        }
+        #root-app-main.memo-layout-desktop #view-memo-exam .max-w-2xl,
+        #root-app-main.memo-layout-desktop #view-memo-result .max-w-md {
+            max-width: 1700px !important;
+        }
+        /* 문항/채점 결과는 과목마다 글자 크기 클래스가 제각각이라 개별 클래스를 일일이 덮어쓰는
+           대신 전체를 zoom으로 확대한다. */
+        #root-app-main.memo-layout-desktop #memo-exam-container,
+        #root-app-main.memo-layout-desktop #memo-result-passage,
+        #root-app-main.memo-layout-desktop #memo-result-details {
+            zoom: 1.3;
+        }
     </style>
 </head>
 <body class="antialiased">
-    <main class="container mx-auto px-3 py-4 flex-grow flex flex-col max-w-2xl">
+    <main id="root-app-main" class="container mx-auto px-3 py-4 flex-grow flex flex-col max-w-2xl">
 
         <!-- 로그인 화면 -->
         <div id="view-login" class="flex flex-col flex-grow justify-center items-center py-2 fade-in">
@@ -743,10 +768,13 @@
         <!-- 계시록 암기 모의고사: 시험지 (한 페이지에 25문항 전체) -->
         <div id="view-memo-exam" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-2xl px-3">
-                <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors mb-4">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    급수 다시 선택
-                </button>
+                <div class="flex items-center justify-between gap-2 mb-4">
+                    <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        급수 다시 선택
+                    </button>
+                    <button type="button" id="memo-exam-layout-toggle" onclick="toggleMemoLayout()" class="layout-toggle-neon-pulse bg-white border-2 border-fuchsia-200 text-fuchsia-700 rounded-full px-3 py-2 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span class="memo-layout-toggle-icon">🖥️</span><span class="memo-layout-toggle-label"> 큰 화면</span></button>
+                </div>
                 <div class="bg-white border-2 border-fuchsia-100 rounded-2xl p-5 shadow-sm mb-4">
                     <div class="text-center mb-4">
                         <div class="w-14 h-14 rounded-full shadow-md border-2 border-white mb-2 mx-auto overflow-hidden">
@@ -775,10 +803,13 @@
         <!-- 계시록 암기 모의고사: 채점 결과 -->
         <div id="view-memo-result" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-md px-2">
-                <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors mb-4">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    뒤로가기
-                </button>
+                <div class="flex items-center justify-between gap-2 mb-4">
+                    <button onclick="showMemorizeGrade()" class="nav-back-glow flex items-center gap-1.5 text-fuchsia-700 text-[12px] font-black transition-colors">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        뒤로가기
+                    </button>
+                    <button type="button" id="memo-result-layout-toggle" onclick="toggleMemoLayout()" class="layout-toggle-neon-pulse bg-white border-2 border-fuchsia-200 text-fuchsia-700 rounded-full px-3 py-2 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span class="memo-layout-toggle-icon">🖥️</span><span class="memo-layout-toggle-label"> 큰 화면</span></button>
+                </div>
             </div>
             <div class="w-full max-w-md px-2" id="memo-result-pdf-target">
                 <div class="text-center mb-4">
@@ -1698,7 +1729,11 @@
         // "참예"는 예외 없이 정확히 일치해야 정답 처리됨(별도 치환 규칙을 두지 않음)
         function normalizeMemoText(s) {
             if (!s) return '';
-            let t = String(s).replace(/[^가-힣a-zA-Z0-9]/g, '');
+            // 자소가 분리된(NFD) 한글로 입력되는 경우(일부 기기/키보드/붙여넣기 소스)를 먼저 완성형
+            // (NFC)으로 합쳐준다 — 안 그러면 [가-힣] 범위에 안 걸려서 분리된 자모가 통째로 지워지고,
+            // 눈으로는 똑같아 보이는 답이 글자가 빠진 것처럼 비교돼 "분명히 맞게 썼는데 틀렸다"고
+            // 나오는 원인이 된다.
+            let t = String(s).normalize('NFC').replace(/[^가-힣a-zA-Z0-9]/g, '');
             t = t.replace(/찌/g, '지');
             t = t.replace(/세째/g, '셋째').replace(/네째/g, '넷째');
             t = t.replace(/앎으로/g, '알므로');
@@ -2176,10 +2211,38 @@
             });
         }
 
+        // 계시록 암기 모의고사/결과 화면의 세로형(모바일)/가로형(큰 화면) 레이아웃 전환.
+        // 계시록 통달/초중고 신학/계시록암기 앱과 같은 목적 — 선택값은 localStorage에 저장해서
+        // 다음에 다시 들어와도 유지되고, 이 두 화면에만 한정된 효과라 다른 화면들의 기존 모바일
+        // 레이아웃은 건드리지 않는다(showView에서 이 두 화면을 벗어나면 자동으로 되돌아감).
+        const MEMO_LAYOUT_KEY = 'sion_memo_studylayout';
+        function getMemoLayout() {
+            try { return localStorage.getItem(MEMO_LAYOUT_KEY) === 'desktop' ? 'desktop' : 'mobile'; }
+            catch (e) { return 'mobile'; }
+        }
+        function applyMemoLayout(mode) {
+            const main = document.getElementById('root-app-main');
+            if (main) main.classList.toggle('memo-layout-desktop', mode === 'desktop');
+            document.querySelectorAll('.memo-layout-toggle-icon').forEach(el => { el.textContent = mode === 'desktop' ? '📱' : '🖥️'; });
+            document.querySelectorAll('.memo-layout-toggle-label').forEach(el => { el.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 큰 화면'; });
+        }
+        function toggleMemoLayout() {
+            const next = getMemoLayout() === 'desktop' ? 'mobile' : 'desktop';
+            try { localStorage.setItem(MEMO_LAYOUT_KEY, next); } catch (e) { /* 무시 */ }
+            applyMemoLayout(next);
+        }
+
         function showView(id) {
             hideAllViews();
             // 커뮤니티 화면을 벗어나면 주기적 새로고침(폴링)을 멈춘다(보지도 않는데 계속 요청 보내지 않게).
             if (id !== 'view-community') stopCommunityPolling();
+            // 계시록 암기 모의고사/결과 화면일 때만 큰 화면 모드를 적용하고, 나가면 원래 폭으로 되돌린다.
+            if (id === 'view-memo-exam' || id === 'view-memo-result') {
+                applyMemoLayout(getMemoLayout());
+            } else {
+                const main = document.getElementById('root-app-main');
+                if (main) main.classList.remove('memo-layout-desktop');
+            }
             const el = document.getElementById(id);
             el.classList.remove('hidden');
             el.classList.add('flex');

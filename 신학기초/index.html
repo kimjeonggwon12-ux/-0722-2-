@@ -2530,7 +2530,9 @@
                 this.showView('results'); window.scrollTo(0, 0);
             },
 
-            normalizeString(str) { return str ? str.replace(/[^가-힣0-9]/g, '') : ''; },
+            // 자소가 분리된(NFD) 한글 입력을 먼저 완성형(NFC)으로 합친다 — 안 그러면 [가-힣] 범위에
+            // 안 걸려서 분리된 자모가 통째로 지워지고, 눈으로는 똑같아 보이는 답이 오답 처리된다.
+            normalizeString(str) { return str ? str.normalize('NFC').replace(/[^가-힣0-9]/g, '') : ''; },
             strictCompare(userText, correctText) { return this.normalizeString(userText) === this.normalizeString(correctText); },
             // 관용적 채점: 조사(은/는/이/가/을/를 등)뿐 아니라 어미(고/어/아 등)까지 워낙 다양해서
             // 목록으로 다 관리하기 어려우므로, "조사·어미는 보통 한 글자"라는 점을 이용해 끝 한
