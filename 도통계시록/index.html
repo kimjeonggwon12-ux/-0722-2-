@@ -299,18 +299,30 @@
         #screen-chapter-study.layout-desktop .max-w-xl {
             max-width: 1700px;
         }
-        @media (min-width: 900px) {
-            #screen-chapter-study.layout-desktop #chapter-study-container {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1.25rem;
-                align-items: start;
-            }
-            /* space-y-4가 형제 요소마다 넣는 margin-top은 세로 1열 배치를 위한 것이라
-               2단 그리드에서는 무의미(오히려 위쪽이 들쭉날쭉해짐)하므로 0으로 되돌린다. */
-            #screen-chapter-study.layout-desktop #chapter-study-container > * {
-                margin-top: 0 !important;
-            }
+        /* 2단 그리드는 쓰지 않는다 — 기존처럼 1열(세로 스택)을 그대로 두고, 대신 넓어진 프레임
+           폭 안에서 글줄이 옆으로 길게 퍼지도록 한다. 카드 안 본문/문제/답/성구 글자 크기도
+           노트북 모드에서는 더 크게(약 1.3배) 키운다.
+           각 줄의 글자 크기는 Tailwind 임의값 클래스(예: text-[21px])로 개별 지정돼 있어서,
+           부모 기준으로 배율이 걸리는 em을 쓰면 문제/답/성구 사이의 크기 차이(위계)가 다
+           뭉개진다. 그래서 각 크기 클래스를 원래 값의 약 1.3배 px로 직접 덮어쓴다(!important).
+           괄호 넣기 모드(buildBankCardHtml)도 전체 문답 모드와 같은 클래스를 쓰므로 동일하게 적용됨. */
+        #screen-chapter-study.layout-desktop #chapter-study-container [class*="text-[21px]"] {
+            font-size: 28px !important;
+            line-height: 1.6 !important;
+        }
+        #screen-chapter-study.layout-desktop #chapter-study-container [class*="text-[23px]"] {
+            font-size: 30px !important;
+            line-height: 1.55 !important;
+        }
+        #screen-chapter-study.layout-desktop #chapter-study-container [class*="text-[18px]"] {
+            font-size: 23px !important;
+            line-height: 1.5 !important;
+        }
+        #screen-chapter-study.layout-desktop #chapter-study-container [class*="text-[14px]"] {
+            font-size: 17px !important;
+        }
+        #screen-chapter-study.layout-desktop #chapter-study-container .text-lg {
+            font-size: 23px !important;
         }
         #chapter-study-layout-toggle {
             white-space: nowrap;
