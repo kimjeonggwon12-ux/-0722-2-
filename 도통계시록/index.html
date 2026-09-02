@@ -284,6 +284,36 @@
         }
         .chapter-switch-glow { animation: chapterSwitchGlow 1.8s ease-in-out infinite; }
 
+        /* 계시록 통달 "장별 공부하기"(screen-chapter-study) 노트북/가로형 레이아웃 스위치.
+           기존 세로형(모바일) 레이아웃 클래스(max-w-xl, space-y-4 등)는 그대로 두고,
+           #screen-chapter-study.layout-desktop 이 붙었을 때만 더 높은 우선순위로 덮어쓰는
+           방식이라 기존 모바일 레이아웃 코드는 전혀 건드리지 않는다. */
+        #screen-chapter-study.layout-desktop .max-w-xl {
+            max-width: 1400px;
+        }
+        @media (min-width: 900px) {
+            #screen-chapter-study.layout-desktop #chapter-study-container {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1.25rem;
+                align-items: start;
+            }
+            /* space-y-4가 형제 요소마다 넣는 margin-top은 세로 1열 배치를 위한 것이라
+               2단 그리드에서는 무의미(오히려 위쪽이 들쭉날쭉해짐)하므로 0으로 되돌린다. */
+            #screen-chapter-study.layout-desktop #chapter-study-container > * {
+                margin-top: 0 !important;
+            }
+        }
+        #chapter-study-layout-toggle {
+            white-space: nowrap;
+        }
+        /* 좁은 폰 화면에서는 기존 헤더(제목+뒤로가기)가 좁아지지 않도록 이 새 버튼은
+           아이콘만 남기고 글자 라벨은 숨긴다(기존 헤더 요소 자체는 손대지 않음). */
+        @media (max-width: 420px) {
+            .chapter-study-layout-toggle-label { display: none; }
+            #chapter-study-layout-toggle { padding-left: 0.65rem; padding-right: 0.65rem; }
+        }
+
     </style>
 </head>
 <body class="antialiased">
@@ -549,6 +579,7 @@
             <div class="bg-white px-3 py-2 flex items-center gap-2 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <div class="w-[100px] flex-shrink-0"></div>
                 <span id="chapter-study-title" class="flex-grow min-w-0 text-left text-black font-black leading-tight">계 1장</span>
+                <button type="button" id="chapter-study-layout-toggle" onclick="toggleChapterStudyLayout()" class="bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2.5 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="chapter-study-layout-toggle-icon">🖥️</span><span id="chapter-study-layout-toggle-label" class="chapter-study-layout-toggle-label"> 노트북 화면</span></button>
                 <button onclick="showScreen('home')" class="nav-back-glow-ring bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-4 py-2.5 shadow-sm flex items-center gap-1.5 text-[14px] font-black transition-colors flex-shrink-0">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     뒤로가기
@@ -13174,6 +13205,29 @@
         // 어르신도 보기 편하도록 글씨를 크게, 항목 사이 간격을 넉넉하게 잡는다.
         const chapterStudyState = { key: null, mode: 'answer' };
 
+        // 장별 공부하기 화면의 세로형(모바일)/가로형(노트북) 레이아웃 전환.
+        // 선택값은 localStorage에 저장해서 다음에 다시 들어와도 유지되고, 기존 세로형 레이아웃
+        // 마크업/클래스는 전혀 건드리지 않고 #screen-chapter-study에 layout-desktop 클래스만
+        // 추가로 붙여서(위 <style>의 별도 CSS로) 전환한다.
+        const CHAPTER_STUDY_LAYOUT_KEY = 'sion_tongdal_studylayout';
+        function getChapterStudyLayout() {
+            try { return localStorage.getItem(CHAPTER_STUDY_LAYOUT_KEY) === 'desktop' ? 'desktop' : 'mobile'; }
+            catch (e) { return 'mobile'; }
+        }
+        function applyChapterStudyLayout(mode) {
+            const screen = document.getElementById('screen-chapter-study');
+            const icon = document.getElementById('chapter-study-layout-toggle-icon');
+            const label = document.getElementById('chapter-study-layout-toggle-label');
+            if (screen) screen.classList.toggle('layout-desktop', mode === 'desktop');
+            if (icon) icon.textContent = mode === 'desktop' ? '📱' : '🖥️';
+            if (label) label.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 노트북 화면';
+        }
+        window.toggleChapterStudyLayout = function() {
+            const next = getChapterStudyLayout() === 'desktop' ? 'mobile' : 'desktop';
+            try { localStorage.setItem(CHAPTER_STUDY_LAYOUT_KEY, next); } catch (e) {}
+            applyChapterStudyLayout(next);
+        };
+
         window.openChapterStudy = function(chapterKey, mode) {
             chapterStudyState.key = chapterKey;
             if (mode) chapterStudyState.mode = mode;
@@ -13182,6 +13236,7 @@
             fitHeaderTitle(titleEl, titles ? `${titles.title} ${titles.subtitle}` : `계시록 ${chapterKey.replace('ch', '')}장`);
             const answerBtnLabel = document.getElementById('chapter-study-mode-answer');
             if (answerBtnLabel) answerBtnLabel.textContent = `계 ${chapterKey.replace('ch', '')}장 전체 문답`;
+            applyChapterStudyLayout(getChapterStudyLayout());
             renderChapterStudyModeButtons();
             renderChapterNavButtons();
             renderChapterStudyItems();
