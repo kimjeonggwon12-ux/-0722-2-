@@ -285,11 +285,19 @@
         .chapter-switch-glow { animation: chapterSwitchGlow 1.8s ease-in-out infinite; }
 
         /* 계시록 통달 "장별 공부하기"(screen-chapter-study) 노트북/가로형 레이아웃 스위치.
-           기존 세로형(모바일) 레이아웃 클래스(max-w-xl, space-y-4 등)는 그대로 두고,
-           #screen-chapter-study.layout-desktop 이 붙었을 때만 더 높은 우선순위로 덮어쓰는
-           방식이라 기존 모바일 레이아웃 코드는 전혀 건드리지 않는다. */
+           기존 세로형(모바일) 레이아웃 클래스(max-w-md, max-w-xl, space-y-4 등)는 그대로 두고,
+           layout-desktop 클래스가 붙었을 때만 더 높은 우선순위(!important)로 덮어쓰는
+           방식이라 기존 모바일 레이아웃 코드는 전혀 건드리지 않는다.
+           앱 전체가 #app-main(class="max-w-md" — 폰 프레임처럼 448px로 고정)에 갇혀 있어서
+           안쪽 .max-w-xl만 넓혀서는 실제로는 전혀 넓어지지 않았다. 그래서 이 화면이 열려 있고
+           노트북 모드일 때는 #app-main 자체도 함께 넓힌다(showScreen()에서 다른 화면으로 이동하면
+           자동으로 원래 폭으로 되돌아감 — 이 화면에만 한정된 효과). */
+        #app-main.tongdal-wide-main {
+            max-width: min(1800px, 92vw) !important;
+            width: min(1800px, 92vw) !important;
+        }
         #screen-chapter-study.layout-desktop .max-w-xl {
-            max-width: 1400px;
+            max-width: 1700px;
         }
         @media (min-width: 900px) {
             #screen-chapter-study.layout-desktop #chapter-study-container {
@@ -325,7 +333,7 @@
         </a>
     </div>
 
-    <main class="container mx-auto max-w-md h-[100dvh] flex flex-col relative overflow-hidden bg-background shadow-2xl">
+    <main id="app-main" class="container mx-auto max-w-md h-[100dvh] flex flex-col relative overflow-hidden bg-background shadow-2xl">
         
         <!-- View 1: Home / Cover Screen -->
         <div id="screen-home" class="hidden flex-col items-center justify-start pt-16 px-6 text-center z-10 bg-[#f4f6fc] fade-enter overflow-y-auto w-full h-full pb-10 relative">
@@ -13216,9 +13224,12 @@
         }
         function applyChapterStudyLayout(mode) {
             const screen = document.getElementById('screen-chapter-study');
+            const mainEl = document.getElementById('app-main');
             const icon = document.getElementById('chapter-study-layout-toggle-icon');
             const label = document.getElementById('chapter-study-layout-toggle-label');
             if (screen) screen.classList.toggle('layout-desktop', mode === 'desktop');
+            // 앱 전체를 감싸는 #app-main(max-w-md 폰 프레임)도 이 화면이 떠 있는 동안만 함께 넓힌다.
+            if (mainEl) mainEl.classList.toggle('tongdal-wide-main', mode === 'desktop');
             if (icon) icon.textContent = mode === 'desktop' ? '📱' : '🖥️';
             if (label) label.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 노트북 화면';
         }
@@ -13487,6 +13498,12 @@
             });
             els.screens[screenName].classList.remove('hidden');
             els.screens[screenName].classList.add('flex');
+            // 장별 공부하기 화면을 벗어나면 #app-main 확장 폭 효과도 항상 원래대로 되돌린다
+            // (노트북 모드 자체는 그대로 기억하고 있다가, 이 화면에 다시 들어올 때만 다시 적용됨).
+            if (screenName !== 'chapterStudy') {
+                const mainEl = document.getElementById('app-main');
+                if (mainEl) mainEl.classList.remove('tongdal-wide-main');
+            }
             // 모의고사 급수 선택 화면에서는 뒤로가기 버튼만 남기고, 항상 떠 있는 홈으로 버튼은 숨긴다.
             const fixedHomeNav = document.getElementById('fixed-home-nav');
             if (fixedHomeNav) fixedHomeNav.classList.toggle('hidden', screenName === 'gradeSelect');
