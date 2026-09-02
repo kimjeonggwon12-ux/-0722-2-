@@ -3154,13 +3154,17 @@
             return !!getCommunityMyLikes()[id];
         }
 
-        // communityPost 성공 응답인데 editToken이 없으면(서버가 아직 구버전 Apps Script라
-        // 수정토큰을 발급 못 해주는 경우) 수정·삭제 버튼이 영영 안 뜰 수밖에 없다 — 이걸 조용히
-        // 넘기지 않고 화면에 바로 알려준다("적용이 안 된 것 같다"고 다시 물어볼 필요 없게).
+        // 서버(Apps Script)가 아직 구버전이면 두 가지 증상으로 나타난다: (1) communityPost가
+        // 성공은 하지만 editToken을 안 줘서 수정·삭제 버튼이 영영 안 뜨거나, (2) communityEdit/
+        // Delete/Pin/Like처럼 아예 새로 생긴 액션을 호출하면 서버가 모르는 액션이라며
+        // { success:false, message:'unknown_action' }을 돌려준다. 두 경우 다 "왜 안 되지"라고
+        // 다시 물어볼 필요 없이 화면에 바로 안내한다.
         function communityCheckServerOutdated(result) {
             const notice = document.getElementById('community-server-outdated-notice');
             if (!notice) return;
-            if (result && result.success && !result.editToken) notice.classList.remove('hidden');
+            const outdated = (result && result.success && result.id && !result.editToken) ||
+                (result && result.message === 'unknown_action');
+            if (outdated) notice.classList.remove('hidden');
         }
 
         // 글 고정(📌)은 관리자만 할 수 있다. 별도 로그인 화면을 새로 만들지 않고, 건의사항
@@ -3185,15 +3189,31 @@
             // 비밀번호가 실제로 맞는지는 첫 고정 시도 때 서버가 확인한다(여기서는 버튼만 보여줌).
             renderCommunityFeed();
         }
+        function communityAdminKey() {
+            try { return sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE) || ''; } catch (e) { return ''; }
+        }
+        // 글/댓글 둘 다 대상이 될 수 있다(고정은 상위 글에만 의미가 있다는 제약을 클라이언트에서
+        // 두지 않는다 — 답글도 눈에 띄게 위로 올리고 싶을 수 있으므로 동일하게 지원).
+        // 서버 왕복을 기다리지 않고 화면부터 바꾼 뒤(전체 다시 불러오기 없이 그 항목만 바꿈),
+        // 실패하면 되돌린다 — 매번 loadCommunityPosts()로 전체를 다시 그리면 답글 입력 중이던
+        // 칸이 통째로 사라지고 포커스가 끊겨 화면이 "튕겨져 나가는" 것처럼 보이기 때문이다.
         async function toggleCommunityPin(id, pinned) {
-            const adminKey = (() => { try { return sessionStorage.getItem(ADMIN_SUGGEST_KEY_STORAGE) || ''; } catch (e) { return ''; } })();
+            const adminKey = communityAdminKey();
             if (!adminKey) { alert('관리자 로그인이 필요합니다.'); return; }
+            const item = communityPosts.find(p => p.id === id);
+            if (!item) return;
+            const prevPinned = item.pinned;
+            item.pinned = pinned;
+            renderCommunityFeed();
             const result = await gasCall({ action: 'communityPin', id, pinned, adminKey });
-            if (result && result.success) {
-                await loadCommunityPosts();
-            } else {
-                alert((result && result.message) || '고정 처리에 실패했습니다.');
+            if (!result || !result.success) {
+                item.pinned = prevPinned; // 실패하면 되돌린다
+                communityCheckServerOutdated(result);
+                if (!(result && result.message === 'unknown_action')) {
+                    alert((result && result.message) || '고정 처리에 실패했습니다.');
+                }
             }
+            renderCommunityFeed();
         }
 
         // 좋아요는 서버 왕복을 기다리지 않고(하트를 누르자마자 바로 채워지고 숫자가 바뀌도록)
@@ -3216,9 +3236,12 @@
                 if (result && result.success && typeof result.likes === 'number') {
                     item.likes = result.likes; // 서버가 준 정확한 값으로 맞춘다(동시에 여러 명이 눌렀을 수 있음)
                 } else if (!result || !result.success) {
-                    // 실패하면 눌렀던 것을 되돌린다.
+                    // 실패하면 눌렀던 것을 되돌린다("좋아요가 쌓이지 않고 자꾸 지워진다"는 게
+                    // 바로 이 되돌림이다 — 대개는 서버가 구버전이라 communityLike 자체를 몰라서
+                    // 벌어지므로, 그 경우 안내 배너를 띄운다).
                     setCommunityMyLike(id, wasLiked);
                     item.likes = Math.max(0, (item.likes || 0) + (nextLiked ? -1 : 1));
+                    communityCheckServerOutdated(result);
                 }
             } finally {
                 isTogglingCommunityLike[id] = false;
@@ -3263,7 +3286,9 @@
             const result = await gasCall({ action: 'communityList' });
             if (result && result.success && Array.isArray(result.rows)) {
                 communityPosts = result.rows;
-                renderCommunityFeed();
+                // 조용한(폴링) 갱신일 때만, 지금 답글/수정 입력칸에 타이핑 중이면 이번엔 건너뛴다
+                // (아래 renderCommunityFeed의 skipIfFocused 참고).
+                renderCommunityFeed({ skipIfFocused: !!opts.silent });
             } else if (!opts.silent && feedEl) {
                 feedEl.innerHTML = '<p class="community-empty">불러오지 못했어요. 위의 "🔄 새로고침"을 눌러보세요.</p>';
             }
@@ -3327,15 +3352,20 @@
                     </div>`;
             }
             const mine = communityIsMine(item.id);
+            const admin = isCommunityAdmin();
             const liked = communityIsLiked(item.id);
             const likeCount = item.likes || 0;
+            // 삭제는 본인 글/댓글이거나 관리자면 가능(관리자는 다른 사람 것도 지울 수 있음).
+            // 수정은 본인 것만(관리자가 남의 글 내용을 바꿔쓰는 건 지원하지 않음).
+            // 고정은 관리자만, 글/댓글 둘 다 가능.
+            const canDelete = mine || admin;
             return `
                 <p class="text-[14.5px] text-slate-800 whitespace-pre-wrap break-words mt-1 leading-relaxed">${escapeHtml(item.content)}</p>
-                <div class="flex items-center gap-3 mt-1.5">
+                <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                     <button onclick="toggleCommunityLike('${item.id}')" class="text-[11.5px] font-black ${liked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'} transition-colors flex items-center gap-1">${liked ? '❤️' : '🤍'}${likeCount > 0 ? ` ${likeCount}` : ''}</button>
-                    ${mine ? `
-                    <button onclick="startCommunityEdit('${item.id}')" class="text-[11.5px] font-black text-slate-400 ${accent.hover} transition-colors">✏️ 수정</button>
-                    <button onclick="deleteCommunityItem('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-rose-600 transition-colors">🗑️ 삭제</button>` : ''}
+                    ${mine ? `<button onclick="startCommunityEdit('${item.id}')" class="text-[11.5px] font-black text-slate-400 ${accent.hover} transition-colors">✏️ 수정</button>` : ''}
+                    ${canDelete ? `<button onclick="deleteCommunityItem('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-rose-600 transition-colors">🗑️ 삭제</button>` : ''}
+                    ${admin ? `<button onclick="toggleCommunityPin('${item.id}', ${!item.pinned})" class="text-[11.5px] font-black ${item.pinned ? 'text-amber-600' : 'text-slate-300 hover:text-amber-500'} transition-colors">📌 ${item.pinned ? '고정 해제' : '고정'}</button>` : ''}
                 </div>`;
         }
 
@@ -3354,12 +3384,21 @@
             return { pinned, popular, others, all: [...pinned, ...popular, ...others] };
         }
 
-        function renderCommunityFeed() {
+        // skipIfFocused: true면, 지금 답글/수정 입력칸에 포커스가 가 있을 때(한창 타이핑 중일 때)는
+        // 다시 그리지 않고 그대로 둔다. 전체를 다시 그리면 입력 중이던 칸이 통째로 사라져 포커스가
+        // 끊기고(모바일에서는 키보드가 닫히면서) 화면이 "튕겨져 나가는" 것처럼 느껴지기 때문 — 25초
+        // 자동 새로고침(폴링)처럼 사용자가 시키지 않은 조용한 갱신에서만 이 보호를 켠다. 사용자가
+        // 직접 글/댓글을 올렸을 때는 그 결과를 바로 보여줘야 하므로 이 보호를 켜지 않는다.
+        function renderCommunityFeed(opts = {}) {
             const feedEl = document.getElementById('community-feed');
             const countEl = document.getElementById('community-post-count');
             const adminBtn = document.getElementById('community-admin-btn');
             if (adminBtn) adminBtn.textContent = isCommunityAdmin() ? '🔑 관리자(로그인됨)' : '🔑 관리자';
             if (!feedEl) return;
+            if (opts.skipIfFocused) {
+                const active = document.activeElement;
+                if (active && feedEl.contains(active) && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) return;
+            }
             const { pinned, popular, others, all: topPosts } = sortCommunityTopPosts();
             if (countEl) countEl.textContent = topPosts.length ? `(${topPosts.length})` : '';
 
@@ -3376,23 +3415,24 @@
                 const el = document.getElementById(`community-replies-${post.id}`);
                 if (el && el.classList.contains('hidden')) closedIds.add(post.id);
             });
-            const isAdmin = isCommunityAdmin();
 
             const renderPostCard = post => {
-                const replies = communityPosts.filter(p => p.parentId === post.id).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                // 답글 중 관리자가 고정한 것은 작성 시각과 무관하게 맨 위로 올리고, 나머지는 기존처럼
+                // 오래된 순(대화 흐름) 그대로 둔다.
+                const allReplies = communityPosts.filter(p => p.parentId === post.id);
+                const pinnedReplies = allReplies.filter(r => r.pinned).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const otherReplies = allReplies.filter(r => !r.pinned).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                const replies = [...pinnedReplies, ...otherReplies];
                 const repliesHtml = replies.map(r => `
                     <div class="flex gap-2 mt-3">
                         <div class="community-avatar is-reply" style="${communityAvatarStyle(r.name)}">${escapeHtml(communityAvatarLetter(r.name))}</div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-[12.5px]"><span class="font-black text-slate-700">${escapeHtml(r.name || '익명')}</span> <span class="text-slate-400 font-bold">· ${communityRelativeTime(r.createdAt)}</span></p>
+                            <p class="text-[12.5px] flex items-center gap-1 flex-wrap">${r.pinned ? '<span class="text-amber-500">📌</span>' : ''}<span class="font-black text-slate-700">${escapeHtml(r.name || '익명')}</span> <span class="text-slate-400 font-bold">· ${communityRelativeTime(r.createdAt)}</span></p>
                             ${renderCommunityItemContent(r, true)}
                         </div>
                     </div>
                 `).join('');
                 const isOpen = !closedIds.has(post.id) || replies.some(r => r.id === communityEditingId);
-                const pinBtn = isAdmin
-                    ? `<button onclick="toggleCommunityPin('${post.id}', ${!post.pinned})" class="text-[11px] font-black ${post.pinned ? 'text-amber-600' : 'text-slate-300 hover:text-amber-500'} transition-colors">📌 ${post.pinned ? '고정 해제' : '고정'}</button>`
-                    : '';
                 return `
                 <div class="community-post-card${post.pinned ? ' !border-amber-300 !bg-amber-50' : ''}">
                     <div class="flex gap-2.5">
@@ -3402,7 +3442,6 @@
                             ${renderCommunityItemContent(post, false)}
                             <div class="flex items-center gap-3 mt-2">
                                 <button class="community-reply-btn" onclick="toggleCommunityReplies('${post.id}')">${replies.length > 0 ? `답글 ${replies.length}개` : '답글 달기'}</button>
-                                ${pinBtn}
                             </div>
                             <div id="community-replies-${post.id}" class="${isOpen ? '' : 'hidden'} community-replies-box rounded-xl px-2.5 py-2 ml-1">
                                 ${repliesHtml}
@@ -3456,6 +3495,9 @@
             renderCommunityFeed();
         }
 
+        // 서버가 성공을 확인해주면 그때 이 브라우저의 communityPosts 배열을 직접 고쳐서 바로
+        // 반영한다(loadCommunityPosts()로 전체를 다시 불러오지 않음) — 매번 전체를 새로 그리면
+        // 답글 입력칸 등이 통째로 사라져 포커스가 끊기고 화면이 "튕겨져 나가는" 것처럼 보였다.
         async function saveCommunityEdit(id) {
             if (isSubmittingCommunityEdit) return; // 전송 중 중복 클릭 방지
             const ta = document.getElementById(`community-edit-input-${id}`);
@@ -3470,9 +3512,12 @@
             try {
                 const result = await gasCall({ action: 'communityEdit', id, editToken: token, content });
                 if (result && result.success) {
+                    const item = communityPosts.find(p => p.id === id);
+                    if (item) item.content = content;
                     communityEditingId = null;
-                    await loadCommunityPosts();
+                    renderCommunityFeed();
                 } else {
+                    communityCheckServerOutdated(result);
                     alert((result && result.message) || '수정에 실패했습니다. 다시 시도해주세요.');
                     ta.disabled = false;
                 }
@@ -3481,15 +3526,24 @@
             }
         }
 
+        // 본인 것이면 수정토큰으로, 관리자면 관리자 비밀번호로 지울 수 있다(둘 중 하나만 있으면 됨).
+        // 글을 지우면 그 글에 달린 댓글도 이 브라우저 화면에서 같이 지운다(서버도 communityDelete에서
+        // 함께 지움).
         async function deleteCommunityItem(id) {
             const token = getCommunityMyTokens()[id];
-            if (!token) { alert('삭제 권한이 없습니다.'); return; }
+            const adminKey = isCommunityAdmin() ? communityAdminKey() : '';
+            if (!token && !adminKey) { alert('삭제 권한이 없습니다.'); return; }
             if (!confirm('정말 삭제하시겠어요? 되돌릴 수 없어요.')) return;
-            const result = await gasCall({ action: 'communityDelete', id, editToken: token });
+            const payload = { action: 'communityDelete', id };
+            if (token) payload.editToken = token;
+            if (adminKey) payload.adminKey = adminKey;
+            const result = await gasCall(payload);
             if (result && result.success) {
                 removeCommunityMyToken(id);
-                await loadCommunityPosts();
+                communityPosts = communityPosts.filter(p => p.id !== id && p.parentId !== id);
+                renderCommunityFeed();
             } else {
+                communityCheckServerOutdated(result);
                 alert((result && result.message) || '삭제에 실패했습니다. 다시 시도해주세요.');
             }
         }
@@ -3519,12 +3573,14 @@
                     errEl.classList.remove('hidden');
                     return;
                 }
-                const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId: '', createdAt: nowStr() });
+                const createdAt = nowStr();
+                const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId: '', createdAt });
                 if (result && result.success) {
                     saveCommunityMyToken(result.id, result.editToken);
                     communityCheckServerOutdated(result);
+                    communityPosts.push({ id: result.id, createdAt, name: name || '익명', content, parentId: '', pinned: false, likes: 0 });
                     contentEl.value = '';
-                    await loadCommunityPosts();
+                    renderCommunityFeed();
                 } else {
                     errEl.textContent = (result && result.offline) ? '인터넷 연결을 확인해주세요.' : '게시에 실패했습니다. 다시 시도해주세요.';
                     errEl.classList.remove('hidden');
@@ -3549,15 +3605,18 @@
             isSubmittingCommunityReply = true;
             input.disabled = true;
             try {
-                const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId, createdAt: nowStr() });
+                const createdAt = nowStr();
+                const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId, createdAt });
                 if (result && result.success) {
                     saveCommunityMyToken(result.id, result.editToken);
                     communityCheckServerOutdated(result);
+                    communityPosts.push({ id: result.id, createdAt, name: name || '익명', content, parentId, pinned: false, likes: 0 });
                     input.value = '';
-                    await loadCommunityPosts();
                     const el = document.getElementById(`community-replies-${parentId}`);
                     if (el) el.classList.remove('hidden');
+                    renderCommunityFeed();
                 } else {
+                    communityCheckServerOutdated(result);
                     alert('답글 등록에 실패했습니다. 다시 시도해주세요.');
                 }
             } finally {
