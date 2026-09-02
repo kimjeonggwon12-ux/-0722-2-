@@ -324,16 +324,20 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.15); }
         }
-        /* 커뮤니티 피드: 유튜브 댓글처럼 아바타 + 이름/시간 + 본문 + 답글 묶음 */
+        /* 커뮤니티 피드: 유튜브 댓글처럼 아바타 + 이름/시간 + 본문 + 답글 묶음.
+           아바타 배경색은 이름마다 다르게(communityAvatarStyle) 인라인으로 지정하므로,
+           여기 background는 그 전(로딩 중 등) 잠깐 보일 수 있는 기본값일 뿐이다. */
         .community-avatar {
             flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 900; font-size: 14px; color: #fff;
-            background: linear-gradient(160deg, #f472b6, #db2777);
+            background: linear-gradient(160deg, #94a3b8, #64748b);
         }
         .community-avatar.is-reply { width: 30px; height: 30px; font-size: 12px; }
         .community-post-card { background: #fff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         .community-reply-btn { color: #db2777; font-weight: 800; font-size: 12px; }
+        /* 답글(댓글) 영역은 게시글의 로즈 톤과 구분되도록 인디고 계열로 다르게 준다 */
+        .community-replies-box { background: #eef2ff; border-left: 2px solid #c7d2fe; }
         .community-empty { text-align: center; color: #94a3b8; font-weight: 700; font-size: 13px; padding: 40px 20px; }
     </style>
 </head>
@@ -3185,15 +3189,43 @@
             return n ? n[0] : '익';
         }
 
+        // 이름마다 서로 다른 아바타 색을 고정으로 배정한다(같은 이름 → 항상 같은 색, 다른 이름 →
+        // 대체로 다른 색). 예전엔 모든 아바타가 똑같은 핑크색이라 게시글이든 댓글이든 화면이 온통
+        // 붉게 보였다 — 이름 문자열을 해시해 다양한 색 팔레트 중 하나를 고르는 방식으로 바꿨다.
+        const COMMUNITY_AVATAR_PALETTE = [
+            ['#f472b6', '#db2777'], // rose
+            ['#818cf8', '#4f46e5'], // indigo
+            ['#34d399', '#059669'], // emerald
+            ['#fbbf24', '#d97706'], // amber
+            ['#38bdf8', '#0284c7'], // sky
+            ['#a78bfa', '#7c3aed'], // violet
+            ['#2dd4bf', '#0d9488'], // teal
+            ['#fb923c', '#ea580c'], // orange
+            ['#f87171', '#dc2626'], // red
+            ['#94a3b8', '#475569']  // slate
+        ];
+        function communityAvatarStyle(name) {
+            const n = (name || '익명').trim() || '익명';
+            let hash = 0;
+            for (let i = 0; i < n.length; i++) hash = (hash * 31 + n.charCodeAt(i)) >>> 0;
+            const [c1, c2] = COMMUNITY_AVATAR_PALETTE[hash % COMMUNITY_AVATAR_PALETTE.length];
+            return `background: linear-gradient(160deg, ${c1}, ${c2});`;
+        }
+
         // 글/댓글 하나의 "본문" 부분을 그린다 — 지금 수정 중인 항목이면 입력칸+저장/취소를,
         // 아니면 일반 본문 텍스트를 그리고, 내가 쓴 것이면(수정토큰을 갖고 있으면) 그 아래에
         // 수정·삭제 버튼을 덧붙인다.
-        function renderCommunityItemContent(item) {
+        function renderCommunityItemContent(item, isReply) {
+            // 게시글은 로즈, 댓글은 인디고 — 답글 영역 전체(community-replies-box)의 색과 맞춰서
+            // 게시글/댓글이 한눈에 구분되게 한다.
+            const accent = isReply
+                ? { btn: 'bg-indigo-500 hover:bg-indigo-600', hover: 'hover:text-indigo-600' }
+                : { btn: 'bg-pink-500 hover:bg-pink-600', hover: 'hover:text-pink-600' };
             if (communityEditingId === item.id) {
                 return `
                     <textarea id="community-edit-input-${item.id}" class="field-input mt-1" rows="3">${escapeHtml(item.content)}</textarea>
                     <div class="flex gap-2 mt-1.5">
-                        <button onclick="saveCommunityEdit('${item.id}')" class="bg-pink-500 hover:bg-pink-600 text-white rounded-lg px-3 py-1.5 text-[12px] font-black">저장</button>
+                        <button onclick="saveCommunityEdit('${item.id}')" class="${accent.btn} text-white rounded-lg px-3 py-1.5 text-[12px] font-black">저장</button>
                         <button onclick="cancelCommunityEdit()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg px-3 py-1.5 text-[12px] font-black">취소</button>
                     </div>`;
             }
@@ -3202,7 +3234,7 @@
                 <p class="text-[14.5px] text-slate-800 whitespace-pre-wrap break-words mt-1 leading-relaxed">${escapeHtml(item.content)}</p>
                 ${mine ? `
                 <div class="flex gap-3 mt-1.5">
-                    <button onclick="startCommunityEdit('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-pink-600 transition-colors">✏️ 수정</button>
+                    <button onclick="startCommunityEdit('${item.id}')" class="text-[11.5px] font-black text-slate-400 ${accent.hover} transition-colors">✏️ 수정</button>
                     <button onclick="deleteCommunityItem('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-rose-600 transition-colors">🗑️ 삭제</button>
                 </div>` : ''}`;
         }
@@ -3232,10 +3264,10 @@
                 const replies = communityPosts.filter(p => p.parentId === post.id).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 const repliesHtml = replies.map(r => `
                     <div class="flex gap-2 mt-3">
-                        <div class="community-avatar is-reply">${escapeHtml(communityAvatarLetter(r.name))}</div>
+                        <div class="community-avatar is-reply" style="${communityAvatarStyle(r.name)}">${escapeHtml(communityAvatarLetter(r.name))}</div>
                         <div class="flex-1 min-w-0">
                             <p class="text-[12.5px]"><span class="font-black text-slate-700">${escapeHtml(r.name || '익명')}</span> <span class="text-slate-400 font-bold">· ${communityRelativeTime(r.createdAt)}</span></p>
-                            ${renderCommunityItemContent(r)}
+                            ${renderCommunityItemContent(r, true)}
                         </div>
                     </div>
                 `).join('');
@@ -3243,18 +3275,18 @@
                 return `
                 <div class="community-post-card">
                     <div class="flex gap-2.5">
-                        <div class="community-avatar">${escapeHtml(communityAvatarLetter(post.name))}</div>
+                        <div class="community-avatar" style="${communityAvatarStyle(post.name)}">${escapeHtml(communityAvatarLetter(post.name))}</div>
                         <div class="flex-1 min-w-0">
                             <p class="text-[13px]"><span class="font-black text-slate-800">${escapeHtml(post.name || '익명')}</span> <span class="text-slate-400 font-bold text-[12px]">· ${communityRelativeTime(post.createdAt)}</span></p>
-                            ${renderCommunityItemContent(post)}
+                            ${renderCommunityItemContent(post, false)}
                             <div class="flex items-center gap-3 mt-2">
                                 <button class="community-reply-btn" onclick="toggleCommunityReplies('${post.id}')">${replies.length > 0 ? `답글 ${replies.length}개` : '답글 달기'}</button>
                             </div>
-                            <div id="community-replies-${post.id}" class="${isOpen ? '' : 'hidden'} pl-1 border-l-2 border-pink-100 ml-1">
+                            <div id="community-replies-${post.id}" class="${isOpen ? '' : 'hidden'} community-replies-box rounded-xl px-2.5 py-2 ml-1">
                                 ${repliesHtml}
                                 <div class="flex gap-2 mt-3">
                                     <input type="text" id="community-reply-input-${post.id}" class="field-input flex-1" placeholder="답글 달기..." onkeydown="if(event.key==='Enter'){event.preventDefault();submitCommunityComment('${post.id}');}">
-                                    <button onclick="submitCommunityComment('${post.id}')" class="bg-pink-500 hover:bg-pink-600 text-white rounded-lg px-3 text-[12px] font-black flex-shrink-0">등록</button>
+                                    <button onclick="submitCommunityComment('${post.id}')" class="bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg px-3 text-[12px] font-black flex-shrink-0">등록</button>
                                 </div>
                             </div>
                         </div>
