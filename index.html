@@ -397,7 +397,7 @@
                 </button>
                 <div class="relative inline-flex">
                     <button onclick="showCommunity()" class="suggest-badge">
-                        <span class="badge-icon" style="background:linear-gradient(160deg, #f472b6, #db2777);">🗣️</span>
+                        <span class="badge-icon" style="background:linear-gradient(160deg, #f472b6, #db2777);">🤗</span>
                         커뮤니티
                     </button>
                     <span class="community-new-badge">NEW</span>
@@ -483,8 +483,8 @@
                     뒤로가기
                 </button>
                 <div class="text-center mb-5">
-                    <h1 class="text-2xl font-black text-pink-600 font-jua break-keep">🗣️ 커뮤니티</h1>
-                    <p class="text-slate-500 text-[13px] mt-1 break-keep">공부하고 시험 준비하면서 느낀 걸 자유롭게 나눠보세요</p>
+                    <h1 class="text-2xl font-black text-pink-600 font-jua break-keep">🤗 시온 공부방 커뮤니티</h1>
+                    <p class="text-slate-500 text-[13px] mt-1 break-keep">성도님들의 자유 대화 공간. 응원, 격려, 공부 노하우 등을 서로 나눠요.</p>
                 </div>
 
                 <!-- 글쓰기 -->
@@ -3098,16 +3098,46 @@
         // 적고 쓸 수 있게 해서 "누구든 자유롭게" 요건을 만족한다.
         // ─────────────────────────────────────────────────────────
         const COMMUNITY_NAME_KEY = 'sion_community_name'; // 마지막에 쓴 이름을 기억해뒀다가 다음에 미리 채워준다
+        // 로그인/가입이 없으므로, 글/댓글을 쓸 때마다 서버가 발급하는 1회용 "수정토큰"을 이 브라우저에만
+        // { 글번호: 수정토큰 } 형태로 저장해둔다. 이게 있는 글/댓글만 "내가 쓴 것"으로 보고 수정·삭제
+        // 버튼을 보여준다 — 다른 사람에게는 이 토큰이 절대 안 보이므로(communityList 응답에도 없음)
+        // 남의 글을 고치거나 지울 수 없다.
+        const COMMUNITY_MY_TOKENS_KEY = 'sion_community_my_tokens';
+        function getCommunityMyTokens() {
+            try { return JSON.parse(localStorage.getItem(COMMUNITY_MY_TOKENS_KEY)) || {}; } catch (e) { return {}; }
+        }
+        function saveCommunityMyToken(id, token) {
+            if (!id || !token) return;
+            try {
+                const map = getCommunityMyTokens();
+                map[id] = token;
+                localStorage.setItem(COMMUNITY_MY_TOKENS_KEY, JSON.stringify(map));
+            } catch (e) { /* 무시 */ }
+        }
+        function removeCommunityMyToken(id) {
+            try {
+                const map = getCommunityMyTokens();
+                delete map[id];
+                localStorage.setItem(COMMUNITY_MY_TOKENS_KEY, JSON.stringify(map));
+            } catch (e) { /* 무시 */ }
+        }
+        function communityIsMine(id) {
+            return !!getCommunityMyTokens()[id];
+        }
+
         let communityPosts = []; // 서버에서 불러온 글+댓글 평면 목록(parentId로 댓글을 구분)
         let communityPollHandle = null;
+        let communityEditingId = null; // 지금 인라인으로 수정 중인 글/댓글 id(한 번에 하나만)
         let isSubmittingCommunityPost = false;
         let isSubmittingCommunityReply = false;
+        let isSubmittingCommunityEdit = false;
 
         function showCommunity() {
             const nameInput = document.getElementById('community-post-name');
             if (nameInput) { try { nameInput.value = localStorage.getItem(COMMUNITY_NAME_KEY) || ''; } catch (e) { /* 무시 */ } }
             document.getElementById('community-post-content').value = '';
             document.getElementById('community-post-error').classList.add('hidden');
+            communityEditingId = null;
             showView('view-community');
             loadCommunityPosts();
             // 화면이 떠 있는 동안은 주기적으로 다시 불러와서, 다른 사람이 남긴 글/댓글이 자연스럽게
@@ -3155,6 +3185,28 @@
             return n ? n[0] : '익';
         }
 
+        // 글/댓글 하나의 "본문" 부분을 그린다 — 지금 수정 중인 항목이면 입력칸+저장/취소를,
+        // 아니면 일반 본문 텍스트를 그리고, 내가 쓴 것이면(수정토큰을 갖고 있으면) 그 아래에
+        // 수정·삭제 버튼을 덧붙인다.
+        function renderCommunityItemContent(item) {
+            if (communityEditingId === item.id) {
+                return `
+                    <textarea id="community-edit-input-${item.id}" class="field-input mt-1" rows="3">${escapeHtml(item.content)}</textarea>
+                    <div class="flex gap-2 mt-1.5">
+                        <button onclick="saveCommunityEdit('${item.id}')" class="bg-pink-500 hover:bg-pink-600 text-white rounded-lg px-3 py-1.5 text-[12px] font-black">저장</button>
+                        <button onclick="cancelCommunityEdit()" class="bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg px-3 py-1.5 text-[12px] font-black">취소</button>
+                    </div>`;
+            }
+            const mine = communityIsMine(item.id);
+            return `
+                <p class="text-[14.5px] text-slate-800 whitespace-pre-wrap break-words mt-1 leading-relaxed">${escapeHtml(item.content)}</p>
+                ${mine ? `
+                <div class="flex gap-3 mt-1.5">
+                    <button onclick="startCommunityEdit('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-pink-600 transition-colors">✏️ 수정</button>
+                    <button onclick="deleteCommunityItem('${item.id}')" class="text-[11.5px] font-black text-slate-400 hover:text-rose-600 transition-colors">🗑️ 삭제</button>
+                </div>` : ''}`;
+        }
+
         function renderCommunityFeed() {
             const feedEl = document.getElementById('community-feed');
             const countEl = document.getElementById('community-post-count');
@@ -3167,11 +3219,13 @@
                 return;
             }
 
-            // 지금 펼쳐져 있던 답글 영역은 다시 그린 뒤에도 펼친 상태를 유지한다(폴링 중 접히지 않게).
-            const openIds = new Set();
+            // 답글은 기본이 "펼침"이다 — 답글 내용이 클릭 없이 바로 보여야 소통이 되므로, 굳이 눌러야
+            // 보이게 접어두지 않는다. 사용자가 직접 접었던 것만(이미 화면에 hidden으로 그려져 있던 것만)
+            // 다시 그린 뒤에도 계속 접힌 채로 둔다.
+            const closedIds = new Set();
             topPosts.forEach(post => {
                 const el = document.getElementById(`community-replies-${post.id}`);
-                if (el && !el.classList.contains('hidden')) openIds.add(post.id);
+                if (el && el.classList.contains('hidden')) closedIds.add(post.id);
             });
 
             feedEl.innerHTML = topPosts.map(post => {
@@ -3181,18 +3235,18 @@
                         <div class="community-avatar is-reply">${escapeHtml(communityAvatarLetter(r.name))}</div>
                         <div class="flex-1 min-w-0">
                             <p class="text-[12.5px]"><span class="font-black text-slate-700">${escapeHtml(r.name || '익명')}</span> <span class="text-slate-400 font-bold">· ${communityRelativeTime(r.createdAt)}</span></p>
-                            <p class="text-[13px] text-slate-700 whitespace-pre-wrap break-words mt-0.5">${escapeHtml(r.content)}</p>
+                            ${renderCommunityItemContent(r)}
                         </div>
                     </div>
                 `).join('');
-                const isOpen = openIds.has(post.id);
+                const isOpen = !closedIds.has(post.id) || replies.some(r => r.id === communityEditingId);
                 return `
                 <div class="community-post-card">
                     <div class="flex gap-2.5">
                         <div class="community-avatar">${escapeHtml(communityAvatarLetter(post.name))}</div>
                         <div class="flex-1 min-w-0">
                             <p class="text-[13px]"><span class="font-black text-slate-800">${escapeHtml(post.name || '익명')}</span> <span class="text-slate-400 font-bold text-[12px]">· ${communityRelativeTime(post.createdAt)}</span></p>
-                            <p class="text-[14.5px] text-slate-800 whitespace-pre-wrap break-words mt-1 leading-relaxed">${escapeHtml(post.content)}</p>
+                            ${renderCommunityItemContent(post)}
                             <div class="flex items-center gap-3 mt-2">
                                 <button class="community-reply-btn" onclick="toggleCommunityReplies('${post.id}')">${replies.length > 0 ? `답글 ${replies.length}개` : '답글 달기'}</button>
                             </div>
@@ -3212,6 +3266,58 @@
         function toggleCommunityReplies(postId) {
             const el = document.getElementById(`community-replies-${postId}`);
             if (el) el.classList.toggle('hidden');
+        }
+
+        function startCommunityEdit(id) {
+            communityEditingId = id;
+            renderCommunityFeed();
+            setTimeout(() => {
+                const ta = document.getElementById(`community-edit-input-${id}`);
+                if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+            }, 0);
+        }
+
+        function cancelCommunityEdit() {
+            communityEditingId = null;
+            renderCommunityFeed();
+        }
+
+        async function saveCommunityEdit(id) {
+            if (isSubmittingCommunityEdit) return; // 전송 중 중복 클릭 방지
+            const ta = document.getElementById(`community-edit-input-${id}`);
+            if (!ta) return;
+            const content = ta.value.trim();
+            if (!content) { ta.focus(); return; }
+            const token = getCommunityMyTokens()[id];
+            if (!token) { alert('수정 권한이 없습니다.'); return; }
+
+            isSubmittingCommunityEdit = true;
+            ta.disabled = true;
+            try {
+                const result = await gasCall({ action: 'communityEdit', id, editToken: token, content });
+                if (result && result.success) {
+                    communityEditingId = null;
+                    await loadCommunityPosts();
+                } else {
+                    alert((result && result.message) || '수정에 실패했습니다. 다시 시도해주세요.');
+                    ta.disabled = false;
+                }
+            } finally {
+                isSubmittingCommunityEdit = false;
+            }
+        }
+
+        async function deleteCommunityItem(id) {
+            const token = getCommunityMyTokens()[id];
+            if (!token) { alert('삭제 권한이 없습니다.'); return; }
+            if (!confirm('정말 삭제하시겠어요? 되돌릴 수 없어요.')) return;
+            const result = await gasCall({ action: 'communityDelete', id, editToken: token });
+            if (result && result.success) {
+                removeCommunityMyToken(id);
+                await loadCommunityPosts();
+            } else {
+                alert((result && result.message) || '삭제에 실패했습니다. 다시 시도해주세요.');
+            }
         }
 
         async function submitCommunityPost() {
@@ -3241,6 +3347,7 @@
                 }
                 const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId: '', createdAt: nowStr() });
                 if (result && result.success) {
+                    saveCommunityMyToken(result.id, result.editToken);
                     contentEl.value = '';
                     await loadCommunityPosts();
                 } else {
@@ -3269,6 +3376,7 @@
             try {
                 const result = await gasCall({ action: 'communityPost', name: name || '익명', content, parentId, createdAt: nowStr() });
                 if (result && result.success) {
+                    saveCommunityMyToken(result.id, result.editToken);
                     input.value = '';
                     await loadCommunityPosts();
                     const el = document.getElementById(`community-replies-${parentId}`);
