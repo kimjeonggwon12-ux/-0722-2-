@@ -83,6 +83,30 @@
             50% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0), 0 8px 20px rgba(5, 150, 105, 0.2); }
         }
 
+        /* "학습(view-test)" 화면 노트북/가로형 레이아웃 스위치 — 계시록 통달의 "큰 화면" 기능과
+           같은 목적. 기존 세로형(모바일) 레이아웃 클래스(max-w-2xl 등)는 그대로 두고,
+           layout-desktop 클래스가 붙었을 때만 !important로 덮어써서 기존 모바일 레이아웃
+           코드는 건드리지 않는다. */
+        .layout-toggle-neon-pulse { animation: layoutToggleNeonPulse 1.6s ease-in-out infinite; }
+        @keyframes layoutToggleNeonPulse {
+            0%, 100% { box-shadow: 0 0 6px 1px rgba(79,70,229,0.6), 0 0 0 0 rgba(79,70,229,0.55); border-color: #a5b4fc; }
+            50% { box-shadow: 0 0 18px 5px rgba(129,140,248,0.95), 0 0 0 9px rgba(79,70,229,0); border-color: #818cf8; }
+        }
+        #main-container.theology-wide-main {
+            max-width: min(1800px, 92vw) !important;
+            width: min(1800px, 92vw) !important;
+        }
+        /* 과목마다 문항 카드 안 글자 크기 클래스가 제각각(text-sm/base/lg/xl, text-[11px] 등)이라
+           하나하나 덮어쓰는 대신 컨테이너 전체를 zoom으로 확대한다 — 어떤 과목 카드가 와도
+           레이아웃/줄바꿈이 그 크기에 맞게 자연스럽게 다시 계산된다. */
+        #view-test.layout-desktop #questions-container {
+            zoom: 1.3;
+        }
+        @media (max-width: 420px) {
+            .theology-layout-toggle-label { display: none; }
+            #theology-layout-toggle { padding-left: 0.65rem; padding-right: 0.65rem; }
+        }
+
         @media print {
             body { background: white !important; color: black !important; font-size: 11pt !important; }
             header, .no-print, button, label:not(.print-keep), .sticky, #finish-btn { display: none !important; }
@@ -282,10 +306,13 @@
 
         <div id="view-test" class="hidden flex-col flex-grow fade-in pb-16 no-print">
             <div class="sticky top-[52px] z-10 bg-background/95 backdrop-blur-md pt-2 pb-3 mb-4 flex flex-col gap-1.5 border-b border-slate-200/60">
-                <button onclick="app.backFromTest()" class="back-btn self-start">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                    뒤로가기
-                </button>
+                <div class="flex items-center justify-between gap-2">
+                    <button onclick="app.backFromTest()" class="back-btn self-start">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        뒤로가기
+                    </button>
+                    <button type="button" id="theology-layout-toggle" onclick="toggleTheologyLayout()" class="layout-toggle-neon-pulse bg-white border-2 border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-2 shadow-sm text-[13px] font-black transition-colors flex-shrink-0"><span id="theology-layout-toggle-icon">🖥️</span><span id="theology-layout-toggle-label" class="theology-layout-toggle-label"> 큰 화면</span></button>
+                </div>
                 <div class="flex justify-between items-end px-1 text-xs font-extrabold">
                     <div class="flex items-center gap-1.5">
                         <span id="test-mode-badge" class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">진행중</span>
@@ -1044,6 +1071,32 @@
             previewAudioRateSelect: document.getElementById('preview-audio-rate'),
         };
 
+        // "학습(view-test)" 화면의 세로형(모바일)/가로형(큰 화면) 레이아웃 전환.
+        // 계시록 통달(도통계시록/index.html)의 "큰 화면" 기능과 같은 목적 — 선택값은
+        // localStorage에 저장해서 다음에 다시 들어와도 유지되고, 기존 세로형 레이아웃
+        // 마크업/클래스는 전혀 건드리지 않고 layout-desktop/theology-wide-main 클래스만
+        // 추가로 붙여서(위 <style>의 별도 CSS로) 전환한다.
+        const THEOLOGY_LAYOUT_KEY = 'sion_theology_studylayout';
+        function getTheologyLayout() {
+            try { return localStorage.getItem(THEOLOGY_LAYOUT_KEY) === 'desktop' ? 'desktop' : 'mobile'; }
+            catch (e) { return 'mobile'; }
+        }
+        function applyTheologyLayout(mode) {
+            const screen = document.getElementById('view-test');
+            const mainEl = document.getElementById('main-container');
+            const icon = document.getElementById('theology-layout-toggle-icon');
+            const label = document.getElementById('theology-layout-toggle-label');
+            if (screen) screen.classList.toggle('layout-desktop', mode === 'desktop');
+            if (mainEl) mainEl.classList.toggle('theology-wide-main', mode === 'desktop');
+            if (icon) icon.textContent = mode === 'desktop' ? '📱' : '🖥️';
+            if (label) label.textContent = mode === 'desktop' ? ' 모바일 화면' : ' 큰 화면';
+        }
+        window.toggleTheologyLayout = function() {
+            const next = getTheologyLayout() === 'desktop' ? 'mobile' : 'desktop';
+            try { localStorage.setItem(THEOLOGY_LAYOUT_KEY, next); } catch (e) {}
+            applyTheologyLayout(next);
+        };
+
         const appState = {
             currentSubject: null,
             currentMode: null,
@@ -1757,6 +1810,14 @@
                 els.views[viewName].classList.remove('hidden'); els.views[viewName].classList.add('flex');
                 if (viewName === 'home' || viewName === 'modeSelect' || viewName === 'gradeSelect') els.header.classList.add('hidden');
                 else els.header.classList.remove('hidden');
+                // "학습" 화면을 벗어나면 큰 화면(#main-container 확장 폭) 효과도 항상 원래대로
+                // 되돌린다(모드 자체는 그대로 기억하고 있다가, 이 화면에 다시 들어올 때만 재적용됨).
+                if (viewName === 'test') {
+                    applyTheologyLayout(getTheologyLayout());
+                } else {
+                    const mainEl = document.getElementById('main-container');
+                    if (mainEl) mainEl.classList.remove('theology-wide-main');
+                }
                 // 모의고사 급수 선택 화면에서는 뒤로가기 버튼만 남기고, 항상 떠 있는 홈으로 버튼은 숨긴다.
                 const fixedHomeNav = document.getElementById('fixed-home-nav');
                 if (fixedHomeNav) fixedHomeNav.classList.toggle('hidden', viewName === 'gradeSelect');
