@@ -919,12 +919,14 @@ revelationData.forEach(chapter => {
 
 function normalizeTextForComparison(text) {
     return text
-        .replace(/\s+/g, '') // 모든 공백 제거 추가
+        // 공백뿐 아니라 쉼표/마침표/물음표 등 모든 문장부호·기호를 다 무시한다(한글/영문/숫자만 남김).
+        // 이전에는 공백과 쉼표·괄호만 제거해서, 예를 들어 문장 끝에 마침표를 붙이거나
+        // 스마트폰 자동 문장부호(예: 스페이스 두 번 → 마침표)가 들어가면 글자와 띄어쓰기가
+        // 전부 맞아도 오답 처리되는 문제가 있었다.
+        .replace(/[^가-힣a-zA-Z0-9]/g, '')
         .replace(/잠간/g, '잠깐')
         .replace(/찌/g, '지')
         .replace(/참예/g, '참여')
-        .replace(/,/g, '') // 쉼표 무시
-        .replace(/[()]/g, '') // 괄호 무시
         .replace(/세째/g, '셋째') // '세째'를 '셋째'로 통일
         .replace(/네째/g, '넷째') // '네째'를 '넷째'로 통일
         .replace(/비췸/g, '비침') // '비췸'(고어)을 '비침'으로 통일

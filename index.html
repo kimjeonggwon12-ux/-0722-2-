@@ -2170,7 +2170,7 @@
             { word: "새요한", keyword: "요한", v: "계 1:2", text: "요한은 하나님의 말씀과 예수 그리스도의 증거 곧 자기의 본 것을 다 증거하였느니라", meaningBefore: "[실상] 열린 책을 받아먹은 ", meaningAfter: "" },
             { word: "장막성전", keyword: "일곱 금 촛대", v: "계 1:20", text: "네 본 것은 내 오른손에 일곱 별의 비밀과 일곱 금 촛대라", meaningBefore: "일곱 등불의 영이 있는 곳, [실상] ", meaningAfter: "" },
             { word: "니골라당", keyword: "자칭 사도라 하되 아닌 자들", v: "계 2:2", text: "자칭 사도라 하되 아닌 자들을 시험하여 그 거짓된 것을 네가 드러낸 것과", meaningBefore: "배도하고 당을 지어 성도를 미혹한 ", meaningAfter: "" },
-            { word: "일곱교육장", keyword: "하나님의 일곱 영", v: "계 4:5", text: "보좌 앞에 일곱 등불 켠 것이 있으니 이는 하나님의 일곱 영이더라", meaningBefore: "하나님의 말씀을 대언하는 일곱 사자, [실상] 총회 소속 ", meaningAfter: "" },
+            { word: "일곱교육장", keyword: "하나님의 일곱 영", v: "계 4:5", text: "보좌 앞에 일곱 등불 켠 것이 있으니 이는 하나님의 일곱 영이라", meaningBefore: "하나님의 말씀을 대언하는 일곱 사자, [실상] 총회 소속 ", meaningAfter: "" },
             { word: "말씀", keyword: "유리바다", v: "계 4:6", text: "보좌 앞에 수정과 같은 유리바다가 있고", meaningBefore: "속사람을 씻어 주는, 보좌 앞 열린 책의 ", meaningAfter: "" },
             { word: "예수님", keyword: "다윗의 뿌리", v: "계 5:5", text: "유대 지파의 사자 다윗의 뿌리가 이기었으니 이 책과 그 일곱 인을 떼시리라", meaningBefore: "이기신 ", meaningAfter: "" },
             { word: "장막성전", keyword: "큰 산", v: "계 8:8", text: "불붙는 큰 산과 같은 것이 바다에 던지우매", meaningBefore: "배도한 일곱 금촛대 장막, [실상] 배도한 ", meaningAfter: " 본부" },
@@ -2513,7 +2513,11 @@
                         input.addEventListener('focus', () => cwHandleFocus(r, c));
                         input.addEventListener('keyup', (e) => cwHandleKeyUp(e, r, c));
                         input.addEventListener('keydown', (e) => cwHandleKeyDown(e, r, c));
-                        input.addEventListener('input', (e) => {
+                        // 한글은 자모가 조합되는 동안(예: ㄱ→가) input 이벤트가 여러 번 오는데,
+                        // 조합이 끝나기 전에 다음 칸으로 넘어가면 조합이 깨진다. 그래서 조합 중(e.isComposing)에는
+                        // 건드리지 않고, 조합이 끝난 뒤(compositionend) 또는 조합이 필요 없는 입력(영문/숫자 등)의
+                        // 일반 input 이벤트에서만 실제 처리를 한다.
+                        const handleCwCellInput = () => {
                             const val = input.value;
                             if (val.includes(' ') || val.includes('　')) {
                                 // 한 글자를 쓴 뒤 스페이스를 누르면(칸에 이미 글자가 있어도) 다음 칸으로 이동.
@@ -2524,7 +2528,16 @@
                             if (val.length > 1) {
                                 input.value = val.slice(-1); // 실제로는 한 글자만 담는다(마지막 입력 글자 유지)
                             }
+                            // 글자를 쓰면 스페이스바나 "다음"을 누르지 않아도 바로 다음 칸으로 이동.
+                            if (input.value.length === 1) {
+                                cwMoveToNextInput(r, c);
+                            }
+                        };
+                        input.addEventListener('input', (e) => {
+                            if (e.isComposing) return;
+                            handleCwCellInput();
                         });
+                        input.addEventListener('compositionend', () => handleCwCellInput());
                         input.addEventListener('click', () => cwHandleFocus(r, c));
                         cellDiv.appendChild(input);
                         if (cell.labels.length > 0) {
