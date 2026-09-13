@@ -327,7 +327,10 @@
             </div>
 
             <p id="grading-notice-text" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">채점 기준: 핵심 단어는 정확히 기록하되, 문장 끝 한 글자(조사·어미 등)는 틀려도 정답으로 인정됩니다.</p>
-            <p id="star-notice-text" class="hidden text-[11px] text-amber-700 bg-amber-50 border border-amber-100 text-center font-black rounded-full py-1.5 px-3 mb-4 break-keep">⭐ 별표 문항: 자주 틀리는 문항. 문항 오른쪽 위 별표를 눌러두면 모드 선택 화면에서 별표한 문항만 모아 연습·시험볼 수 있어요.</p>
+            <div id="star-notice-text" class="hidden flex items-center gap-3 bg-amber-100 border-2 border-amber-300 rounded-2xl px-4 py-3 mb-4 shadow-sm">
+                <span class="text-3xl flex-shrink-0">⭐</span>
+                <p class="text-[13px] text-amber-900 font-black leading-snug break-keep">자주 틀리는 문항은 별표를 눌러 저장하세요! 문항 오른쪽 위 <span class="text-lg align-middle">☆</span>를 누르면, 모드 선택 화면에서 별표한 문항만 모아 연습·시험볼 수 있어요.</p>
+            </div>
 
             <div id="grade-exam-summary" class="hidden bg-white border-2 border-emerald-100 rounded-2xl p-4 mb-4">
                 <p id="grade-exam-range-text" class="text-[11px] text-slate-600 font-bold break-keep leading-relaxed"></p>
@@ -422,6 +425,34 @@
                 </div>
             </div>
         </div>
+
+        <div id="view-preview-list" class="hidden flex-col flex-grow fade-in pb-16 no-print">
+            <div class="sticky top-[52px] z-10 bg-background/95 backdrop-blur-md pt-2 pb-3 mb-4 flex flex-col gap-2 border-b border-slate-200/60">
+                <button onclick="app.backFromPreviewList()" class="back-btn self-start">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    뒤로가기
+                </button>
+                <h3 class="font-black text-lg text-slate-800 flex items-center gap-2 px-0.5" id="preview-list-title">전체 제목 미리보기</h3>
+                <div id="preview-audio-bar" class="hidden items-center gap-2 px-3 py-2.5 bg-indigo-50 border border-indigo-100 rounded-xl">
+                    <button id="preview-audio-play-btn" onclick="app.toggleReadAloud()" class="flex-shrink-0 flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <span>전체 읽어주기</span>
+                    </button>
+                    <button onclick="app.stopReadAloud()" class="flex-shrink-0 flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-600 text-xs font-black px-2.5 py-1.5 rounded-lg border border-slate-300 transition">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+                        <span>정지</span>
+                    </button>
+                    <span id="preview-audio-status" class="flex-grow text-xs font-bold text-indigo-700 truncate">읽어주기 준비됨</span>
+                    <select id="preview-audio-rate" onchange="app.setReadAloudRate(this.value)" class="flex-shrink-0 text-xs font-bold border border-indigo-200 rounded-lg px-1.5 py-1.5 bg-white text-indigo-700">
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                    </select>
+                </div>
+            </div>
+            <div id="preview-list-body" class="space-y-3"></div>
+        </div>
     </main>
 
     <!-- 성구 새김 모달 -->
@@ -486,37 +517,6 @@
             <div class="p-5 overflow-y-auto bg-amber-50/50" id="lecture-modal-body"></div>
             <div class="p-4 border-t border-slate-100 bg-white flex justify-end gap-2 rounded-b-2xl">
                 <button onclick="app.hideLectureModal()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition shadow-sm">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 전체 제목 미리보기 모달 -->
-    <div id="preview-list-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center opacity-0 transition-opacity duration-200 p-4 no-print">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-200 flex flex-col max-h-[85vh]" id="preview-list-modal-content">
-            <div class="bg-slate-800 px-4 py-3 flex justify-between items-center text-white rounded-t-2xl border-b border-slate-900">
-                <h3 class="font-black text-base flex items-center gap-2" id="preview-list-title">전체 제목 미리보기</h3>
-                <button onclick="app.hidePreviewListModal()" class="text-slate-300 hover:text-white p-1 rounded-md transition-colors"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <div id="preview-audio-bar" class="hidden items-center gap-2 px-4 py-2.5 bg-indigo-50 border-b border-indigo-100">
-                <button id="preview-audio-play-btn" onclick="app.toggleReadAloud()" class="flex-shrink-0 flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    <span>전체 읽어주기</span>
-                </button>
-                <button onclick="app.stopReadAloud()" class="flex-shrink-0 flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-600 text-xs font-black px-2.5 py-1.5 rounded-lg border border-slate-300 transition">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
-                    <span>정지</span>
-                </button>
-                <span id="preview-audio-status" class="flex-grow text-xs font-bold text-indigo-700 truncate">읽어주기 준비됨</span>
-                <select id="preview-audio-rate" onchange="app.setReadAloudRate(this.value)" class="flex-shrink-0 text-xs font-bold border border-indigo-200 rounded-lg px-1.5 py-1.5 bg-white text-indigo-700">
-                    <option value="0.75">0.75x</option>
-                    <option value="1" selected>1x</option>
-                    <option value="1.25">1.25x</option>
-                    <option value="1.5">1.5x</option>
-                </select>
-            </div>
-            <div class="p-4 overflow-y-auto bg-slate-50 space-y-3" id="preview-list-body"></div>
-            <div class="p-4 border-t border-slate-200 bg-white flex justify-end rounded-b-2xl">
-                <button onclick="app.hidePreviewListModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-sm transition shadow-sm">닫기</button>
             </div>
         </div>
     </div>
@@ -1040,7 +1040,8 @@
                 modeSelect: document.getElementById('view-mode-select'),
                 gradeSelect: document.getElementById('view-grade-select'),
                 test: document.getElementById('view-test'),
-                results: document.getElementById('view-results')
+                results: document.getElementById('view-results'),
+                previewList: document.getElementById('view-preview-list')
             },
             levelBadge: document.getElementById('selected-level-badge'),
             modeBtnsContainer: document.getElementById('mode-buttons-container'),
@@ -1084,8 +1085,6 @@
             verseLearningModal: document.getElementById('verse-learning-modal'),
             verseLearningContent: document.getElementById('verse-learning-content'),
             verseLearningBody: document.getElementById('verse-learning-body'),
-            previewListModal: document.getElementById('preview-list-modal'),
-            previewListContent: document.getElementById('preview-list-modal-content'),
             previewListBody: document.getElementById('preview-list-body'),
             previewListTitle: document.getElementById('preview-list-title'),
             previewAudioBar: document.getElementById('preview-audio-bar'),
@@ -1954,7 +1953,7 @@
                 if (subject !== 'parable') {
                     const isFinalExam = ['elemFinal', 'midFinal', 'highFinal', 'totalFinal'].includes(subject);
                     html += `
-                    <button onclick="app.showPreviewListModal('${subject}')" class="relative mt-6 w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 shadow-sm">
+                    <button onclick="app.showPreviewList('${subject}')" class="relative mt-6 w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition flex items-center justify-center gap-2 shadow-sm">
                         ${isFinalExam ? `<span class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">NEW</span>` : ''}
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                         전체 문항 보기
@@ -1966,7 +1965,7 @@
                 els.modeBtnsContainer.innerHTML = html;
             },
 
-            showPreviewListModal(subject) {
+            showPreviewList(subject) {
                 let data = []; let titleStr = "";
                 if(subject === 'elem') { data = dataElem; titleStr = "초등 제목 전체 보기"; }
                 else if(subject === 'elemFinal') { data = dataElemFinal; titleStr = "초등 종강 시험 전체 보기"; }
@@ -2008,15 +2007,14 @@
                 });
                 els.previewListBody.innerHTML = html;
 
-                els.previewListModal.classList.remove('hidden'); void els.previewListModal.offsetWidth;
-                els.previewListModal.classList.remove('opacity-0');
-                els.previewListContent.classList.remove('scale-95'); els.previewListContent.classList.add('scale-100');
+                // 팝업 대신 본래 화면으로 이동 — 뒤로가기를 누르면 부르기 전 화면(시험 화면 안 "전체"
+                // 탭에서 왔는지, 모드 선택 화면의 "전체 문항 보기" 버튼에서 왔는지)으로 되돌아간다.
+                appState.previewListFrom = els.views.test.classList.contains('hidden') ? 'modeSelect' : 'test';
+                this.showView('previewList');
             },
-            hidePreviewListModal() {
+            backFromPreviewList() {
                 this.stopReadAloud();
-                els.previewListModal.classList.add('opacity-0');
-                els.previewListContent.classList.remove('scale-100'); els.previewListContent.classList.add('scale-95');
-                setTimeout(() => els.previewListModal.classList.add('hidden'), 200);
+                this.showView(appState.previewListFrom || 'modeSelect');
             },
             _ttsVoice: null,
             _getKoreanVoice() {
@@ -2186,7 +2184,7 @@
 
                 tabsHtml += `<button onclick="app.switchMode('practice')" class="${pracAct}">연습</button><button onclick="app.switchMode('exam')" class="${examAct}">시험</button>`;
                 if (appState.currentSubject !== 'parable') {
-                    tabsHtml += `<button onclick="app.showPreviewListModal('${appState.currentSubject}')" class="${inactCls}">전체</button>`;
+                    tabsHtml += `<button onclick="app.showPreviewList('${appState.currentSubject}')" class="${inactCls}">전체</button>`;
                 }
                 els.headerTabs.innerHTML = tabsHtml;
             },
@@ -3652,7 +3650,12 @@
                 const numBadge = document.getElementById(`num-badge-${index}`);
                 const previewBox = document.getElementById(`preview-box-${index}`);
 
-                const isElemFinalPractice = appState.currentSubject === 'elemFinal' && appState.currentMode === 'practice';
+                // 초등 종강 시험(elemFinal) 연습 모드에서 쓰던 "정답 보기 박스 자동 노출" 체계를
+                // 제목(mid/elem), 고등 종강(highFinal), 수료 종합(totalFinal) 연습 모드에도 동일하게
+                // 적용 — 진단창(정오 비교 오버레이+쏙쏙강의 자동 노출) 대신 항상 이 방식으로 통일.
+                // 중등 종강(midFinal)은 요청 범위 밖이라 기존 방식 그대로 둔다.
+                const SIMPLE_REVEAL_SUBJECTS = ['elemFinal', 'mid', 'elem', 'highFinal', 'totalFinal'];
+                const isElemFinalPractice = SIMPLE_REVEAL_SUBJECTS.includes(appState.currentSubject) && appState.currentMode === 'practice';
 
                 if (subBadgeResults) {
                     subBadgeResults.forEach(b => {
