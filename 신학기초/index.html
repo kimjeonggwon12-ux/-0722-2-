@@ -2836,18 +2836,34 @@
             showLectureModal(index) {
                 const q = appState.questions[index];
                 if(!q || !q.tutor) return;
-                
+
                 const bodyEl = document.getElementById('lecture-modal-body');
+                // "[이 과목에서 배우는 내용]" + "강의 요약" 2단 구성(중등·초등 쏙쏙 강의)이면 각 섹션에
+                // 아이콘 달린 큼직한 굵은 제목을 붙여 렌더링. 그 외(비유 단어 등 기존 단일 문단 tutor)는
+                // 예전처럼 그대로 한 문단으로 표시.
+                const twoPart = q.tutor.match(/^\[이 과목에서 배우는 내용\]\n([\s\S]*?)\n\n강의 요약\n([\s\S]*)$/);
+                const lectureBodyHtml = twoPart ? `
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 text-emerald-700 font-black text-[17px] mb-2"><span class="text-xl">🎯</span> 이 과목에서 배우는 내용</div>
+                        <p class="text-[14px] text-slate-700 leading-relaxed font-medium break-keep whitespace-pre-wrap bg-emerald-50/70 border border-emerald-100 rounded-xl p-3">${twoPart[1]}</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 text-amber-700 font-black text-[17px] mb-2"><span class="text-xl">📖</span> 강의 요약</div>
+                        <p class="text-[14px] text-slate-700 leading-relaxed font-medium break-keep whitespace-pre-wrap bg-white border border-amber-200 rounded-xl p-3 shadow-sm">${twoPart[2]}</p>
+                    </div>
+                ` : `
+                    <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+                        <p class="text-[14px] text-slate-700 leading-relaxed font-medium break-keep whitespace-pre-wrap">${q.tutor}</p>
+                    </div>
+                `;
                 bodyEl.innerHTML = `
                     <div class="mb-4 text-center">
                         <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-black">${index + 1}번 항목</span>
                         <h4 class="font-black text-xl text-slate-800 mt-2">${q.q}</h4>
                     </div>
-                    <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
-                        <p class="text-[14px] text-slate-700 leading-relaxed font-medium break-keep whitespace-pre-wrap">${q.tutor}</p>
-                    </div>
+                    ${lectureBodyHtml}
                 `;
-                
+
                 const modal = document.getElementById('lecture-modal');
                 const content = document.getElementById('lecture-modal-content');
                 modal.classList.remove('hidden'); void modal.offsetWidth;
