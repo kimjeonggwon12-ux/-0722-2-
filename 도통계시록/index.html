@@ -362,6 +362,10 @@
             .chapter-study-layout-toggle-label { display: none; }
             #chapter-study-layout-toggle { padding-left: 0.65rem; padding-right: 0.65rem; }
         }
+        /* 글자 크기 조절(돋보기 버튼): #app-main은 phone-frame(overflow-hidden)이지만 body는
+           min-height:100vh로 자유롭게 늘어나므로, zoom으로 커진 만큼은 body 스크롤로 보인다. */
+        body.font-scale-1 #app-main { zoom: 1.15; }
+        body.font-scale-2 #app-main { zoom: 1.3; }
 
     </style>
 </head>
@@ -372,6 +376,13 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6"/></svg>
             홈으로
         </a>
+    </div>
+
+    <!-- 글자 크기 조절: 화면 어디서나 항상 눌리는 고정 버튼(기본/크게/아주 크게 3단계) -->
+    <div id="font-scale-control" class="fixed top-2 right-2 z-[9999] flex items-center gap-1.5 bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-1.5 py-1.5">
+        <button type="button" onclick="changeFontScale(-1)" aria-label="글자 작게" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[15px] font-black">🔍-</button>
+        <button type="button" onclick="resetFontScale()" aria-label="글자 크기 초기화" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[10px] font-black leading-tight">초기화</button>
+        <button type="button" onclick="changeFontScale(1)" aria-label="글자 크게" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[15px] font-black">🔍+</button>
     </div>
 
     <main id="app-main" class="container mx-auto max-w-md h-[100dvh] flex flex-col relative overflow-hidden bg-background shadow-2xl">
@@ -13947,6 +13958,32 @@
                 els.result.wrongList.innerHTML = '';
             }
         }
+
+        // ─────────────────────────────────────────────────────────
+        // 글자 크기 조절(돋보기 버튼): 기본/크게/아주 크게 3단계, localStorage에 저장해 다음 방문 때도 유지
+        // (루트 index.html·다른 공부방과 같은 sion_font_scale 키를 공유해 사이트 전체에서 일관되게 유지된다)
+        // ─────────────────────────────────────────────────────────
+        const FONT_SCALE_KEY = 'sion_font_scale';
+        const FONT_SCALE_MAX = 2;
+        function loadFontScaleStage() {
+            const n = parseInt(localStorage.getItem(FONT_SCALE_KEY), 10);
+            return (Number.isInteger(n) && n >= 0 && n <= FONT_SCALE_MAX) ? n : 0;
+        }
+        function applyFontScaleStage(stage) {
+            document.body.classList.remove('font-scale-1', 'font-scale-2');
+            if (stage === 1) document.body.classList.add('font-scale-1');
+            if (stage === 2) document.body.classList.add('font-scale-2');
+        }
+        window.changeFontScale = function(delta) {
+            const next = Math.max(0, Math.min(FONT_SCALE_MAX, loadFontScaleStage() + delta));
+            try { localStorage.setItem(FONT_SCALE_KEY, next); } catch (e) { /* 무시 */ }
+            applyFontScaleStage(next);
+        };
+        window.resetFontScale = function() {
+            try { localStorage.setItem(FONT_SCALE_KEY, 0); } catch (e) { /* 무시 */ }
+            applyFontScaleStage(0);
+        };
+        applyFontScaleStage(loadFontScaleStage());
 
         window.onload = init;
     </script>
