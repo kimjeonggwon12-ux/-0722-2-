@@ -364,9 +364,19 @@
         #root-app-main.memo-layout-desktop #memo-result-details {
             zoom: 1.3;
         }
+        /* 글자 크기 조절(돋보기 버튼): 문제/보기/성구 등 화면 전체를 zoom으로 확대해
+           개별 텍스트 클래스를 일일이 손대지 않고도 모든 화면에 동일하게 적용되게 한다. */
+        body.font-scale-1 #root-app-main { zoom: 1.15; }
+        body.font-scale-2 #root-app-main { zoom: 1.3; }
     </style>
 </head>
 <body class="antialiased">
+    <!-- 글자 크기 조절: 화면 어디서나 항상 눌리는 고정 버튼(기본/크게/아주 크게 3단계) -->
+    <div id="font-scale-control" class="fixed top-2 right-2 z-[9999] flex items-center gap-1.5 bg-white/95 backdrop-blur rounded-full shadow-lg border border-slate-200 px-1.5 py-1.5">
+        <button type="button" onclick="changeFontScale(-1)" aria-label="글자 작게" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[15px] font-black">🔍-</button>
+        <button type="button" onclick="resetFontScale()" aria-label="글자 크기 초기화" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[10px] font-black leading-tight">초기화</button>
+        <button type="button" onclick="changeFontScale(1)" aria-label="글자 크게" class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 transition-transform text-[15px] font-black">🔍+</button>
+    </div>
     <main id="root-app-main" class="container mx-auto px-3 py-4 flex-grow flex flex-col max-w-2xl">
 
         <!-- 로그인 화면 -->
@@ -1721,7 +1731,8 @@
 
         // 채점: 띄어쓰기·기호 무시, "찌"↔"지" 계열 어미는 동일하게 처리 (예: 찌어다=지어다, 찌니라=지니라)
         // 그 밖에 "세째"="셋째", "네째"="넷째", "앎으로"="알므로", "자주빛"="자줏빛", "잠간"="잠깐", "륙"="육"(예:육백육십륙=육백육십육),
-        // "써"="서"(예:으로써=으로서, 써서=서서), "우레"="우뢰"(예:우렛소리=우뢰소리, 일곱 우레=일곱 우뢰)도 동일하게 처리
+        // "써"="서"(예:으로써=으로서, 써서=서서), "우레"="우뢰"(예:우렛소리=우뢰소리, 일곱 우레=일곱 우뢰),
+        // "비췸"="비침", "쌔"="새"(예:싸울쌔=싸울새), "찐"="진"(예:찐저=진저), "두째"="둘째"도 동일하게 처리
         // 위 규칙들은 모두 성경 버전(개역한글판 등)마다 다른 고어체 표기 차이를 관용 채점하기 위한 것 — 새로운 버전차이 사례가 발견되면 같은 방식으로 치환 규칙 추가
         // "참예"는 예외 없이 정확히 일치해야 정답 처리됨(별도 치환 규칙을 두지 않음)
         function normalizeMemoText(s) {
@@ -1739,6 +1750,10 @@
             t = t.replace(/륙/g, '육');
             t = t.replace(/써/g, '서');
             t = t.replace(/우레/g, '우뢰');
+            t = t.replace(/비췸/g, '비침');
+            t = t.replace(/쌔/g, '새');
+            t = t.replace(/찐/g, '진');
+            t = t.replace(/두째/g, '둘째');
             return t;
         }
 
@@ -4592,6 +4607,31 @@
                 checkAutoLogin();
             }, 400);
         })();
+
+        // ─────────────────────────────────────────────────────────
+        // 글자 크기 조절(돋보기 버튼): 기본/크게/아주 크게 3단계, localStorage에 저장해 다음 방문 때도 유지
+        // ─────────────────────────────────────────────────────────
+        const FONT_SCALE_KEY = 'sion_font_scale';
+        const FONT_SCALE_MAX = 2;
+        function loadFontScaleStage() {
+            const n = parseInt(localStorage.getItem(FONT_SCALE_KEY), 10);
+            return (Number.isInteger(n) && n >= 0 && n <= FONT_SCALE_MAX) ? n : 0;
+        }
+        function applyFontScaleStage(stage) {
+            document.body.classList.remove('font-scale-1', 'font-scale-2');
+            if (stage === 1) document.body.classList.add('font-scale-1');
+            if (stage === 2) document.body.classList.add('font-scale-2');
+        }
+        window.changeFontScale = function(delta) {
+            const next = Math.max(0, Math.min(FONT_SCALE_MAX, loadFontScaleStage() + delta));
+            try { localStorage.setItem(FONT_SCALE_KEY, next); } catch (e) { /* 무시 */ }
+            applyFontScaleStage(next);
+        };
+        window.resetFontScale = function() {
+            try { localStorage.setItem(FONT_SCALE_KEY, 0); } catch (e) { /* 무시 */ }
+            applyFontScaleStage(0);
+        };
+        applyFontScaleStage(loadFontScaleStage());
     </script>
 </body>
 </html>

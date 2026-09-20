@@ -408,8 +408,6 @@
                 <p class="text-[#7c3aed] text-[13px] font-bold leading-snug break-keep mt-1.5">① 장별로 전체 문답을 공부한 후<br>② 괄호 넣기도 풀어보세요.<br>③ 그리고 급수 시험을 대비해서 모의고사를 풀어보세요.</p>
             </div>
 
-            <div id="tongdal-bank-progress-panel" class="w-full relative z-10 mb-4"></div>
-
             <button onclick="openStarredBank()" class="w-full relative z-10 mb-4 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 text-amber-700 rounded-2xl py-3 font-black text-[14px] shadow-sm active:scale-95 transition-transform flex items-center justify-center gap-1.5">
                 ⭐ 괄호 넣기 별표 모음 보기
             </button>
@@ -5472,7 +5470,7 @@
    "q": "일천 이백 육십일 동안",
    "hl": "일천 이백 육십일 동안",
    "a": "[실상] 1980. 10. 도미~1984. 4. 귀국",
-   "ref": "계 12:14 ※ 멸망의 기간 42달, 1980. 9.~1984. 3. 계 11:2, 계 13:5 ※ 예언의 기간 1,260일, 계 11:3",
+   "ref": "계 12:14 ※ 멸망의 기간 42달: 1980. 9.~1984. 3. 계 11:2, 계 13:5 ※ 예언의 기간 1,260일, 계 11:3",
    "v": 6
   },
   {
@@ -10474,7 +10472,18 @@
 
             // 시온 공부방 첫 화면에서 로그인 여부 확인 후 분기
             if (localStorage.getItem('sion_auth') === '1') {
-                showScreen(window.location.hash === '#grade' ? 'gradeSelect' : 'home');
+                if (window.location.hash === '#grade') {
+                    showScreen('gradeSelect');
+                } else {
+                    // 진도 게이지 대신, 이 과목에 들어오면 곧바로 마지막으로 공부하던
+                    // "괄호 넣기" 장으로 이동한다(뒤로가기로 홈에 돌아오면 원래 22장 목록을 보여줌).
+                    const lastBankChapter = loadTongdalBankLastPage();
+                    if (lastBankChapter && quizDataStore[lastBankChapter]) {
+                        openChapterStudy(lastBankChapter, 'blank');
+                    } else {
+                        showScreen('home');
+                    }
+                }
             } else {
                 window.location.href = '../index.html';
             }
@@ -11403,7 +11412,7 @@
                 { q: "하나님 앞과 그 보좌 앞으로 올려가더라", template: "영계 보좌가 {{이긴자}}에게 임함. 계 3:12", ref: "계 3:21, 계 4장, 계 14:3, 계 15:2", v: 5 },
                 { q: "광야", template: "진리의 말씀이 없는 곳, [실상] {{세상 신학교}}", ref: "암 8:11", v: 6 },
                 { q: "도망", template: "{{1차전}}의 결과, [실상] 도미(渡美)", ref: "신 28:25", v: 6 },
-                { q: "일천 이백 육십일 동안", template: "[실상] {{1980}}. {{10}}. 도미~{{1984}}. {{4}}. 귀국", ref: "계 12:14 ※ 멸망의 기간 42달, 1980. 9.~1984. 3. 계 11:2, 계 13:5 ※ 예언의 기간 1,260일, 계 11:3", v: 6 },
+                { q: "일천 이백 육십일 동안", template: "[실상] {{1980}}. {{10}}. 도미~{{1984}}. {{4}}. 귀국", ref: "계 12:14 ※ 멸망의 기간 42달: 1980. 9.~1984. 3. 계 11:2, 계 13:5 ※ 예언의 기간 1,260일, 계 11:3", v: 6 },
                 { q: "양육", template: "{{이방 교리}}를 배움, 엘리야의 심령으로 온 길 예비 사자임을 알림", ref: "눅 1:17, 마 17:11~13, 마 3:3, 요 10:11~15, [실상] 1980. 10.~1984. 4. 장막성전 목자 모씨(某氏), 미국의 신학교에서 양육받음.", v: 6 },
                 { q: "하늘", template: "선민 {{장막}}", ref: "", v: 7 },
                 { q: "전쟁", template: "영적 전쟁, {{2차전}}", ref: "엡 6:12, 17, 히 4:12", v: 7 },
@@ -12370,6 +12379,19 @@
             return result;
         }
 
+        // 개역한글판 특유의 옛 표기(고어체)는 현대 표기와 같은 답으로 인정 (계시록암기 앱의
+        // normalizeTextForComparison과 동일한 규칙 — 예: 비침=비췸, 싸울새=싸울쌔, 육백육십육=육백육십륙)
+        const G4_SPELLING_VARIANTS = [
+            [/찌/g, '지'], [/세째/g, '셋째'], [/네째/g, '넷째'], [/앎으로/g, '알므로'],
+            [/자주빛/g, '자줏빛'], [/잠간/g, '잠깐'], [/륙/g, '육'], [/써/g, '서'],
+            [/우레/g, '우뢰'], [/비췸/g, '비침'], [/쌔/g, '새'], [/찐/g, '진'], [/두째/g, '둘째'],
+        ];
+        function g4CanonicalizeSpelling(normStr) {
+            let result = normStr;
+            G4_SPELLING_VARIANTS.forEach(([re, to]) => { result = result.replace(re, to); });
+            return result;
+        }
+
         // 학생 입력 끝에 붙은 조사 한 글자는 없거나 틀려도 정답으로 인정 (정답 쪽은 그대로 유지)
         const G4_TRAILING_PARTICLES = ['은', '는', '이', '가', '을', '를', '도', '의', '들'];
         function g4StripTrailingParticle(normStr) {
@@ -12393,6 +12415,8 @@
             if (g4CanonicalizeSynonyms(userNoParticle) === g4CanonicalizeSynonyms(ansNorm)) return true;
             if (g4StripNumberUnit(userNorm) === g4StripNumberUnit(ansNorm)) return true;
             if (g4StripNumberUnit(userNoParticle) === g4StripNumberUnit(ansNorm)) return true;
+            if (g4CanonicalizeSpelling(userNorm) === g4CanonicalizeSpelling(ansNorm)) return true;
+            if (g4CanonicalizeSpelling(userNoParticle) === g4CanonicalizeSpelling(ansNorm)) return true;
             return false;
         }
 
@@ -13148,6 +13172,16 @@
         // ─────────────────────────────────────────────────────────
         const TONGDAL_BANK_ANSWERS_KEY = 'sion_tongdal_bank_answers';
 
+        // 괄호 넣기로 마지막에 공부하던 장을 기억해뒀다가, 다음에 "계시록 통달" 과목에
+        // 들어올 때 진도 게이지 없이 곧바로 그 장의 괄호 넣기 화면으로 이동시켜준다.
+        const TONGDAL_BANK_LASTPAGE_KEY = 'sion_tongdal_bank_lastpage';
+        function markTongdalBankLastPage(chapterKey) {
+            try { localStorage.setItem(TONGDAL_BANK_LASTPAGE_KEY, chapterKey); } catch (e) { /* 무시 */ }
+        }
+        function loadTongdalBankLastPage() {
+            try { return localStorage.getItem(TONGDAL_BANK_LASTPAGE_KEY); } catch (e) { return null; }
+        }
+
         // ─────────────────────────────────────────────────────────
         // "괄호 넣기" 문항 별표(자주 틀리는 문항) — 신학기초 과목의 별표 기능과 동일한 개념.
         // { ch1: [0, 3, 7], ch2: [...] , ... } 형태로 장별 원본 배열 위치(idx)를 저장한다.
@@ -13347,6 +13381,7 @@
         window.openChapterStudy = function(chapterKey, mode) {
             chapterStudyState.key = chapterKey;
             if (mode) chapterStudyState.mode = mode;
+            if (chapterStudyState.mode === 'blank') markTongdalBankLastPage(chapterKey);
             // 헤더의 장 제목(계 N장 부제)은 삭제됨 — 헤더에는 "큰 화면"/"뒤로가기" 버튼만 남는다.
             const answerBtnLabel = document.getElementById('chapter-study-mode-answer');
             if (answerBtnLabel) answerBtnLabel.textContent = `계 ${chapterKey.replace('ch', '')}장 전체 문답`;
@@ -13361,6 +13396,7 @@
         window.setChapterStudyMode = function(mode) {
             if (chapterStudyState.mode === mode) return;
             chapterStudyState.mode = mode;
+            if (mode === 'blank' && chapterStudyState.key) markTongdalBankLastPage(chapterStudyState.key);
             renderChapterStudyModeButtons();
             renderChapterStudyItems();
         };
@@ -13688,7 +13724,6 @@
             // 모의고사 급수 선택 화면에서는 뒤로가기 버튼만 남기고, 항상 떠 있는 홈으로 버튼은 숨긴다.
             const fixedHomeNav = document.getElementById('fixed-home-nav');
             if (fixedHomeNav) fixedHomeNav.classList.toggle('hidden', screenName === 'gradeSelect');
-            if (screenName === 'home') { renderTongdalBankProgressPanel(); }
             if (screenName === 'gradeSelect') { renderTongdalMockHistoryList(); }
         }
 
