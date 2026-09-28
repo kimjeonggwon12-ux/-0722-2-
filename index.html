@@ -139,10 +139,11 @@
         }
         .rooms-photo {
             position: relative;
-            aspect-ratio: 1026 / 1532;
-            width: min(100%, 420px, calc((100vh - 40px) * 0.6697));
-            width: min(100%, 420px, calc((100dvh - 40px) * 0.6697));
-            background: url('assets/ChatGPT Image 2026년 8월 19일 오후 02_35_24.png') center / cover no-repeat;
+            /* 원본 그림(1026×1532) 중 세 공부방 카드까지(위쪽 1005px)만 보여준다 — 아래 모의고사·시험안내·신청 부분은
+               그림 대신 동그라미 버튼(.home-circle)으로 대체 */
+            aspect-ratio: 1026 / 1005;
+            width: min(100%, 420px);
+            background: url('assets/ChatGPT Image 2026년 8월 19일 오후 02_35_24.png') top center / 100% auto no-repeat;
             border-radius: 20px;
             box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
             overflow: hidden;
@@ -266,6 +267,35 @@
         }
         .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
 
+        /* 홈 동그라미 버튼 3개 (시험 안내 · 신청서 · 모의고사) */
+        .home-circles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(100%, 420px); margin: 16px auto 0; }
+        .home-circle { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; padding: 0; cursor: pointer; }
+        .home-circle .c { width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center;
+                          color: #fff; font-family: 'Jua', sans-serif; font-size: 21px; line-height: 1.15; word-break: keep-all;
+                          box-shadow: 0 8px 18px -6px rgba(30, 41, 59, .45), inset 0 -4px 0 rgba(0,0,0,.12), inset 0 3px 0 rgba(255,255,255,.25);
+                          border: 4px solid #fff; transition: transform .12s ease; }
+        .home-circle:active .c { transform: scale(.94); }
+        .home-circle .c.info  { background: linear-gradient(160deg, #60a5fa, #2563eb); }
+        .home-circle .c.apply { background: linear-gradient(160deg, #34d399, #059669); }
+        .home-circle .c.mock  { background: linear-gradient(160deg, #f472b6, #a855f7); }
+        /* 모의고사 과목 선택 시트 */
+        .mock-sheet-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px; border-radius: 18px;
+                          color: #fff; font-weight: 900; font-size: 18px; box-shadow: 0 6px 14px -6px rgba(0,0,0,.35); }
+        .mock-sheet-btn small { display: block; font-size: 12px; font-weight: 700; opacity: .9; margin-top: 2px; }
+        /* 공부한 날 체크 달력 */
+        .study-cal-card { width: min(100%, 420px); margin: 14px auto 0; background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(2,132,199,.35); }
+        .study-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .study-sum > div { border-radius: 14px; padding: 10px 8px; text-align: center; }
+        .study-sum .v { font-family: 'Jua', sans-serif; font-size: 34px; line-height: 1; }
+        .study-sum .l { font-size: 12px; font-weight: 800; margin-top: 4px; }
+        .study-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
+        .study-cal .w { font-size: 11px; font-weight: 800; color: #94a3b8; }
+        .study-cal .d { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; font-weight: 800; color: #64748b; background: #f8fafc; }
+        .study-cal .d.done { background: linear-gradient(160deg, #6366f1, #4338ca); color: #fff; }
+        .study-cal .d.today { outline: 2px solid #f59e0b; outline-offset: -2px; }
+        .study-cal .d.future { background: transparent; color: #cbd5e1; }
+        .study-cal .d.exam { background: #fee2e2; color: #dc2626; }
+
         /* 11월 15일 계시록 통달 자격증 시험 D-day 카드 */
         .exam-dday-card { background: linear-gradient(135deg, #312e81 0%, #4338ca 55%, #7c3aed 100%); color: #fff; border-radius: 20px; padding: 16px 18px; box-shadow: 0 8px 20px -8px rgba(67,56,202,.6); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .exam-dday-card .dd-label { font-size: 13px; font-weight: 800; color: #e0e7ff; line-height: 1.35; }
@@ -371,16 +401,16 @@
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
             <div class="rooms-photo">
-                <a href="신학기초/index.html" class="rooms-hotspot" style="left:5%; top:33%; width:30%; height:32%;" aria-label="초중고 신학 공부방"></a>
-                <a href="도통계시록/index.html" class="rooms-hotspot" style="left:37%; top:33%; width:29%; height:32%;" aria-label="계시록 통달 공부방"></a>
-                <a href="계시록암기/index.html" class="rooms-hotspot" style="left:68%; top:33%; width:28%; height:32%;" aria-label="계시록 암기 공부방"></a>
+                <a href="신학기초/index.html" class="rooms-hotspot" data-study="1" style="left:5%; top:50.3%; width:30%; height:48.8%;" aria-label="초중고 신학 공부방"></a>
+                <a href="도통계시록/index.html" class="rooms-hotspot" data-study="1" style="left:37%; top:50.3%; width:29%; height:48.8%;" aria-label="계시록 통달 공부방"></a>
+                <a href="계시록암기/index.html" class="rooms-hotspot" data-study="1" style="left:68%; top:50.3%; width:28%; height:48.8%;" aria-label="계시록 암기 공부방"></a>
+            </div>
 
-                <a href="신학기초/index.html#grade" class="rooms-hotspot rooms-hotspot-mock" style="left:3%; top:67%; width:30%; height:6.5%;" aria-label="초중고 신학 모의고사"></a>
-                <a href="도통계시록/index.html#grade" class="rooms-hotspot rooms-hotspot-mock" style="left:35%; top:67%; width:29%; height:6.5%;" aria-label="계시록 통달 모의고사"></a>
-                <a href="#memorize-grade" onclick="showMemorizeGrade()" class="rooms-hotspot rooms-hotspot-mock" style="left:66%; top:67%; width:28%; height:6.5%;" aria-label="계시록 암기 모의고사"></a>
-
-                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:5%; top:75%; width:27%; height:19%;" aria-label="시험 안내"></a>
-                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
+            <!-- 시험 안내 · 신청서 · 모의고사 동그라미 버튼 -->
+            <div class="home-circles">
+                <button type="button" class="home-circle" onclick="showExamInfo()" aria-label="시험 안내"><span class="c info">시험<br>안내</span></button>
+                <button type="button" class="home-circle" onclick="showApplyMenu()" aria-label="신청서"><span class="c apply">신청서</span></button>
+                <button type="button" class="home-circle" onclick="openMockSheet()" aria-label="모의고사"><span class="c mock">모의<br>고사</span></button>
             </div>
 
             <!-- 11월 15일 시험 D-day (한국 시간 오늘 기준, 시험 당일 D-0, 지나면 D+N) -->
@@ -394,12 +424,20 @@
                 </div>
             </div>
 
-            <!-- 종강 시험 문항 변경 공지 배너 -->
-            <div class="w-full" style="max-width:420px; margin:12px auto 0;">
-                <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-2 shadow-sm">
-                    <span class="text-xl leading-none">📢</span>
-                    <p class="text-rose-700 text-[13px] font-bold leading-snug break-keep">9월 11일 기준, 중등 종강 시험 문제 8개 문항이 변형되었습니다. 공부에 참고하시기 바랍니다.</p>
+            <!-- 공부한 날 체크 달력 (이 기기 localStorage 'sion_study_days') -->
+            <div class="study-cal-card">
+                <div class="study-sum">
+                    <div style="background:linear-gradient(160deg,#eef2ff,#e0e7ff);"><div class="v" style="color:#4338ca;"><span id="study-month-count">0</span><span style="font-size:18px">일</span></div><div class="l" style="color:#4338ca;">이번 달 공부한 날</div></div>
+                    <div style="background:linear-gradient(160deg,#fff7ed,#ffedd5);"><div class="v" style="color:#c2410c;"><span id="study-total-count">0</span><span style="font-size:18px">일차</span></div><div class="l" style="color:#c2410c;">누적 공부 일차</div></div>
                 </div>
+                <div class="flex items-center justify-between mt-3">
+                    <button type="button" onclick="shiftStudyMonth(-1)" class="w-8 h-8 rounded-full bg-slate-100 font-black text-slate-500" aria-label="이전 달">‹</button>
+                    <p id="study-cal-title" class="text-[15px] font-black text-slate-700"></p>
+                    <button type="button" id="study-next-btn" onclick="shiftStudyMonth(1)" class="w-8 h-8 rounded-full bg-slate-100 font-black text-slate-500 disabled:opacity-30" aria-label="다음 달">›</button>
+                </div>
+                <div id="study-cal" class="study-cal"></div>
+                <button type="button" id="study-today-btn" onclick="toggleStudyToday()" class="w-full mt-3 py-3 rounded-2xl font-black text-[15px]"></button>
+                <p class="text-[11px] text-slate-400 font-bold mt-2 text-center break-keep">공부방·모의고사에 들어가면 그날이 자동으로 체크돼요. 기록은 이 기기에만 저장됩니다.</p>
             </div>
 
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
@@ -748,7 +786,7 @@
             </div>
         </div>
 
-        <!-- 계시록 암기 모의고사: 시험지 (한 페이지에 25문항 전체) -->
+        <!-- 계시록 암기 모의고사: 시험지 (한 페이지에 10문항 전체) -->
         <div id="view-memo-exam" class="hidden flex-col flex-grow items-center py-6 fade-in w-full overflow-y-auto">
             <div class="w-full max-w-2xl px-3">
                 <div class="flex items-center justify-between gap-2 mb-4">
@@ -764,7 +802,7 @@
                             <img src="assets/memo-logo-woman.jpg" alt="새 노래를 부르는 여인" class="w-full h-full object-cover">
                         </div>
                         <h1 id="memo-exam-title" class="text-xl font-black text-fuchsia-700 font-jua break-keep">계시록 암기 4급 모의고사</h1>
-                        <p id="memo-exam-range" class="text-slate-500 text-[13px] mt-1 font-bold break-keep"><span class="block">📚 출제 범위: 계 1~5장</span><span class="block mt-1">📝 총 25문항 · ✏️ 문항당 2점</span></p>
+                        <p id="memo-exam-range" class="text-slate-500 text-[13px] mt-1 font-bold break-keep"><span class="block">📚 출제 범위: 계 1~5장</span><span class="block mt-1">📝 총 10문항 · ✏️ 문항당 10점</span></p>
                         <p class="inline-block bg-fuchsia-50 text-fuchsia-700 text-[13px] font-black rounded-full px-3 py-1 mt-2 break-keep">채점 기준: 토씨 오탈자 없이 정확히 기록하시기 바랍니다.</p>
                         <p class="inline-block bg-slate-100 text-slate-600 text-[13px] font-black rounded-full px-3 py-1 mt-2 ml-1 break-keep">⏱ <span id="memo-exam-timer">00:00</span></p>
                     </div>
@@ -1038,6 +1076,20 @@
             </div>
         </div>
     </main>
+
+    <!-- 모의고사: 세 과목 중 선택 -->
+    <div id="mock-sheet" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-6" onclick="if (event.target === this) closeMockSheet()">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl space-y-3">
+            <div class="flex items-center justify-between">
+                <p class="text-lg font-black text-slate-800">모의고사 과목 선택</p>
+                <button type="button" onclick="closeMockSheet()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 font-black" aria-label="닫기">✕</button>
+            </div>
+            <p class="text-[12px] text-slate-500 font-bold -mt-1">매일 풀어보는 소문항 10문제 · 문항당 10점</p>
+            <a href="신학기초/index.html#grade" data-study="1" class="mock-sheet-btn" style="background:linear-gradient(135deg,#34d399,#059669);"><span>초중고 신학<small>급수별 모의고사</small></span><span>›</span></a>
+            <a href="도통계시록/index.html#grade" data-study="1" class="mock-sheet-btn" style="background:linear-gradient(135deg,#818cf8,#4f46e5);"><span>계시록 통달<small>급수별 모의고사</small></span><span>›</span></a>
+            <a href="#memorize-grade" data-study="1" onclick="closeMockSheet(); showMemorizeGrade();" class="mock-sheet-btn" style="background:linear-gradient(135deg,#f472b6,#c026d3);"><span>계시록 암기<small>급수별 모의고사</small></span><span>›</span></a>
+        </div>
+    </div>
 
     <!-- 새로 신청이 접수된 사람에게 전체 누적 몇 번째 신청인지 보여주는 축하 팝업 -->
     <div id="apply-milestone-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
@@ -1509,7 +1561,7 @@
 };
 
         // ─────────────────────────────────────────────────────────
-        // 계시록 암기 모의고사 (범위 내 4개 장 전문 제시, 괄호 50문항 + 최상 난이도 절 전체 쓰기)
+        // 계시록 암기 모의고사 — 매일 연습용 10문항 (범위 내 1개 장 전문 제시 + 괄호 넣기, 최상 난이도 절 전체 쓰기)
         // ─────────────────────────────────────────────────────────
         const MEMO_GRADES = {
             grade4: { label: '4급', maxCh: 5, rangeLabel: '계 1~5장', topCount: 1 },
@@ -1562,10 +1614,11 @@
         // 범위 내에서 서로 다른 4개 장을 골라 오름차순 정렬
         // minVerses(=목표 괄호 개수) 이상의 절을 확보할 수 있는 조합이 나올 때까지 재시도
         // (짧은 장만 뽑혀 괄호 수가 목표에 못 미치는 것을 방지)
+        const MEMO_CHAPTERS_PER_EXAM = 1; // 매일 연습용: 1개 장 (이전 50문항 때는 4개 장)
         function pickMemoChapters(maxCh, minVerses) {
             let best = null, bestSum = -1;
             for (let attempt = 0; attempt < 200; attempt++) {
-                const chosen = memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1)).slice(0, 4);
+                const chosen = memoShuffle(Array.from({ length: maxCh }, (_, i) => i + 1)).slice(0, MEMO_CHAPTERS_PER_EXAM);
                 const sum = chosen.reduce((s, ch) => s + memoChVerseCount(ch), 0);
                 if (sum > bestSum) { bestSum = sum; best = chosen; }
                 if (sum >= minVerses) return chosen.sort((a, b) => a - b);
@@ -1587,7 +1640,7 @@
         // (상·중 개수는 고정, 하 개수로 나머지를 채워 총 blankCount에 맞춘다)
         function assignMemoBlanks(verses, blankCount) {
             const order = memoShuffle(verses.map((_, i) => i));
-            const tiers = [{ min: 9, max: 20, count: 4 }, { min: 3, max: 8, count: 16 }, { min: 1, max: 2, count: Math.max(0, blankCount - 20) }];
+            const tiers = [{ min: 9, max: 20, count: 1 }, { min: 3, max: 8, count: 3 }, { min: 1, max: 2, count: Math.max(0, blankCount - 4) }];
             const blanks = new Map();
             let oi = 0;
             tiers.forEach(tier => {
@@ -1607,10 +1660,10 @@
             return blanks;
         }
 
-        // 총 50문항 = 4개 장 전문 괄호 넣기 + 최상 난이도 절 전체 쓰기(급수별 1~2문항), 문항당 2점
+        // 총 10문항 = 1개 장 전문 괄호 넣기 + 최상 난이도 절 전체 쓰기(급수별 1~2문항), 문항당 10점
         function generateMemoExam(gradeKey) {
             const cfg = MEMO_GRADES[gradeKey];
-            const blankCount = 50 - cfg.topCount;
+            const blankCount = 10 - cfg.topCount;
             const chapters = pickMemoChapters(cfg.maxCh, blankCount);
             const passage = buildMemoPassage(chapters);
             const blanks = assignMemoBlanks(passage, blankCount);
@@ -1762,7 +1815,7 @@
             document.getElementById('memo-exam-title').textContent = `계시록 암기 ${cfg.label} 모의고사`;
             // 괄호 넣기/구절 전체 쓰기 문항 수 breakdown은 헤드에 넣으면 난잡해지므로 넣지 않는다.
             // 시험지 안에서 "구절 전체 쓰기" 구간은 이미 별도 소제목으로 구분되어 있다.
-            document.getElementById('memo-exam-range').innerHTML = `<span class="block">📚 출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
+            document.getElementById('memo-exam-range').innerHTML = `<span class="block">📚 출제 범위: ${cfg.rangeLabel} · 출제 장: ${memoState.chapters.map(c => c + '장').join(', ')}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 ${Math.round(100 / (total || 1))}점</span>`;
             document.getElementById('memo-exam-name-input').value = '';
             document.getElementById('memo-exam-name-error').classList.add('opacity-0');
 
@@ -2211,7 +2264,52 @@
             el.textContent = left >= 0 ? `D-${left}` : `D+${-left}`;
         }
         renderExamDday();
-        setInterval(renderExamDday, 60000);
+        setInterval(() => { renderExamDday(); renderStudyCalendar(); }, 60000);
+
+        // 모의고사 동그라미 → 세 과목 선택 시트
+        function openMockSheet() { document.getElementById('mock-sheet').classList.remove('hidden'); }
+        function closeMockSheet() { document.getElementById('mock-sheet').classList.add('hidden'); }
+
+        // ── 공부한 날 체크 달력: 이 기기 localStorage 에 날짜(한국 시간 YYYY-MM-DD) 목록으로 저장.
+        // 공부방·모의고사로 들어가는 링크(data-study)를 누르면 그날이 자동 체크되고, 버튼으로 직접 체크/해제도 가능.
+        const STUDY_DAYS_KEY = 'sion_study_days';
+        const kstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+        function loadStudyDays() { try { const a = JSON.parse(localStorage.getItem(STUDY_DAYS_KEY)); return new Set(Array.isArray(a) ? a : []); } catch (e) { return new Set(); } }
+        function saveStudyDays(set) { try { localStorage.setItem(STUDY_DAYS_KEY, JSON.stringify([...set].sort())); } catch (e) {} }
+        function markStudyToday() { const d = loadStudyDays(); if (!d.has(kstToday())) { d.add(kstToday()); saveStudyDays(d); } }
+        function toggleStudyToday() { const d = loadStudyDays(), t = kstToday(); d.has(t) ? d.delete(t) : d.add(t); saveStudyDays(d); renderStudyCalendar(); }
+        let studyMonth = kstToday().slice(0, 7);
+        function shiftStudyMonth(n) {
+            const [y, m] = studyMonth.split('-').map(Number);
+            const next = new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7);
+            if (next > kstToday().slice(0, 7)) return;
+            studyMonth = next; renderStudyCalendar();
+        }
+        function renderStudyCalendar() {
+            const cal = document.getElementById('study-cal'); if (!cal) return;
+            const days = loadStudyDays(), today = kstToday();
+            const [y, m] = studyMonth.split('-').map(Number);
+            const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+            let html = '일월화수목금토'.split('').map(w => `<div class="w">${w}</div>`).join('') + '<div></div>'.repeat(first);
+            let monthCount = 0;
+            for (let d = 1; d <= last; d++) {
+                const ds = `${studyMonth}-${String(d).padStart(2, '0')}`, done = days.has(ds);
+                if (done) monthCount++;
+                const cls = ['d', done ? 'done' : '', ds === today ? 'today' : '', ds > today ? 'future' : '', ds === EXAM_DDAY_DATE && !done ? 'exam' : ''].join(' ');
+                html += `<div class="${cls}" ${ds === EXAM_DDAY_DATE ? 'title="시험일"' : ''}>${d}</div>`;
+            }
+            cal.innerHTML = html;
+            document.getElementById('study-cal-title').textContent = `${y}년 ${m}월`;
+            document.getElementById('study-next-btn').disabled = studyMonth >= today.slice(0, 7);
+            document.getElementById('study-month-count').textContent = [...days].filter(d => d.startsWith(today.slice(0, 7))).length;
+            document.getElementById('study-total-count').textContent = [...days].filter(d => d <= today).length;
+            const btn = document.getElementById('study-today-btn'), doneToday = days.has(today);
+            btn.textContent = doneToday ? '오늘 공부 완료! (누르면 체크 해제)' : '오늘 공부 체크하기';
+            btn.className = 'w-full mt-3 py-3 rounded-2xl font-black text-[15px] ' + (doneToday ? 'bg-indigo-50 text-indigo-600 border-2 border-indigo-200' : 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md');
+        }
+        document.addEventListener('click', e => { if (e.target.closest('[data-study]')) markStudyToday(); }, true);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) renderStudyCalendar(); });
+        renderStudyCalendar();
         document.addEventListener('visibilitychange', () => { if (!document.hidden) renderExamDday(); });
 
         // ─────────────────────────────────────────────────────────

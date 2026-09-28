@@ -715,7 +715,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 4급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~22장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">144문항 중 50문항 랜덤(문항당 2점)</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">144문항 중 10문항 랜덤(문항당 10점)</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#e8eaf6] text-[#5c6bc0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -727,7 +727,7 @@
                     <div class="flex-grow ml-4">
                         <div class="text-[#1e1b4b] text-[18px] font-black mb-1">계시록 통달 3급 모의고사</div>
                         <div class="mt-1"><span class="inline-block bg-[#e0e7ff] text-[#4f46e5] text-[12px] font-black px-2 py-0.5 rounded-full">범위 계 1~7장</span></div>
-                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">50문항(문항당 2점)</div>
+                        <div class="text-[12px] text-slate-400 font-bold leading-tight mt-1">10문항(문항당 10점)</div>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-[#ece9fe] text-[#7c6ff0] flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -875,7 +875,7 @@
             </div>
         </div>
 
-        <!-- View 1f: 급수 모의고사 (랜덤 50문항 x 2점) -->
+        <!-- View 1f: 급수 모의고사 (랜덤 10문항 x 10점) -->
         <div id="screen-grade4-mock" class="hidden flex-col h-full bg-slate-50 z-10 relative">
             <div class="bg-white px-3 py-3 flex items-center justify-between gap-1.5 z-20 border-b border-slate-100 shadow-sm shrink-0">
                 <button id="g4-mock-back-btn" onclick="showScreen('grade4Rooms')" class="nav-back-glow-ring bg-white border border-[#c7d2fe] text-[#4f46e5] rounded-full px-3 py-1 shadow-sm flex items-center gap-1 text-[11px] font-bold transition-colors flex-shrink-0">
@@ -12190,12 +12190,11 @@
             return shuffle(pool).slice(0, count);
         }
 
-        // 총 문항수는 4개 급수 모두 50문항(문항당 2점)으로 통일. 급수별 장 범위 그룹 간 비율은
-        // 기존 설정(25문항 기준) 그대로 2배로 늘려서 유지한다.
+        // 매일 연습용으로 4개 급수 모두 10문항(문항당 10점). 급수별 장 범위 그룹 간 비율은 50문항 때(1:4, 2:3)와 같게 유지.
         const GRADE_MOCK_CONFIG = {
-            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 50 }] },
-            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 10 }, { from: 8, to: 15, count: 40 }] },
-            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 20 }, { from: 16, to: 22, count: 30 }] },
+            grade3: { label: '3급', rangeLabel: '범위: 계 1~7장', groups: [{ from: 1, to: 7, count: 10 }] },
+            grade2: { label: '2급', rangeLabel: '범위: 계 1~15장', groups: [{ from: 1, to: 7, count: 2 }, { from: 8, to: 15, count: 8 }] },
+            grade1: { label: '1급', rangeLabel: '범위: 계 1~22장', groups: [{ from: 1, to: 15, count: 4 }, { from: 16, to: 22, count: 6 }] },
         };
 
         function pickWeightedMockItems(cfg) {
@@ -12777,9 +12776,9 @@
         }
 
         // ===== 방3: 급수별 모의고사 =====
-        // 4급: 공식 144문항(GRADE4_ALL_ITEMS)에서 50개를 무작위로 뽑아 2점씩(100점 만점)
+        // 4급: 공식 144문항(GRADE4_ALL_ITEMS)에서 10개를 무작위로 뽑아 10점씩(100점 만점)
         //      정답 보기/정답 확인 버튼이 없고, Enter는 다음 칸으로만 이동하며 제출하기를 눌러야 한 번에 채점됩니다.
-        // 3·2·1급: 원본 문제은행(quizDataStore/RICH_CHAPTERS)에서 장 범위 가중치대로 50개를 뽑아 2점씩(100점 만점)
+        // 3·2·1급: 원본 문제은행(quizDataStore/RICH_CHAPTERS)에서 장 범위 가중치대로 10개를 뽑아 10점씩(100점 만점)
         //      한 문항을 풀고 Enter를 누르면 그 자리에서 바로 채점됩니다(정답은 보여주지 않음). 제출하기를 누르면 최종 점수/오답노트가 정리됩니다.
         let g4MockState = { items: [], results: new Map(), submitted: false, gradeKey: 'grade4', pointPer: 4, studentName: '', startedAt: null, elapsedMs: 0 };
 
@@ -12825,10 +12824,10 @@
             const rangeText = document.getElementById('g4-mock-range-text');
             if (rangeText) {
                 if (gradeKey === 'grade4') {
-                    rangeText.innerHTML = '<span class="block">📚 출제 범위: 계 1~22장</span><span class="block mt-1">📝 총 50문항 · ✏️ 문항당 2점</span>';
+                    rangeText.innerHTML = '<span class="block">📚 출제 범위: 계 1~22장</span><span class="block mt-1">📝 총 10문항 · ✏️ 문항당 10점</span>';
                 } else if (cfg) {
                     const total = cfg.groups.reduce((s, g) => s + g.count, 0);
-                    rangeText.innerHTML = `<span class="block">📚 출제 ${cfg.rangeLabel}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
+                    rangeText.innerHTML = `<span class="block">📚 출제 ${cfg.rangeLabel}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 10점</span>`;
                 }
             }
         }
@@ -12853,12 +12852,12 @@
         function startGradeMock(gradeKey = 'grade4') {
             let items, pointPer;
             if (gradeKey === 'grade4') {
-                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 50).sort((a, b) => a - b);
+                const pickedIdx = shuffle(GRADE4_ALL_ITEMS.map((_, i) => i)).slice(0, 10).sort((a, b) => a - b);
                 items = pickedIdx.map(i => GRADE4_ALL_ITEMS[i]);
-                pointPer = 2;
+                pointPer = 10;
             } else {
                 items = pickWeightedMockItems(GRADE_MOCK_CONFIG[gradeKey]);
-                pointPer = 2;
+                pointPer = 10;
             }
             const keepName = g4MockState.studentName || '';
             g4MockState = { items, results: new Map(), submitted: false, gradeKey, pointPer, studentName: keepName };

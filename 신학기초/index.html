@@ -2199,7 +2199,7 @@
 
                 const total = appState.questions.reduce((s, q) => s + this.parseSubQuestions(q.a).length, 0);
 
-                els.gradeExamRangeText.innerHTML = `<span class="block">📚 출제 범위: ${gradeRangeText[gradeKey] || ''}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 2점</span>`;
+                els.gradeExamRangeText.innerHTML = `<span class="block">📚 출제 범위: ${gradeRangeText[gradeKey] || ''}</span><span class="block mt-1">📝 총 ${total}문항 · ✏️ 문항당 10점</span>`;
                 els.gradeExamSummary.classList.remove('hidden');
                 els.gradeExamNameInput.value = appState.studentName || '';
                 els.gradeExamNameError.classList.add('hidden');
@@ -2300,7 +2300,7 @@
                 const shuffled = [...filtered].sort(() => Math.random() - 0.5);
                 return shuffled.slice(0, n);
             },
-            buildGradeQuestions(gradeKey, targetSubCount = 50) {
+            buildGradeQuestions(gradeKey, targetSubCount = 10) {
                 const sections = gradeSections[gradeKey];
                 if (!sections) return [];
                 const n = sections.length;
@@ -2328,7 +2328,7 @@
                 const costOf = (sec, idx) => this.parseSubQuestions(sec.data[idx].a).length;
                 const countSub = (sec, idxArr) => idxArr.reduce((s, idx) => s + costOf(sec, idx), 0);
 
-                // 소문항 합계가 targetSubCount(=50)에 정확히 맞도록, 과목(유연/고정) 구분 없이
+                // 소문항 합계가 targetSubCount(=10, 매일 연습용)에 정확히 맞도록, 과목(유연/고정) 구분 없이
                 // 남는 항목 중 오차 이내 최적(가장 근접한 비용) 항목을 더하거나 뺀다.
                 let total = picks.reduce((sum, p) => sum + countSub(p.sec, p.idx), 0);
                 let guard = 0;
@@ -3922,8 +3922,8 @@
                     finalScore = Math.max(0, 100 - (incorrectSubCountAll * 2));
                     scoreLabelText = "최종 점수 (소문항당 -2점 감점)";
                 } else if (appState.currentSubject && appState.currentSubject.startsWith('grade')) {
-                    finalScore = Math.max(0, Math.min(100, (totalSubCountAll - incorrectSubCountAll) * 2));
-                    scoreLabelText = "최종 점수 (문항당 2점)";
+                    finalScore = Math.max(0, Math.min(100, Math.round((totalSubCountAll - incorrectSubCountAll) * 100 / (totalSubCountAll || 1))));
+                    scoreLabelText = "최종 점수 (문항당 10점)";
                 } else {
                     finalScore = Math.round((correctCount / totalCount) * 100);
                     scoreLabelText = "최종 점수 (백분율 환산)";
