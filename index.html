@@ -383,14 +383,14 @@
                 <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
             </div>
 
-            <!-- 11월 15일 시험 D-day (한국 시간 오늘 기준, 시험 당일 D-0일, 지나면 D+N일) -->
+            <!-- 11월 15일 시험 D-day (한국 시간 오늘 기준, 시험 당일 D-0, 지나면 D+N) -->
             <div class="w-full" style="max-width:420px; margin:16px auto 0;">
                 <div class="exam-dday-card">
                     <div>
                         <p class="dd-label break-keep">계시록 통달 자격증 시험까지</p>
                         <p class="dd-date">신 43년 11월 15일(일)</p>
                     </div>
-                    <span id="exam-dday-value" class="dd-value">D-0일</span>
+                    <span id="exam-dday-value" class="dd-value">D-0</span>
                 </div>
             </div>
 
@@ -398,7 +398,7 @@
             <div class="w-full" style="max-width:420px; margin:12px auto 0;">
                 <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-2 shadow-sm">
                     <span class="text-xl leading-none">📢</span>
-                    <p class="text-rose-700 text-[13px] font-bold leading-snug break-keep">9월 11일 기준, 종강 시험 문제 8개 문항이 변형되었습니다. 공부에 참고하시기 바랍니다.</p>
+                    <p class="text-rose-700 text-[13px] font-bold leading-snug break-keep">9월 11일 기준, 중등 종강 시험 문제 8개 문항이 변형되었습니다. 공부에 참고하시기 바랍니다.</p>
                 </div>
             </div>
 
@@ -2208,7 +2208,7 @@
             if (!el) return;
             const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
             const left = Math.round((new Date(EXAM_DDAY_DATE + 'T00:00:00Z') - new Date(today + 'T00:00:00Z')) / 864e5);
-            el.textContent = left >= 0 ? `D-${left}일` : `D+${-left}일`;
+            el.textContent = left >= 0 ? `D-${left}` : `D+${-left}`;
         }
         renderExamDday();
         setInterval(renderExamDday, 60000);
