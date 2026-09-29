@@ -226,35 +226,51 @@
         }
         .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
 
-        /* 오늘의 양식 카드 (오늘의양식/ 연습 앱 입구) — 표지 위 얇은 띠 */
-        .bread-card { position: relative; display: block; width: min(100%, 420px); margin: 0 auto 14px; overflow: hidden; border-radius: 20px; padding: 12px 18px 11px; text-align: center; color: #fff;
-                      background: radial-gradient(120% 90% at 50% 0%, #fbbf77 0%, rgba(251,191,119,0) 55%), linear-gradient(170deg, #1e1b4b 0%, #3730a3 45%, #7c3aed 80%, #db7093 100%);
-                      box-shadow: 0 10px 22px -10px rgba(55,48,163,.6); transition: transform .12s ease; }
-        .bread-card:active { transform: scale(.98); }
-        .bread-card::after { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(246,211,139,.35); border-radius: 15px; pointer-events: none; }
-        .bread-card .title { font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 30px; line-height: 1.1; color: #f6d38b; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
-        .bread-card .sub { font-family: 'Jua', sans-serif; font-size: 16px; margin-top: 4px; }
-        /* 내가 신청한 과목 공부 관리 */
-        .my-study-card { width: min(100%, 420px); margin: 16px auto 0; background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(2,132,199,.35); }
-        .my-study-title { font-family: 'Jua', sans-serif; font-size: 19px; color: #1e293b; text-align: center; }
-        .my-study-sub { font-size: 12px; font-weight: 800; color: #6366f1; text-align: center; margin-top: 2px; word-break: keep-all; }
-        .my-study-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-        .my-study-stats > div { background: #f8fafc; border-radius: 14px; padding: 10px 4px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
-        .my-study-stats .l { font-size: 11px; font-weight: 800; color: #64748b; line-height: 1.25; }
-        .my-study-stats .v { font-family: 'Jua', sans-serif; font-size: 24px; color: #1e293b; margin-top: 4px; }
-        /* 공부한 날 체크 달력 */
-        .study-cal-card { width: min(100%, 420px); margin: 14px auto 0; background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(2,132,199,.35); }
-        .study-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .study-sum > div { border-radius: 14px; padding: 10px 8px; text-align: center; }
-        .study-sum .v { font-family: 'Jua', sans-serif; font-size: 34px; line-height: 1; }
-        .study-sum .l { font-size: 12px; font-weight: 800; margin-top: 4px; }
-        .study-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
-        .study-cal .w { font-size: 11px; font-weight: 800; color: #94a3b8; }
-        .study-cal .d { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; font-weight: 800; color: #64748b; background: #f8fafc; }
-        .study-cal .d.done { background: linear-gradient(160deg, #6366f1, #4338ca); color: #fff; }
-        .study-cal .d.today { outline: 2px solid #f59e0b; outline-offset: -2px; }
-        .study-cal .d.future { background: transparent; color: #cbd5e1; }
-        .study-cal .d.exam { background: #fee2e2; color: #dc2626; }
+        /* 오늘의 양식 간판 + 내가 신청한 과목 공부 관리 + 공부한 날 달력 — 먹빛 남색 · 금빛 · 크림 톤 한 장 */
+        .bread-board { width: min(100%, 420px); margin: 16px auto 0; border-radius: 22px; overflow: hidden; background: #fffaf0; border: 1px solid #eadcc0; box-shadow: 0 10px 24px -12px rgba(60, 45, 20, .35); }
+        .bread-sign { position: relative; display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 14px 18px;
+                      background: linear-gradient(135deg, #1f2a44 0%, #2c3b5e 100%); color: #fff; transition: filter .12s ease; }
+        .bread-sign:active { filter: brightness(1.12); }
+        .bread-sign::after { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(233, 199, 123, .35); border-radius: 17px 17px 4px 4px; pointer-events: none; }
+        .bread-orn { grid-row: 1 / 3; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid rgba(233, 199, 123, .7); display: flex; align-items: center; justify-content: center; }
+        .bread-orn i { width: 10px; height: 10px; transform: rotate(45deg); background: #e9c77b; }
+        .bread-title { font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 26px; line-height: 1.1; color: #e9c77b; letter-spacing: .02em; }
+        .bread-sub { grid-column: 2; font-size: 12.5px; font-weight: 800; color: rgba(255, 246, 225, .85); margin-top: 2px; }
+        .bread-go { grid-row: 1 / 3; grid-column: 3; width: 34px; height: 34px; border-radius: 50%; background: #e9c77b; color: #1f2a44; font-size: 22px; font-weight: 900; display: flex; align-items: center; justify-content: center; padding-bottom: 2px; }
+        .bread-body { padding: 16px 16px 14px; }
+        .bb-title { font-family: 'Jua', sans-serif; font-size: 19px; color: #1f2a44; text-align: center; }
+        .bb-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+        .bb-chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 6px 5px 12px; border-radius: 999px; background: #1f2a44; color: #fff6e1; font-size: 13px; font-weight: 800; }
+        .bb-chip button { width: 20px; height: 20px; border-radius: 50%; background: rgba(233, 199, 123, .25); color: #e9c77b; font-size: 11px; font-weight: 900; line-height: 1; }
+        .bb-empty { font-size: 12px; font-weight: 700; color: #9a8a6e; text-align: center; }
+        .bb-add { display: grid; grid-template-columns: 1fr 72px 60px; gap: 6px; margin-top: 10px; }
+        .bb-add select { height: 38px; border-radius: 12px; border: 1px solid #eadcc0; background: #fff; padding: 0 8px; font-size: 14px; font-weight: 800; color: #1f2a44; }
+        .bb-add button { height: 38px; border-radius: 12px; background: #c8963e; color: #fff; font-size: 14px; font-weight: 900; }
+        .bb-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .bb-stats > div { background: #fff; border: 1px solid #eadcc0; border-radius: 14px; padding: 9px 4px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .bb-stats .l { font-size: 11px; font-weight: 800; color: #8a7a5e; line-height: 1.25; }
+        .bb-stats .v { font-family: 'Jua', sans-serif; font-size: 26px; line-height: 1; color: #1f2a44; margin-top: 6px; }
+        .bb-stats .v small { font-size: 14px; margin-left: 1px; color: #8a7a5e; }
+        .bb-stats > div:first-child .v span { color: #b7791f; }
+        .bb-cal-head { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px dashed #e2d3b3; }
+        .bb-cal-head p { font-size: 15px; font-weight: 900; color: #1f2a44; }
+        .bb-cal-head button { width: 32px; height: 32px; border-radius: 50%; background: #f3ead7; color: #7a6647; font-weight: 900; }
+        .bb-cal-head button:disabled { opacity: .3; }
+        .study-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .study-cal .w { font-size: 11px; font-weight: 800; color: #a8987a; text-align: center; }
+        .study-cal .w:first-child { color: #d0735a; }
+        .study-cal .d { min-height: 56px; display: flex; flex-direction: column; align-items: stretch; gap: 1px; padding: 3px 3px 4px; border-radius: 10px; background: #f6efdf; color: #7a6647; overflow: hidden; }
+        .study-cal .d .n { font-size: 11px; font-weight: 900; line-height: 1.2; padding-left: 2px; }
+        .study-cal .d .s { font-size: 9.5px; font-weight: 900; line-height: 1.25; text-align: center; border-radius: 5px; background: #fff; color: #1f2a44; }
+        .study-cal .d.done { background: #1f2a44; color: #fff6e1; }
+        .study-cal .d.done .s { background: rgba(233, 199, 123, .95); color: #1f2a44; }
+        .study-cal .d.today { box-shadow: inset 0 0 0 2px #c8963e; }
+        .study-cal .d.future { background: transparent; color: #d6c9ae; }
+        .study-cal .d.exam { background: #fbe4dc; color: #c2410c; }
+        .bb-today { width: 100%; margin-top: 12px; padding: 12px 0; border-radius: 14px; font-size: 15px; font-weight: 900; }
+        .bb-today.off { background: #1f2a44; color: #e9c77b; box-shadow: 0 6px 14px -8px rgba(31, 42, 68, .7); }
+        .bb-today.on { background: #fff; color: #7a6647; border: 1.5px solid #e2d3b3; }
+        .bb-hint { font-size: 11px; font-weight: 700; color: #a8987a; margin-top: 8px; text-align: center; word-break: keep-all; }
 
         /* 커뮤니티: 홈 화면 버튼 위 빨간 NEW 뱃지 */
         .community-new-badge {
@@ -343,12 +359,6 @@
 
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
-            <!-- 오늘의 양식: 매일 과목별 10문제 (오늘의양식/ 앱, 기록은 이 기기 localStorage 'tongdal_practice_v2') -->
-            <a href="오늘의양식/index.html" class="bread-card" aria-label="오늘의 양식 풀기">
-                <p class="title">오늘의 양식</p>
-                <p class="sub">매일 과목별로 10문제</p>
-            </a>
-
             <div class="rooms-photo">
                 <a href="신학기초/index.html" class="rooms-hotspot" data-study="1" style="left:5%; top:33%; width:30%; height:32%;" aria-label="초중고 신학 공부방"></a>
                 <a href="도통계시록/index.html" class="rooms-hotspot" data-study="1" style="left:37%; top:33%; width:29%; height:32%;" aria-label="계시록 통달 공부방"></a>
@@ -362,32 +372,47 @@
                 <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
             </div>
 
-            <!-- 내가 신청한 과목 공부 관리: 오늘의 양식 기록 중 신청 과목 것만 집계 -->
-            <div class="my-study-card">
-                <p class="my-study-title">내가 신청한 과목 공부 관리</p>
-                <p class="my-study-sub" id="my-study-subject"></p>
-                <div class="my-study-stats">
-                    <div><p class="l">연속 학습</p><p class="v" style="color:#d97706;"><span id="my-study-streak">0</span>일</p></div>
-                    <div><p class="l">푼 횟수</p><p class="v"><span id="my-study-count">0</span>회</p></div>
-                    <div><p class="l">내 시험 과목<br>평균 점수</p><p class="v" id="my-study-avg">-</p></div>
-                </div>
-            </div>
+            <!-- 오늘의 양식 간판 + 내가 신청한 과목 공부 관리 + 공부한 날 달력 (모두 이 기기 localStorage) -->
+            <section class="bread-board">
+                <a href="오늘의양식/index.html" class="bread-sign" aria-label="오늘의 양식 풀기">
+                    <span class="bread-orn"><i></i></span>
+                    <span class="bread-title">오늘의 양식</span>
+                    <span class="bread-sub">매일 과목별로 10문제</span>
+                    <span class="bread-go">›</span>
+                </a>
+                <div class="bread-body">
+                    <p class="bb-title">내가 신청한 과목 공부 관리</p>
+                    <div id="my-subject-chips" class="bb-chips"></div>
+                    <div class="bb-add">
+                        <select id="my-subject-sel" aria-label="과목">
+                            <option value="theology">초중고 신학</option>
+                            <option value="tongdal" selected>계시록 통달</option>
+                            <option value="memo">계시록 암기</option>
+                        </select>
+                        <select id="my-grade-sel" aria-label="급수">
+                            <option value="4">4급</option>
+                            <option value="3">3급</option>
+                            <option value="2">2급</option>
+                            <option value="1">1급</option>
+                        </select>
+                        <button type="button" onclick="addMySubject()">추가</button>
+                    </div>
+                    <div class="bb-stats">
+                        <div><p class="l">연속 학습</p><p class="v"><span id="my-study-streak">0</span><small>일</small></p></div>
+                        <div><p class="l">푼 횟수</p><p class="v"><span id="my-study-count">0</span><small>회</small></p></div>
+                        <div><p class="l">내 시험 과목<br>평균 점수</p><p class="v"><span id="my-study-avg">-</span></p></div>
+                    </div>
 
-            <!-- 공부한 날 체크 달력 (이 기기 localStorage 'sion_study_days') -->
-            <div class="study-cal-card">
-                <div class="study-sum">
-                    <div style="background:linear-gradient(160deg,#eef2ff,#e0e7ff);"><div class="v" style="color:#4338ca;"><span id="study-month-count">0</span><span style="font-size:18px">일</span></div><div class="l" style="color:#4338ca;">이번 달 공부한 날</div></div>
-                    <div style="background:linear-gradient(160deg,#fff7ed,#ffedd5);"><div class="v" style="color:#c2410c;"><span id="study-total-count">0</span><span style="font-size:18px">일차</span></div><div class="l" style="color:#c2410c;">누적 공부 일차</div></div>
+                    <div class="bb-cal-head">
+                        <button type="button" onclick="shiftStudyMonth(-1)" aria-label="이전 달">‹</button>
+                        <p id="study-cal-title"></p>
+                        <button type="button" id="study-next-btn" onclick="shiftStudyMonth(1)" aria-label="다음 달">›</button>
+                    </div>
+                    <div id="study-cal" class="study-cal"></div>
+                    <button type="button" id="study-today-btn" onclick="toggleStudyToday()" class="bb-today"></button>
+                    <p class="bb-hint">오늘의 양식을 풀면 달력에 점수가 적혀요(하루 최근 3개). 공부방·모의고사에 들어간 날도 체크돼요. 기록은 이 기기에만 저장됩니다.</p>
                 </div>
-                <div class="flex items-center justify-between mt-3">
-                    <button type="button" onclick="shiftStudyMonth(-1)" class="w-8 h-8 rounded-full bg-slate-100 font-black text-slate-500" aria-label="이전 달">‹</button>
-                    <p id="study-cal-title" class="text-[15px] font-black text-slate-700"></p>
-                    <button type="button" id="study-next-btn" onclick="shiftStudyMonth(1)" class="w-8 h-8 rounded-full bg-slate-100 font-black text-slate-500 disabled:opacity-30" aria-label="다음 달">›</button>
-                </div>
-                <div id="study-cal" class="study-cal"></div>
-                <button type="button" id="study-today-btn" onclick="toggleStudyToday()" class="w-full mt-3 py-3 rounded-2xl font-black text-[15px]"></button>
-                <p class="text-[11px] text-slate-400 font-bold mt-2 text-center break-keep">오늘의 양식을 풀거나 공부방·모의고사에 들어가면 그날이 자동으로 체크돼요. 기록은 이 기기에만 저장됩니다.</p>
-            </div>
+            </section>
 
             <div class="flex items-center gap-2 mt-3 flex-wrap justify-center">
                 <button onclick="showSuggest()" class="suggest-badge">
@@ -2210,53 +2235,63 @@
         function renderStudyCalendar() {
             const cal = document.getElementById('study-cal'); if (!cal) return;
             const days = loadStudyDays(), today = kstToday();
+            // 날짜별 오늘의 양식 점수(내 과목만, 과목을 안 넣었으면 전체) — 하루 최근 3개까지만 칸에 적는다.
+            const scoresByDay = {};
+            myStudyRecords().forEach(r => { const ds = myStudyDayOf(r.at); (scoresByDay[ds] = scoresByDay[ds] || []).push(r); });
             const [y, m] = studyMonth.split('-').map(Number);
             const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), last = new Date(Date.UTC(y, m, 0)).getUTCDate();
             let html = '일월화수목금토'.split('').map(w => `<div class="w">${w}</div>`).join('') + '<div></div>'.repeat(first);
-            let monthCount = 0;
             for (let d = 1; d <= last; d++) {
-                const ds = `${studyMonth}-${String(d).padStart(2, '0')}`, done = days.has(ds);
-                if (done) monthCount++;
+                const ds = `${studyMonth}-${String(d).padStart(2, '0')}`;
+                const recs = (scoresByDay[ds] || []).sort((a, b) => b.at - a.at).slice(0, 3);
+                const done = days.has(ds) || recs.length > 0;
                 const cls = ['d', done ? 'done' : '', ds === today ? 'today' : '', ds > today ? 'future' : '', ds === EXAM_DDAY_DATE && !done ? 'exam' : ''].join(' ');
-                html += `<div class="${cls}" ${ds === EXAM_DDAY_DATE ? 'title="시험일"' : ''}>${d}</div>`;
+                html += `<div class="${cls}" ${ds === EXAM_DDAY_DATE ? 'title="시험일"' : ''}><span class="n">${d}</span>${recs.map(r => `<span class="s">${Math.round(r.score || 0)}</span>`).join('')}</div>`;
             }
             cal.innerHTML = html;
             document.getElementById('study-cal-title').textContent = `${y}년 ${m}월`;
             document.getElementById('study-next-btn').disabled = studyMonth >= today.slice(0, 7);
-            document.getElementById('study-month-count').textContent = [...days].filter(d => d.startsWith(today.slice(0, 7))).length;
-            document.getElementById('study-total-count').textContent = [...days].filter(d => d <= today).length;
             const btn = document.getElementById('study-today-btn'), doneToday = days.has(today);
             btn.textContent = doneToday ? '오늘 공부 완료! (누르면 체크 해제)' : '오늘 공부 체크하기';
-            btn.className = 'w-full mt-3 py-3 rounded-2xl font-black text-[15px] ' + (doneToday ? 'bg-indigo-50 text-indigo-600 border-2 border-indigo-200' : 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md');
+            btn.className = 'bb-today ' + (doneToday ? 'on' : 'off');
         }
         document.addEventListener('click', e => { if (e.target.closest('[data-study]')) markStudyToday(); }, true);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderStudyCalendar(); renderMyStudy(); } });
         renderStudyCalendar();
 
-        // ── 내가 신청한 과목 공부 관리: 이 기기에 남은 시험 신청(localStorage 'sion_exam_applications', 취소 제외)의
-        // 과목·급수와 오늘의양식/ 앱 기록(localStorage 'tongdal_practice_v2', history[{ key: '과목-gradeN', score, at(ms) }])을
-        // 맞춰 연속 학습 · 푼 횟수 · 평균 점수를 보여준다. 신청 기록이 없으면 오늘의 양식 전체 기록으로 집계.
-        // (APPLY_KEY 상수는 아래쪽에 선언돼 여기서 즉시 실행 시 참조할 수 없어 키 문자열을 직접 쓴다)
-        const MY_STUDY_SUBJECT_KEY = { '초중고 신학': 'theology', '계시록 통달': 'tongdal', '계시록 암기': 'memo' };
-        const MY_STUDY_SPECIAL_DEPTS = ['자문회', '장로회'];
+        // ── 내가 신청한 과목 공부 관리: 사용자가 직접 넣은 과목·급수(localStorage 'sion_my_subjects', ['tongdal-grade4', ...])와
+        // 오늘의양식/ 앱 기록(localStorage 'tongdal_practice_v2', history[{ key: '과목-gradeN', score, at(ms) }])을 맞춰
+        // 연속 학습 · 푼 횟수 · 평균 점수를 보여준다. 과목을 하나도 안 넣었으면 오늘의 양식 전체 기록으로 집계.
+        // (위쪽 renderStudyCalendar()가 먼저 즉시 실행되므로 여기 헬퍼는 const 대신 함수 선언으로 둔다)
+        function mySubjectLabel(key) {
+            const [s, g] = String(key).split('-grade');
+            return ({ theology: '초중고 신학', tongdal: '계시록 통달', memo: '계시록 암기' }[s] || s) + ' ' + g + '급';
+        }
+        function loadMySubjects() { try { const a = JSON.parse(localStorage.getItem('sion_my_subjects')); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+        function saveMySubjects(list) { try { localStorage.setItem('sion_my_subjects', JSON.stringify(list)); } catch (e) {} }
+        function addMySubject() {
+            const key = `${document.getElementById('my-subject-sel').value}-grade${document.getElementById('my-grade-sel').value}`;
+            const list = loadMySubjects();
+            if (!list.includes(key)) { list.push(key); saveMySubjects(list); }
+            renderMyStudy(); renderStudyCalendar();
+        }
+        function removeMySubject(key) { saveMySubjects(loadMySubjects().filter(k => k !== key)); renderMyStudy(); renderStudyCalendar(); }
+        function myStudyDayOf(ts) { return new Date(ts + 9 * 3600e3).toISOString().slice(0, 10); }
+        function myStudyRecords() {
+            let hist = [];
+            try { const s = JSON.parse(localStorage.getItem('tongdal_practice_v2')); if (s && Array.isArray(s.history)) hist = s.history; } catch (e) {}
+            const mine = loadMySubjects();
+            return mine.length ? hist.filter(r => mine.includes(r.key)) : hist;
+        }
         function myStudyPrevDay(ds) { const t = new Date(ds + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); }
         function renderMyStudy() {
-            const subEl = document.getElementById('my-study-subject'); if (!subEl) return;
-            let apps = [], hist = [];
-            try { const a = JSON.parse(localStorage.getItem('sion_exam_applications')); if (Array.isArray(a)) apps = a; } catch (e) {}
-            try { const s = JSON.parse(localStorage.getItem('tongdal_practice_v2')); if (s && Array.isArray(s.history)) hist = s.history; } catch (e) {}
-            // 신청 과목 → 오늘의 양식 시험 키. 자문회·장로회 계시록 통달 특별 전형(급수 없음)은 4급(전장 144문항)과 같다.
-            const mine = new Map();
-            apps.filter(a => a && a.status !== '취소').forEach(a => {
-                const subj = MY_STUDY_SUBJECT_KEY[a.subject]; if (!subj) return;
-                let grade = a.grade || (a.subject === '계시록 통달' && MY_STUDY_SPECIAL_DEPTS.includes(a.department) ? '4급' : '');
-                const n = String(grade).replace(/[^1-4]/g, ''); if (!n) return;
-                mine.set(`${subj}-grade${n}`, `${a.subject} ${n}급`);
-            });
-            const recs = mine.size ? hist.filter(r => mine.has(r.key)) : hist;
-            subEl.textContent = mine.size ? [...mine.values()].join(' · ') : '신청한 과목이 없어 오늘의 양식 전체 기록으로 보여드려요';
-            const dayOf = ts => new Date(ts + 9 * 3600e3).toISOString().slice(0, 10);
-            const days = new Set(recs.map(r => dayOf(r.at))), today = kstToday();
+            const chipsEl = document.getElementById('my-subject-chips'); if (!chipsEl) return;
+            const mine = loadMySubjects();
+            chipsEl.innerHTML = mine.length
+                ? mine.map(k => `<span class="bb-chip">${mySubjectLabel(k)}<button type="button" onclick="removeMySubject('${k}')" aria-label="${mySubjectLabel(k)} 빼기">✕</button></span>`).join('')
+                : '<p class="bb-empty">시험 볼 과목과 급수를 골라 추가해 주세요</p>';
+            const recs = myStudyRecords();
+            const days = new Set(recs.map(r => myStudyDayOf(r.at))), today = kstToday();
             let streak = 0, cur = days.has(today) ? today : myStudyPrevDay(today);
             while (days.has(cur)) { streak++; cur = myStudyPrevDay(cur); }
             document.getElementById('my-study-streak').textContent = streak;
