@@ -97,20 +97,15 @@
 
     <!-- ───────── 홈 (한 페이지) ───────── -->
     <section id="view-home">
-        <!-- 시그니처 -->
-        <header class="cover -mx-4 shadow-lg">
-            <a class="back" href="../index.html">‹ 시온 공부방</a>
-            <p class="eyebrow">DAILY BREAD</p>
-            <h1 class="title">오늘의 양식</h1>
-            <div class="orn"><span></span><i></i><span></span></div>
-            <p class="sub">계시록 통달 연습</p>
-            <p class="date" id="cover-date"></p>
-            <div><div class="dday"><span class="l">11월 15일 시험까지</span><span class="v" id="cover-dday"></span></div></div>
-            <div class="chip">매일 조금씩 · 연속 <b id="cover-streak">0</b>일</div>
-        </header>
+        <!-- 상단 바 (표지는 시온 공부방 홈에 있으므로 여기선 생략) -->
+        <div class="flex items-center justify-between pt-4 pb-3">
+            <a href="../index.html" class="text-sm font-bold text-slate-500">‹ 시온 공부방</a>
+            <h1 class="font-jua text-xl text-slate-800">오늘의 양식</h1>
+            <span class="w-16"></span>
+        </div>
 
         <!-- 과목 · 급수 탭 -->
-        <div id="picker" class="card p-3 -mt-8 relative z-10">
+        <div id="picker" class="card p-3">
             <div id="subject-tabs" class="grid grid-cols-3 gap-2"></div>
             <div id="grade-tabs" class="gtabs mt-3"></div>
             <p id="pick-range" class="text-[12px] font-bold text-c2 mt-3 text-center break-keep"></p>
@@ -124,34 +119,10 @@
             <ul class="space-y-0.5">
                 <li>• <b>풀 때마다 새 문제</b> — 시작할 때마다 문제은행에서 10문제를 무작위로 뽑아요. 전체 문제를 한 바퀴 다 풀 때까지 이미 나온 문제는 다시 나오지 않아요.</li>
                 <li>• 답을 쓰고 <b>Enter</b>를 누르면 다음 문항으로 넘어가요.</li>
-                <li>• 채점까지 마친 날은 <b>공부한 날 달력</b>에 표시돼요. 쓰던 답은 자동 저장되고, 기록은 이 기기에만 남아요.</li>
+                <li>• 채점까지 마친 날은 시온 공부방 홈의 <b>공부한 날 달력</b>에 체크되고, 연속 학습·푼 횟수·평균 점수도 홈에서 볼 수 있어요. 쓰던 답은 자동 저장되고, 기록은 이 기기에만 남아요.</li>
             </ul>
         </div>
 
-        <!-- 통계 -->
-        <div class="grid grid-cols-3 gap-2 mt-3">
-            <div class="card py-2.5 text-center"><p class="text-[10px] font-bold text-slate-500">연속 학습</p><p class="font-jua text-xl text-amber-600"><span id="stat-streak">0</span>일</p></div>
-            <div class="card py-2.5 text-center"><p class="text-[10px] font-bold text-slate-500">푼 횟수</p><p class="font-jua text-xl text-slate-800"><span id="stat-count">0</span>회</p></div>
-            <div class="card py-2.5 text-center"><p class="text-[10px] font-bold text-slate-500">평균 점수</p><p class="font-jua text-xl text-slate-800"><span id="stat-avg">-</span></p></div>
-        </div>
-
-        <!-- 공부한 날 -->
-        <div class="card p-4 mt-3">
-            <div class="flex items-center justify-between mb-3">
-                <button id="cal-prev" class="w-8 h-8 rounded-full hover:bg-amber-50 font-black text-amber-700" aria-label="이전 달">‹</button>
-                <p class="font-jua text-lg text-slate-800">공부한 날 · <span id="cal-title"></span></p>
-                <button id="cal-next" class="w-8 h-8 rounded-full hover:bg-amber-50 font-black text-amber-700 disabled:opacity-25" aria-label="다음 달">›</button>
-            </div>
-            <div id="cal" class="cal"></div>
-            <div id="cal-sum" class="cal-sum"></div>
-        </div>
-
-        <!-- 최근 기록 -->
-        <div class="flex items-center justify-between mt-6 mb-2">
-            <h2 class="font-jua text-lg text-slate-800">최근 기록</h2>
-            <span id="history-count" class="text-[11px] font-bold text-slate-400"></span>
-        </div>
-        <div id="history" class="card divide-y divide-slate-100"></div>
     </section>
 
     <!-- ───────── 시험지 ───────── -->
@@ -388,20 +359,12 @@ function scoreBadge(score) {
 }
 
 // ───────── 홈 ─────────
-// 표지 날짜와 D-day — 한국 시간 오늘 기준. 시험 당일은 D-0일, 지나면 D+N일.
-const EXAM_DAY = '2026-11-15';
-function renderCoverDate() {
-    const today = kstDate(Date.now()), t = new Date(today + 'T00:00:00Z');
-    $('cover-date').textContent = `${t.getUTCFullYear()}. ${t.getUTCMonth() + 1}. ${t.getUTCDate()}. ${'일월화수목금토'[t.getUTCDay()]}요일`;
-    const left = Math.round((new Date(EXAM_DAY + 'T00:00:00Z') - t) / 864e5);
-    $('cover-dday').textContent = left >= 0 ? `D-${left}일` : `D+${-left}일`;
-}
-// 앱을 켜 둔 채 자정이 지나도 날짜·D-day·달력이 바뀌도록, 화면으로 돌아올 때와 1분마다 확인
+// 앱을 켜 둔 채 자정이 지나도 급수 탭의 기록이 새 날 기준이 되도록, 화면으로 돌아올 때와 1분마다 확인
 let shownDay = kstDate(Date.now());
 function refreshIfNewDay() {
     const d = kstDate(Date.now());
     if (d === shownDay) return;
-    shownDay = d; calMonth = d.slice(0, 7);
+    shownDay = d;
     if (!$('view-home').classList.contains('hidden')) renderHome();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIfNewDay(); });
@@ -423,52 +386,7 @@ function renderHome() {
         <button id="resume-btn" class="w-full mt-2 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-black text-[13px]">풀던 문제 이어서 풀기 (${c.answers.filter(a => a.every(x => String(x).trim())).length}/${c.exam.questions.length} 작성)</button>` : '';
     $('start-btn').textContent = c && c.key === store.sel ? '새 10문제로 다시 시작 →' : '새 10문제 풀기 →';
 
-    // 통계
-    const h = store.history;
-    $('stat-count').textContent = h.length;
-    $('stat-avg').textContent = h.length ? Math.round(h.reduce((a, r) => a + r.score, 0) / h.length) + '점' : '-';
-    const days = new Set(h.map(r => kstDate(r.at)));
-    const today = kstDate(Date.now());
-    let streak = 0, d = days.has(today) ? today : addDays(today, -1);
-    while (days.has(d)) { streak++; d = addDays(d, -1); }
-    $('stat-streak').textContent = streak;
-    $('cover-streak').textContent = streak;
-    renderCoverDate();
-    renderCalendar(days);
-
-    $('history-count').textContent = h.length ? `최근 ${Math.min(h.length, 15)}개` : '';
-    $('history').innerHTML = h.length ? h.slice(0, 15).map((r, i) => {
-        const ps = parseKey(r.key).s;
-        return `<button class="w-full flex items-center gap-3 px-4 py-3 text-left" data-review="${i}">
-            <span class="th-${ps} w-1.5 h-9 rounded-full bg-c1 shrink-0"></span>
-            <div class="flex-1 min-w-0"><p class="text-[14px] font-black text-slate-800">${esc(examName(r.key))}</p><p class="text-[11px] text-slate-400">${fmtWhen(r.at)} · ${r.full}/${r.exam.questions.length}문항 정답</p></div>
-            ${scoreBadge(r.score)}<span class="text-slate-300 font-black">›</span>
-        </button>`; }).join('')
-        : '<p class="p-5 text-center text-[13px] text-slate-400">아직 기록이 없어요. 위에서 과목을 고르고 시작해보세요!</p>';
 }
-// 공부한 날 달력 (채점까지 마친 날 표시)
-let calMonth = kstDate(Date.now()).slice(0, 7);
-function renderCalendar(days) {
-    const today = kstDate(Date.now());
-    const [y, m] = calMonth.split('-').map(Number);
-    const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
-    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    $('cal-title').textContent = `${y}년 ${m}월`;
-    $('cal-next').disabled = calMonth >= today.slice(0, 7);
-    let html = '일월화수목금토'.split('').map(w => `<div class="w">${w}</div>`).join('');
-    html += '<div></div>'.repeat(first);
-    let cnt = 0;
-    for (let d = 1; d <= last; d++) {
-        const ds = `${calMonth}-${String(d).padStart(2, '0')}`;
-        const done = days.has(ds); if (done) cnt++;
-        html += `<div class="d ${done ? 'done' : ''} ${ds === today ? 'today' : ''} ${ds > today ? 'future' : ''}">${d}</div>`;
-    }
-    $('cal').innerHTML = html;
-    $('cal-sum').innerHTML = `<span class="l">${calMonth === today.slice(0, 7) ? '이번 달' : m + '월'} 공부한 날</span><span class="v">${cnt}</span><span class="u">일</span>`;
-}
-function shiftMonth(n) { const [y, m] = calMonth.split('-').map(Number); const t = new Date(Date.UTC(y, m - 1 + n, 1)); calMonth = t.toISOString().slice(0, 7); renderHome(); }
-$('cal-prev').onclick = () => shiftMonth(-1);
-$('cal-next').onclick = () => shiftMonth(1);
 
 document.addEventListener('click', e => {
     const sb = e.target.closest('[data-subject]');

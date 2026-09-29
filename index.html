@@ -99,11 +99,10 @@
         }
         .rooms-photo {
             position: relative;
-            /* 원본 그림(1026×1532) 중 세 공부방 카드까지(위쪽 1005px)만 보여준다 — 아래 모의고사·시험안내·신청 부분은
-               그림 대신 동그라미 버튼(.home-circle)으로 대체 */
-            aspect-ratio: 1026 / 1005;
-            width: min(100%, 420px);
-            background: url('assets/ChatGPT Image 2026년 8월 19일 오후 02_35_24.png') top center / 100% auto no-repeat;
+            aspect-ratio: 1026 / 1532;
+            width: min(100%, 420px, calc((100vh - 40px) * 0.6697));
+            width: min(100%, 420px, calc((100dvh - 40px) * 0.6697));
+            background: url('assets/ChatGPT Image 2026년 8월 19일 오후 02_35_24.png') center / cover no-repeat;
             border-radius: 20px;
             box-shadow: 0 12px 32px rgba(2, 132, 199, 0.25);
             overflow: hidden;
@@ -227,37 +226,22 @@
         }
         .memo-inline-input:focus { border-color: #a21caf; background: #fae8ff; }
 
-        /* 홈 동그라미 버튼 3개 (시험 안내 · 신청서 · 모의고사) */
-        .home-circles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(100%, 420px); margin: 16px auto 0; }
-        .home-circle { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; padding: 0; cursor: pointer; }
-        .home-circle .c { width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center;
-                          color: #fff; font-family: 'Jua', sans-serif; font-size: 21px; line-height: 1.15; word-break: keep-all;
-                          box-shadow: 0 8px 18px -6px rgba(30, 41, 59, .45), inset 0 -4px 0 rgba(0,0,0,.12), inset 0 3px 0 rgba(255,255,255,.25);
-                          border: 4px solid #fff; transition: transform .12s ease; }
-        .home-circle:active .c { transform: scale(.94); }
-        .home-circle .c.info  { background: linear-gradient(160deg, #60a5fa, #2563eb); }
-        .home-circle .c.apply { background: linear-gradient(160deg, #34d399, #059669); }
-        .home-circle .c.mock  { background: linear-gradient(160deg, #f472b6, #a855f7); }
-        /* 모의고사 과목 선택 시트 */
-        .mock-sheet-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px; border-radius: 18px;
-                          color: #fff; font-weight: 900; font-size: 18px; box-shadow: 0 6px 14px -6px rgba(0,0,0,.35); }
-        .mock-sheet-btn small { display: block; font-size: 12px; font-weight: 700; opacity: .9; margin-top: 2px; }
-        /* 오늘의 양식 카드 (오늘의양식/ 연습 앱 입구) */
-        .bread-card { position: relative; display: block; width: min(100%, 420px); margin: 0 auto 16px; overflow: hidden; border-radius: 24px; padding: 22px 20px 18px; text-align: center; color: #fff;
+        /* 오늘의 양식 카드 (오늘의양식/ 연습 앱 입구) — 표지 위 얇은 띠 */
+        .bread-card { position: relative; display: block; width: min(100%, 420px); margin: 0 auto 14px; overflow: hidden; border-radius: 20px; padding: 12px 18px 11px; text-align: center; color: #fff;
                       background: radial-gradient(120% 90% at 50% 0%, #fbbf77 0%, rgba(251,191,119,0) 55%), linear-gradient(170deg, #1e1b4b 0%, #3730a3 45%, #7c3aed 80%, #db7093 100%);
-                      box-shadow: 0 12px 26px -10px rgba(55,48,163,.6); transition: transform .12s ease; }
+                      box-shadow: 0 10px 22px -10px rgba(55,48,163,.6); transition: transform .12s ease; }
         .bread-card:active { transform: scale(.98); }
-        .bread-card::after { content: ''; position: absolute; inset: 8px; border: 1px solid rgba(246,211,139,.35); border-radius: 18px; pointer-events: none; }
-        .bread-card .eyebrow { font-size: 10px; font-weight: 900; letter-spacing: .38em; color: rgba(246,211,139,.9); }
-        .bread-card .title { font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 38px; line-height: 1.1; margin-top: 8px; color: #f6d38b; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
-        .bread-card .orn { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px auto 0; width: 150px; }
-        .bread-card .orn span { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(246,211,139,.8), transparent); }
-        .bread-card .orn i { width: 6px; height: 6px; transform: rotate(45deg); background: #f3cf86; }
-        .bread-card .sub { font-family: 'Jua', sans-serif; font-size: 19px; margin-top: 8px; }
-        .bread-card .date { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.75); margin-top: 2px; }
-        .bread-card .status { margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(246,211,139,.35); font-size: 13px; font-weight: 800; line-height: 1.45; word-break: keep-all; }
-        .bread-card .status b { color: #f6d38b; }
-        .bread-card .go { display: inline-block; margin-top: 12px; padding: 9px 22px; border-radius: 999px; background: linear-gradient(135deg, #f6d38b, #e9a94f); color: #3b1d06; font-family: 'Jua', sans-serif; font-size: 17px; box-shadow: 0 6px 14px -6px rgba(0,0,0,.4); }
+        .bread-card::after { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(246,211,139,.35); border-radius: 15px; pointer-events: none; }
+        .bread-card .title { font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 30px; line-height: 1.1; color: #f6d38b; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
+        .bread-card .sub { font-family: 'Jua', sans-serif; font-size: 16px; margin-top: 4px; }
+        /* 내가 신청한 과목 공부 관리 */
+        .my-study-card { width: min(100%, 420px); margin: 16px auto 0; background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(2,132,199,.35); }
+        .my-study-title { font-family: 'Jua', sans-serif; font-size: 19px; color: #1e293b; text-align: center; }
+        .my-study-sub { font-size: 12px; font-weight: 800; color: #6366f1; text-align: center; margin-top: 2px; word-break: keep-all; }
+        .my-study-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+        .my-study-stats > div { background: #f8fafc; border-radius: 14px; padding: 10px 4px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
+        .my-study-stats .l { font-size: 11px; font-weight: 800; color: #64748b; line-height: 1.25; }
+        .my-study-stats .v { font-family: 'Jua', sans-serif; font-size: 24px; color: #1e293b; margin-top: 4px; }
         /* 공부한 날 체크 달력 */
         .study-cal-card { width: min(100%, 420px); margin: 14px auto 0; background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(2,132,199,.35); }
         .study-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -359,28 +343,34 @@
 
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
-            <!-- 오늘의 양식: 매일 새 10문제로 계시록 통달 체크 (오늘의양식/ 앱, 기록은 이 기기 localStorage 'tongdal_practice_v2') -->
+            <!-- 오늘의 양식: 매일 과목별 10문제 (오늘의양식/ 앱, 기록은 이 기기 localStorage 'tongdal_practice_v2') -->
             <a href="오늘의양식/index.html" class="bread-card" aria-label="오늘의 양식 풀기">
-                <p class="eyebrow">DAILY BREAD</p>
                 <p class="title">오늘의 양식</p>
-                <div class="orn"><span></span><i></i><span></span></div>
-                <p class="sub">매일 10문제 · 계시록 통달 체크</p>
-                <p class="date" id="bread-date"></p>
-                <div class="status" id="bread-status">오늘의 10문제가 기다리고 있어요</div>
-                <span class="go" id="bread-go">오늘의 양식 먹으러 가기 →</span>
+                <p class="sub">매일 과목별로 10문제</p>
             </a>
 
             <div class="rooms-photo">
-                <a href="신학기초/index.html" class="rooms-hotspot" data-study="1" style="left:5%; top:50.3%; width:30%; height:48.8%;" aria-label="초중고 신학 공부방"></a>
-                <a href="도통계시록/index.html" class="rooms-hotspot" data-study="1" style="left:37%; top:50.3%; width:29%; height:48.8%;" aria-label="계시록 통달 공부방"></a>
-                <a href="계시록암기/index.html" class="rooms-hotspot" data-study="1" style="left:68%; top:50.3%; width:28%; height:48.8%;" aria-label="계시록 암기 공부방"></a>
+                <a href="신학기초/index.html" class="rooms-hotspot" data-study="1" style="left:5%; top:33%; width:30%; height:32%;" aria-label="초중고 신학 공부방"></a>
+                <a href="도통계시록/index.html" class="rooms-hotspot" data-study="1" style="left:37%; top:33%; width:29%; height:32%;" aria-label="계시록 통달 공부방"></a>
+                <a href="계시록암기/index.html" class="rooms-hotspot" data-study="1" style="left:68%; top:33%; width:28%; height:32%;" aria-label="계시록 암기 공부방"></a>
+
+                <a href="신학기초/index.html#grade" data-study="1" class="rooms-hotspot rooms-hotspot-mock" style="left:3%; top:67%; width:30%; height:6.5%;" aria-label="초중고 신학 모의고사"></a>
+                <a href="도통계시록/index.html#grade" data-study="1" class="rooms-hotspot rooms-hotspot-mock" style="left:35%; top:67%; width:29%; height:6.5%;" aria-label="계시록 통달 모의고사"></a>
+                <a href="#memorize-grade" data-study="1" onclick="showMemorizeGrade()" class="rooms-hotspot rooms-hotspot-mock" style="left:66%; top:67%; width:28%; height:6.5%;" aria-label="계시록 암기 모의고사"></a>
+
+                <a href="#examinfo" onclick="showExamInfo()" class="rooms-hotspot" style="left:5%; top:75%; width:27%; height:19%;" aria-label="시험 안내"></a>
+                <a href="#apply" onclick="showApplyMenu()" class="rooms-hotspot" style="left:34%; top:76.5%; width:60%; height:19%;" aria-label="계시록 통달 자격증 시험 신청하기"></a>
             </div>
 
-            <!-- 시험 안내 · 신청서 · 모의고사 동그라미 버튼 -->
-            <div class="home-circles">
-                <button type="button" class="home-circle" onclick="showExamInfo()" aria-label="시험 안내"><span class="c info">시험<br>안내</span></button>
-                <button type="button" class="home-circle" onclick="showApplyMenu()" aria-label="신청서"><span class="c apply">신청서</span></button>
-                <button type="button" class="home-circle" onclick="openMockSheet()" aria-label="모의고사"><span class="c mock">모의<br>고사</span></button>
+            <!-- 내가 신청한 과목 공부 관리: 오늘의 양식 기록 중 신청 과목 것만 집계 -->
+            <div class="my-study-card">
+                <p class="my-study-title">내가 신청한 과목 공부 관리</p>
+                <p class="my-study-sub" id="my-study-subject"></p>
+                <div class="my-study-stats">
+                    <div><p class="l">연속 학습</p><p class="v" style="color:#d97706;"><span id="my-study-streak">0</span>일</p></div>
+                    <div><p class="l">푼 횟수</p><p class="v"><span id="my-study-count">0</span>회</p></div>
+                    <div><p class="l">내 시험 과목<br>평균 점수</p><p class="v" id="my-study-avg">-</p></div>
+                </div>
             </div>
 
             <!-- 공부한 날 체크 달력 (이 기기 localStorage 'sion_study_days') -->
@@ -1035,20 +1025,6 @@
             </div>
         </div>
     </main>
-
-    <!-- 모의고사: 세 과목 중 선택 -->
-    <div id="mock-sheet" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-6" onclick="if (event.target === this) closeMockSheet()">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl space-y-3">
-            <div class="flex items-center justify-between">
-                <p class="text-lg font-black text-slate-800">모의고사 과목 선택</p>
-                <button type="button" onclick="closeMockSheet()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 font-black" aria-label="닫기">✕</button>
-            </div>
-            <p class="text-[12px] text-slate-500 font-bold -mt-1">매일 풀어보는 소문항 10문제 · 문항당 10점</p>
-            <a href="신학기초/index.html#grade" data-study="1" class="mock-sheet-btn" style="background:linear-gradient(135deg,#34d399,#059669);"><span>초중고 신학<small>급수별 모의고사</small></span><span>›</span></a>
-            <a href="도통계시록/index.html#grade" data-study="1" class="mock-sheet-btn" style="background:linear-gradient(135deg,#818cf8,#4f46e5);"><span>계시록 통달<small>급수별 모의고사</small></span><span>›</span></a>
-            <a href="#memorize-grade" data-study="1" onclick="closeMockSheet(); showMemorizeGrade();" class="mock-sheet-btn" style="background:linear-gradient(135deg,#f472b6,#c026d3);"><span>계시록 암기<small>급수별 모의고사</small></span><span>›</span></a>
-        </div>
-    </div>
 
     <!-- 새로 신청이 접수된 사람에게 전체 누적 몇 번째 신청인지 보여주는 축하 팝업 -->
     <div id="apply-milestone-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
@@ -2214,11 +2190,7 @@
         function showApplyCancel() { showView('view-applycancel'); }
         // 11월 15일 계시록 통달 자격증 시험일 — 공부한 날 달력에서 시험일 표시에 사용.
         const EXAM_DDAY_DATE = '2026-11-15';
-        setInterval(renderStudyCalendar, 60000);
-
-        // 모의고사 동그라미 → 세 과목 선택 시트
-        function openMockSheet() { document.getElementById('mock-sheet').classList.remove('hidden'); }
-        function closeMockSheet() { document.getElementById('mock-sheet').classList.add('hidden'); }
+        setInterval(() => { renderStudyCalendar(); renderMyStudy(); }, 60000);
 
         // ── 공부한 날 체크 달력: 이 기기 localStorage 에 날짜(한국 시간 YYYY-MM-DD) 목록으로 저장.
         // 공부방·모의고사로 들어가는 링크(data-study)를 누르면 그날이 자동 체크되고, 버튼으로 직접 체크/해제도 가능.
@@ -2258,39 +2230,42 @@
             btn.className = 'w-full mt-3 py-3 rounded-2xl font-black text-[15px] ' + (doneToday ? 'bg-indigo-50 text-indigo-600 border-2 border-indigo-200' : 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-md');
         }
         document.addEventListener('click', e => { if (e.target.closest('[data-study]')) markStudyToday(); }, true);
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderStudyCalendar(); renderBreadCard(); } });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderStudyCalendar(); renderMyStudy(); } });
         renderStudyCalendar();
 
-        // ── 오늘의 양식 카드: 오늘의양식/ 앱의 기록(같은 출처 localStorage 'tongdal_practice_v2')을 읽어
-        // 오늘 풀었는지 · 연속 며칠째인지 · 오늘 최고 점수를 보여준다. 기록 형식: history[{ key, score, at(ms) }].
-        const BREAD_SUBJECT_LABEL = { theology: '초중고 신학', tongdal: '계시록 통달', memo: '계시록 암기' };
-        function breadPrevDay(ds) { const t = new Date(ds + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); }
-        function renderBreadCard() {
-            const statusEl = document.getElementById('bread-status'); if (!statusEl) return;
-            const today = kstToday(), [y, m, d] = today.split('-').map(Number);
-            const wd = '일월화수목금토'[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
-            document.getElementById('bread-date').textContent = `${y}년 ${m}월 ${d}일 (${wd})`;
-            let hist = [];
+        // ── 내가 신청한 과목 공부 관리: 이 기기에 남은 시험 신청(localStorage 'sion_exam_applications', 취소 제외)의
+        // 과목·급수와 오늘의양식/ 앱 기록(localStorage 'tongdal_practice_v2', history[{ key: '과목-gradeN', score, at(ms) }])을
+        // 맞춰 연속 학습 · 푼 횟수 · 평균 점수를 보여준다. 신청 기록이 없으면 오늘의 양식 전체 기록으로 집계.
+        // (APPLY_KEY 상수는 아래쪽에 선언돼 여기서 즉시 실행 시 참조할 수 없어 키 문자열을 직접 쓴다)
+        const MY_STUDY_SUBJECT_KEY = { '초중고 신학': 'theology', '계시록 통달': 'tongdal', '계시록 암기': 'memo' };
+        const MY_STUDY_SPECIAL_DEPTS = ['자문회', '장로회'];
+        function myStudyPrevDay(ds) { const t = new Date(ds + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); }
+        function renderMyStudy() {
+            const subEl = document.getElementById('my-study-subject'); if (!subEl) return;
+            let apps = [], hist = [];
+            try { const a = JSON.parse(localStorage.getItem('sion_exam_applications')); if (Array.isArray(a)) apps = a; } catch (e) {}
             try { const s = JSON.parse(localStorage.getItem('tongdal_practice_v2')); if (s && Array.isArray(s.history)) hist = s.history; } catch (e) {}
+            // 신청 과목 → 오늘의 양식 시험 키. 자문회·장로회 계시록 통달 특별 전형(급수 없음)은 4급(전장 144문항)과 같다.
+            const mine = new Map();
+            apps.filter(a => a && a.status !== '취소').forEach(a => {
+                const subj = MY_STUDY_SUBJECT_KEY[a.subject]; if (!subj) return;
+                let grade = a.grade || (a.subject === '계시록 통달' && MY_STUDY_SPECIAL_DEPTS.includes(a.department) ? '4급' : '');
+                const n = String(grade).replace(/[^1-4]/g, ''); if (!n) return;
+                mine.set(`${subj}-grade${n}`, `${a.subject} ${n}급`);
+            });
+            const recs = mine.size ? hist.filter(r => mine.has(r.key)) : hist;
+            subEl.textContent = mine.size ? [...mine.values()].join(' · ') : '신청한 과목이 없어 오늘의 양식 전체 기록으로 보여드려요';
             const dayOf = ts => new Date(ts + 9 * 3600e3).toISOString().slice(0, 10);
-            const days = new Set(hist.map(r => dayOf(r.at)));
-            let streak = 0, cur = days.has(today) ? today : breadPrevDay(today);
-            while (days.has(cur)) { streak++; cur = breadPrevDay(cur); }
-            const todays = hist.filter(r => dayOf(r.at) === today);
-            const goEl = document.getElementById('bread-go');
-            if (todays.length) {
-                const best = Math.max(...todays.map(r => r.score || 0));
-                const subj = BREAD_SUBJECT_LABEL[String(todays[0].key || '').split('-')[0]] || '';
-                statusEl.innerHTML = `오늘의 양식 완료! ${subj ? subj + ' ' : ''}<b>${todays.length}회</b> · 최고 <b>${best}점</b><br>연속 <b>${streak}일</b>째 계시록 통달 중`;
-                goEl.textContent = '한 번 더 풀기 →';
-            } else {
-                statusEl.innerHTML = streak ? `연속 <b>${streak}일</b>째! 오늘도 이어가세요<br>오늘의 10문제가 기다리고 있어요` : '오늘의 10문제가 기다리고 있어요<br>매일 조금씩, 계시록 통달';
-                goEl.textContent = '오늘의 양식 먹으러 가기 →';
-            }
+            const days = new Set(recs.map(r => dayOf(r.at))), today = kstToday();
+            let streak = 0, cur = days.has(today) ? today : myStudyPrevDay(today);
+            while (days.has(cur)) { streak++; cur = myStudyPrevDay(cur); }
+            document.getElementById('my-study-streak').textContent = streak;
+            document.getElementById('my-study-count').textContent = recs.length;
+            document.getElementById('my-study-avg').textContent = recs.length ? Math.round(recs.reduce((s, r) => s + (r.score || 0), 0) / recs.length) + '점' : '-';
         }
-        renderBreadCard();
-        // 오늘의 양식에서 풀고 뒤로 돌아왔을 때(bfcache 복원 포함) 카드·달력을 새로 그린다.
-        window.addEventListener('pageshow', () => { renderStudyCalendar(); renderBreadCard(); });
+        renderMyStudy();
+        // 오늘의 양식에서 풀고 뒤로 돌아왔을 때(bfcache 복원 포함) 관리판·달력을 새로 그린다.
+        window.addEventListener('pageshow', () => { renderStudyCalendar(); renderMyStudy(); });
 
         // ─────────────────────────────────────────────────────────
         // 홈 화면 "나의 학습 현황" 미니 패널 — 로그인 직후 바로 보이는 자리에서
