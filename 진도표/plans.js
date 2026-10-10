@@ -48,7 +48,14 @@
     // ── 계시록 통달 3~1급: 장별 "전체 문답 읽기 → 괄호 넣기", 어제 본 장 다시 풀기 + 자기 전 별표 모음
     const TD = '../도통계시록/index.html#plan:';
     const TD_STAR = { id: 'star', label: '자기 전 별표 모음', links: [{ text: '⭐ 별표 모음', href: TD + 'star' }] };
-    const TD_GUIDE = ['어제 본 장 괄호 넣기(15분) → 오늘 장 읽기 → 괄호 넣기 → 자기 전 별표 모음', '틀린 문답에는 ☆별표를 달아 둡니다.', '하루 30분뿐이라면 비중이 큰 장만 끝까지 갑니다.'];
+    const TD_GUIDE = [
+        '<b>① 어제 본 장 괄호 넣기 (15분)</b> 가장 먼저 풉니다. 틀린 문답에는 ☆별표를 답니다.',
+        '<b>② 오늘 장 전체 문답 읽기 (30~40분)</b> 문답 5개씩 끊어 읽고, 답을 가린 채 입으로 말해 봅니다.',
+        '<b>③ 오늘 장 괄호 넣기 (15분)</b> 읽은 직후 한 번 풉니다. 조사(은/는/이/가)는 채점하지 않으니 핵심 낱말만 정확히 씁니다.',
+        '<b>④ 자기 전 별표 모음 (10분)</b> 별표한 문답만 다시 봅니다.',
+        '<b>모의고사 날</b> 점수보다 틀린 문항이 중요합니다. 목표 점수에 못 미치면 분량을 늘리지 말고 틀린 것만 다시 봅니다.',
+        '<b>하루 30분뿐이라면</b> 달력에서 남색(첫 구간) 장만 끝까지 갑니다. 출제 비중이 가장 큰 범위입니다.'
+    ];
     function tongdalPlan(grade, o, build) {
         const days = []; let prev = [];
         const chLinks = (chs, mode) => chs.map(c => ({ text: '계 ' + c + '장', href: TD + 'ch' + c + ':' + mode }));
@@ -110,7 +117,13 @@
         days[0].m.unshift(mock(0));
         return finish('tongdal-grade4', days, {
             tip: '144문항을 하루 2장씩, 세 번 돕니다.',
-            guide: ['어제 본 장 다시 풀기 → 오늘 2장 풀기', '답을 보기 전에 먼저 써 봅니다.', '두 번째부터는 틀린 문항만 봅니다.'],
+            guide: [
+                '<b>① 어제 본 2장 다시 풀기 (10분)</b> 답을 가리고 먼저 써 봅니다.',
+                '<b>② 오늘 2장 풀기 (20~30분)</b> 성구 본문을 소리 내어 읽고, 괄호에 들어갈 말을 직접 씁니다.',
+                '<b>③ 틀린 문항은 그 자리에서 3번</b> 다시 써 보고 넘어갑니다.',
+                '<b>두 번째·세 번째</b> 맞힌 문항은 건너뛰고 틀렸던 문항만 봅니다.',
+                '<b>전체 시험 날</b> 144문항을 처음부터 끝까지 한 번에 풀고, 틀린 장을 적어 둡니다.'
+            ],
             final: [mock(90), { id: 'wrong', label: '틀린 문항 다시 풀기', links: study }],
             last: [{ id: 'light', label: '틀렸던 문항만 가볍게', links: study }]
         });
@@ -155,7 +168,14 @@
         days[0].m.unshift(mock(0));
         return finish('theology-grade' + grade, days, {
             tip: o.tip,
-            guide: ['어제 분량 다시 쓰기 → 오늘 분량 외우기(연습 모드)', '눈으로 읽지 말고 안 보고 써 봅니다.', '틀린 문항에는 ⭐별표를 달아 둡니다.'],
+            guide: [
+                '<b>① 어제 분량 안 보고 쓰기 (10분)</b> 가장 먼저 합니다. 못 쓴 문항에는 ⭐별표를 답니다.',
+                '<b>② 오늘 분량 읽기 (15분)</b> 연습 모드에서 답을 보며 소리 내어 3번 읽습니다.',
+                '<b>③ 가리고 쓰기 (20분)</b> 답을 가리고 직접 씁니다. 눈으로 아는 것과 쓸 수 있는 것은 다릅니다.',
+                '<b>제목</b>은 "번호 · 제목 · 성구"를 한 묶음으로, <b>종강·수료</b>는 ①②③ 소문항 순서 그대로 외웁니다.',
+                '<b>두 번째부터</b>는 시험 모드로 처음부터 안 보고 씁니다.',
+                '<b>모의고사 날</b> 틀린 문항이 어느 과목인지 보고, 그 과목만 다시 씁니다.'
+            ],
             final: [mock(90), { id: 'wrong', label: '틀린 문항 다시 쓰기', links: [{ text: '응시 기록', href: '../신학기초/index.html#grade' }] }],
             last: [{ id: 'light', label: '틀렸던 문항만 가볍게', links: [{ text: '신학 공부방', href: '../신학기초/index.html' }] }]
         });
@@ -184,7 +204,14 @@
         days[days.length - 1].m.push(mock(85));
         return finish('memo-grade' + grade, days, {
             tip: o.tip,
-            guide: ['어제 분량 다시 암송 → 오늘 분량 소리 내어 읽기 → 안 보고 쓰기', '한 장이 끝나면 처음부터 끝까지 이어 씁니다.', '이미 외운 장은 장 전체 암송으로 점검만 합니다.'],
+            guide: [
+                '<b>① 어제 분량 다시 암송 (10분)</b> 가장 먼저 합니다. 막힌 절을 적어 둡니다.',
+                '<b>② 오늘 분량 소리 내어 5번 읽기 (10분)</b> 끊어 읽는 자리를 매번 같게 합니다.',
+                '<b>③ 한 절씩 가리고 쓰기 (20분)</b> 절별 암송에서 한 절씩 확인합니다.',
+                '<b>④ 오늘 분량 이어 쓰기 (10분)</b> 절과 절이 이어지는 첫 낱말을 특히 봅니다.',
+                '<b>한 장이 끝나는 날</b> 장 전체 암송으로 처음부터 끝까지 이어 씁니다.',
+                '<b>이미 외운 장</b>은 장 전체 암송으로 점검만 하고 넘어갑니다.'
+            ],
             final: [mock(90), { id: 'wrong', label: '틀린 절만 다시 암송', links: [{ text: '계시록 암기', href: '../계시록암기/index.html' }] }],
             last: [{ id: 'light', label: '틀렸던 절만 가볍게', links: [{ text: '계시록 암기', href: '../계시록암기/index.html' }] }]
         });
@@ -337,12 +364,27 @@
     .jd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
     .jd-stat { background: #fff; border-radius: 12px; padding: 6px 4px; text-align: center; font-size: 11px; font-weight: 800; color: #94a3b8; }
     .jd-stat b { font-size: 16px; font-weight: 900; color: #1e1b4b; margin-right: 3px; }
-    .jd-card { background: #fff; border-radius: 18px; padding: 12px 14px; border: 2px solid #e0e7ff; margin-bottom: 10px; }
-    .jd-card.is-done { border-color: #6ee7b7; background: #f0fdf4; }
-    .jd-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-    .jd-kicker { font-size: 12px; font-weight: 900; color: #4f46e5; }
-    .jd-card-title { font-size: 17px; font-weight: 900; color: #1e1b4b; word-break: keep-all; }
-    .jd-count { font-size: 13px; font-weight: 900; color: #059669; white-space: nowrap; }
+    .jd-card { background: #fff; border-radius: 20px; border: 3px solid #1f2a44; margin-bottom: 14px; overflow: hidden; box-shadow: 0 10px 22px -10px rgba(31,42,68,.55); }
+    .jd-day-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: linear-gradient(135deg, #1f2a44, #2c3b5e); color: #fff; }
+    .jd-day-date { flex: 0 0 auto; font-size: 38px; font-weight: 900; line-height: 1; color: #f5d98b; letter-spacing: -1px; text-align: center; }
+    .jd-day-date small { display: block; font-size: 12px; font-weight: 900; color: #fff; letter-spacing: 0; margin-top: 4px; }
+    .jd-day-what { flex: 1 1 auto; min-width: 0; }
+    .jd-day-when { font-size: 12.5px; font-weight: 900; color: #f5d98b; }
+    .jd-day-when .jd-textbtn { color: #cbd5e1; }
+    .jd-day-title { font-size: 21px; font-weight: 900; line-height: 1.25; word-break: keep-all; margin-top: 2px; }
+    .jd-day-count { flex: 0 0 auto; font-size: 15px; font-weight: 900; text-align: center; background: rgba(255,255,255,.14); border-radius: 12px; padding: 6px 10px; white-space: nowrap; }
+    .jd-day-body { padding: 4px 14px 8px; }
+    .jd-day-body .jd-mission:first-child { border-top: 0; }
+    .jd-card.is-done { border-color: #059669; }
+    .jd-card.is-done .jd-day-head { background: linear-gradient(135deg, #047857, #10b981); }
+    .jd-card.is-late { border-color: #be123c; }
+    .jd-card.is-late .jd-day-head { background: linear-gradient(135deg, #9f1239, #e11d48); }
+    .jd-card.is-lock { border-color: #64748b; }
+    .jd-card.is-lock .jd-day-head { background: linear-gradient(135deg, #475569, #64748b); }
+    .jd-card.exam { border-color: #dc2626; }
+    .jd-card.exam .jd-day-head { background: #dc2626; }
+    .jd-cal-title { font-size: 20px; font-weight: 900; color: #1e1b4b; margin: 2px 2px 0; }
+    .jd-cal-sub { font-size: 11.5px; font-weight: 700; color: #94a3b8; margin: 1px 2px 6px; word-break: keep-all; }
     .jd-note { font-size: 12px; font-weight: 800; border-radius: 10px; padding: 6px 10px; margin: 4px 0; word-break: keep-all; }
     .jd-note.late { background: #fff1f2; color: #be123c; }
     .jd-note.lock { background: #f1f5f9; color: #64748b; }
@@ -362,10 +404,12 @@
     .jd-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
     .jd-wd { text-align: center; font-size: 10.5px; font-weight: 900; color: #94a3b8; }
     .jd-wd:first-child { color: #f43f5e; }
-    .jd-cell { position: relative; height: 44px; border-radius: 9px; border: 2px solid transparent; background: #f8fafc; padding: 2px 0 0; text-align: center; color: #475569; overflow: hidden; }
+    .jd-cell { position: relative; height: 62px; border-radius: 9px; border: 2px solid transparent; background: #f8fafc; padding: 2px 0 0; text-align: center; color: #475569; overflow: hidden; }
     .jd-cell.out { background: transparent; color: #cbd5e1; }
     .jd-cell .n { font-size: 11.5px; font-weight: 900; line-height: 1.2; }
     .jd-cell .t { display: block; margin: 2px 1px 0; border-radius: 6px; padding: 2px 0; font-size: 10px; font-weight: 900; line-height: 1.2; letter-spacing: -.6px; white-space: nowrap; color: #fff; }
+    .jd-cell .r { display: block; height: 15px; margin-top: 2px; font-size: 10.5px; font-weight: 900; line-height: 15px; letter-spacing: -.4px; color: inherit; }
+    .jd-cell .r b { color: #b45309; }
     .jd-cell.done { background: #d1fae5; color: #065f46; }
     .jd-cell.late { background: #ffe4e6; color: #be123c; }
     .jd-cell.exam { background: #dc2626; color: #fff; }
@@ -378,7 +422,9 @@
     .jd-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 3px; vertical-align: -1px; }
     .jd-guide { background: #fff; border-radius: 14px; padding: 9px 12px; font-size: 12.5px; font-weight: 700; color: #475569; line-height: 1.55; word-break: keep-all; }
     .jd-guide summary { font-size: 13px; font-weight: 900; color: #1e1b4b; }
-    .jd-guide ul { margin: 6px 0 0 16px; list-style: disc; }
+    .jd-guide ul { margin: 6px 0 0 0; list-style: none; padding: 0; }
+    .jd-guide li { padding: 5px 0; border-top: 1px solid #eef2f7; }
+    .jd-guide b { color: #1e1b4b; }
     .jd-clear { position: fixed; inset: 0; z-index: 10000; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; }
     .jd-clear-box { background: #fff; border-radius: 26px; padding: 26px 30px; text-align: center; animation: jdPop .45s ease; max-width: 80%; }
     .jd-clear-box .e { font-size: 50px; line-height: 1; }
@@ -396,7 +442,7 @@
 
     // ---------- 12과목 고르기 (홈 보드와 진도표 화면 공용) ----------
     function pickerHtml(my) {
-        return '<div class="jd-pick-help">내가 신청한 과목·급수를 누르세요. 그 진도표만 보입니다.</div>' +
+        return (my.length ? '' : '<div class="jd-pick-help">내가 신청한 과목·급수를 누르세요. 그 진도표만 보입니다.</div>') +
             SUBJECT_ORDER.map(s => '<div class="jd-pick-row"><em>' + SUBJECTS[s] + '</em>' +
                 GRADES.map(g => { const k = s + '-grade' + g; return '<button type="button" class="jd-pick' + (my.includes(k) ? ' on' : '') + '" data-pick="' + k + '">' + g + '급</button>'; }).join('') + '</div>').join('');
     }
@@ -443,21 +489,36 @@
     }
     function cardHtml(s) {
         const day = s.plan.byDate[selDate];
+        const dt = parseDate(selDate);
         const isToday = selDate === s.today;
-        const kicker = (isToday ? '오늘의 미션 · ' : '') + shortDate(selDate) + ((!isToday && s.plan.byDate[s.today]) ? ' <button type="button" class="jd-textbtn" data-today="1">오늘로</button>' : '');
-        if (day.exam) return '<div class="jd-card" id="jd-card"><div class="jd-kicker">' + kicker + '</div><div class="jd-card-title">🙏 시험일입니다</div><div class="jd-note info">그동안 수고하셨습니다. 아는 것부터 차분히 쓰세요.</div></div>';
         const locked = selDate > s.today;
-        const done = doneCount(s.progress, day);
-        const allDone = done === day.m.length;
+        const done = day.exam ? 0 : doneCount(s.progress, day);
+        const allDone = !day.exam && done === day.m.length;
+        const late = !day.exam && !isToday && !locked && !allDone;
+        const when = isToday ? '오늘 꼭 할 공부' : (locked ? '이날 할 공부' : (allDone ? '이날 한 공부' : '밀린 공부'));
+        const head = '<div class="jd-day-head"><div class="jd-day-date">' + (dt.getMonth() + 1) + '/' + dt.getDate() + '<small>' + WEEKDAYS[dt.getDay()] + '요일</small></div>' +
+            '<div class="jd-day-what"><div class="jd-day-when">' + when + ((!isToday && s.plan.byDate[s.today]) ? ' <button type="button" class="jd-textbtn" data-today="1">오늘로</button>' : '') + '</div>' +
+            '<div class="jd-day-title">' + (day.exam ? '🙏 시험일' : day.title) + '</div></div>' +
+            (day.exam ? '' : '<div class="jd-day-count">' + (allDone ? '🎉<br>클리어' : done + ' / ' + day.m.length) + '</div>') + '</div>';
+        if (day.exam) return '<div class="jd-card exam" id="jd-card">' + head + '<div class="jd-day-body"><div class="jd-note info">그동안 수고하셨습니다. 아는 것부터 차분히 쓰세요.</div></div></div>';
         const note = locked ? '<div class="jd-note lock">미리 공부해도 됩니다. 체크는 그날부터 됩니다.</div>'
-            : (!isToday && !allDone ? '<div class="jd-note late">밀린 날입니다. 지금 하고 체크하면 채워집니다.</div>' : '');
-        return '<div class="jd-card' + (allDone ? ' is-done' : '') + '" id="jd-card"><div class="jd-card-head"><div><div class="jd-kicker">' + kicker + '</div><div class="jd-card-title">' + day.title + '</div></div>' +
-            '<div class="jd-count">' + (allDone ? '🎉 클리어' : done + ' / ' + day.m.length) + '</div></div>' + note + day.m.map(m => missionHtml(s, day, m, locked)).join('') + '</div>';
+            : (late ? '<div class="jd-note late">밀린 날입니다. 지금 하고 체크하면 채워집니다.</div>' : '');
+        return '<div class="jd-card' + (allDone ? ' is-done' : (late ? ' is-late' : (locked ? ' is-lock' : ''))) + '" id="jd-card">' + head +
+            '<div class="jd-day-body">' + note + day.m.map(m => missionHtml(s, day, m, locked)).join('') + '</div></div>';
+    }
+    // 달력 칸 맨 아래 줄: 그날 모의고사 점수(있으면)와 미션 진행(예: 2/3)
+    function recordHtml(s, day) {
+        if (day.exam) return '';
+        let score = null;
+        day.m.forEach(m => { const sc = mockScoreOn(day.date, m.auto); if (sc !== null && (score === null || sc > score)) score = sc; });
+        const done = doneCount(s.progress, day);
+        if (score === null && done === 0) return '<span class="r"></span>';
+        return '<span class="r">' + (score !== null ? '<b>' + score + '점</b>' : (done === day.m.length ? '완료' : done + '/' + day.m.length)) + '</span>';
     }
     function calendarHtml(s) {
         const first = addDays(START, -parseDate(START).getDay());
         const last = addDays(EXAM, 6 - parseDate(EXAM).getDay());
-        let html = '<div class="jd-cal"><div class="jd-grid">' + WEEKDAYS.map(w => '<div class="jd-wd">' + w + '</div>').join('');
+        let html = '<div class="jd-cal-title">일차별 공부 진도</div><div class="jd-cal-sub">날짜를 누르면 그날 공부가 위에 나옵니다. 칸 맨 아래 줄은 그날 기록입니다.</div><div class="jd-cal"><div class="jd-grid">' + WEEKDAYS.map(w => '<div class="jd-wd">' + w + '</div>').join('');
         for (let d = first, i = 0; d <= last; d = addDays(d, 1), i++) {
             const dt = parseDate(d);
             const num = (i === 0 || dt.getDate() === 1) ? (dt.getMonth() + 1) + '/' + dt.getDate() : dt.getDate();
@@ -466,7 +527,7 @@
             const st = day.exam ? 'exam' : (isDayDone(s.progress, day) ? 'done' : (d > s.today ? 'future' : (d === s.today ? '' : 'late')));
             html += '<button type="button" class="jd-cell ' + st + (d === s.today ? ' today' : '') + (d === selDate ? ' sel' : '') + '" data-date="' + d + '" aria-label="' + shortDate(d) + ' ' + day.title + '">' +
                 (day.m.some(m => m.isMock) ? '<span class="dot"></span>' : '') + '<div class="n">' + (st === 'done' ? '✓' : '') + num + '</div>' +
-                '<span class="t"' + (day.exam ? '' : ' style="background:' + TONES[day.tone] + '"') + '>' + day.tag + '</span></button>';
+                '<span class="t"' + (day.exam ? '' : ' style="background:' + TONES[day.tone] + '"') + '>' + day.tag + '</span>' + recordHtml(s, day) + '</button>';
         }
         return html + '</div></div><div class="jd-legend"><span><i style="background:#d1fae5"></i>완료</span><span><i style="background:#ffe4e6"></i>밀림</span>' +
             '<span><i style="background:#fff;border:2px solid #1e1b4b"></i>오늘</span><span><i style="background:#f59e0b;border-radius:50%"></i>모의고사일</span><span><i style="background:#dc2626"></i>시험일</span></div>';
@@ -491,7 +552,7 @@
             (pagePicker ? '<div class="jd-card" style="margin-top:8px">' + pickerHtml(my) + '</div>' : '') +
             '<div class="jd-stats"><div class="jd-stat"><b>🔥 ' + s.streak + '</b>연속 달성 일수</div><div class="jd-stat"><b>' + s.doneDays + '/' + s.totalDays + '</b>완료한 날</div><div class="jd-stat"><b>' + s.lateDays + '</b>밀린 날</div></div>' +
             cardHtml(s) + calendarHtml(s) +
-            '<details class="jd-guide"><summary>공부 방법</summary><ul>' + s.plan.guide.map(g => '<li>' + g + '</li>').join('') + '<li>늦게 시작해도 됩니다. 밀린 날은 나중에 체크해 채울 수 있습니다.</li></ul></details></div>';
+            '<details class="jd-guide"><summary>📖 자세한 공부 방법 (눌러서 보기)</summary><ul>' + s.plan.guide.map(g => '<li>' + g + '</li>').join('') + '<li>늦게 시작해도 됩니다. 밀린 날은 나중에 체크해 채울 수 있습니다.</li></ul></details></div>';
     }
     function showClear(s) {
         const box = document.createElement('div');
