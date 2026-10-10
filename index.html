@@ -427,6 +427,9 @@
 
         <!-- 방 선택 화면 -->
         <div id="view-rooms" class="hidden flex-col flex-grow justify-center items-center py-6 fade-in">
+            <!-- 계시록 통달 1급 진도표 안내 배너 (내용은 도통계시록/jindo.js가 채운다) -->
+            <div id="sion-plan-banner" class="w-full"></div>
+
             <!-- 구역예배 & 토툰 소개 영상 (표지 위). 데이터를 아끼려고 누를 때만 받는다 -->
             <video class="rooms-video" controls playsinline preload="none" poster="assets/gooyeok-promo-thumb.jpg" aria-label="구역예배 & 토툰 소개 영상">
                 <source src="assets/gooyeok-promo.mp4" type="video/mp4">
@@ -3890,5 +3893,6 @@
             }, 400);
         })();
     </script>
+    <script src="도통계시록/jindo.js"></script>
 </body>
 </html>
