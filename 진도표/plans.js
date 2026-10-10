@@ -325,6 +325,7 @@
             lateDays: study.filter(x => x.date < today && !isDayDone(progress, x)).length
         };
     }
+    const EXAM_LABEL = (parseDate(EXAM).getMonth() + 1) + '월 ' + parseDate(EXAM).getDate() + '일';
     function ddayText() { const n = diffDays(EXAM, todayStr()); return n > 0 ? 'D-' + n : (n === 0 ? 'D-DAY' : '시험 종료'); }
     function todayLine(s) {
         if (s.after) return '시험이 끝났습니다. 수고하셨습니다!';
@@ -337,39 +338,42 @@
 
     // ---------- 스타일 ----------
     const CSS = `
-    .jd-board { width: min(100%, 420px); margin: 0 auto 12px; border-radius: 20px; overflow: hidden; background: #fffaf0; border: 1px solid #eadcc0; box-shadow: 0 10px 24px -12px rgba(60,45,20,.35); text-align: left; }
-    .jd-board-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 14px; background: linear-gradient(135deg, #1f2a44, #2c3b5e); color: #fff; }
-    .jd-board-head b { font-size: 16px; font-weight: 900; }
-    .jd-dchip { background: #e9c77b; color: #1f2a44; border-radius: 999px; padding: 4px 11px; font-size: 13px; font-weight: 900; white-space: nowrap; }
-    .jd-board-body { padding: 10px 12px 12px; }
-    .jd-my { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid #1f2a44; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; color: #1f2a44; text-decoration: none; }
-    .jd-my b { display: block; font-size: 15px; font-weight: 900; }
-    .jd-my span { display: block; font-size: 12.5px; font-weight: 800; color: #64748b; margin-top: 1px; word-break: keep-all; }
-    .jd-my i { margin-left: auto; font-style: normal; font-size: 20px; font-weight: 900; }
+    .jd-board { width: min(100%, 420px); margin: 0 auto 14px; border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 18px 36px -18px rgba(13,148,136,.55), 0 2px 6px rgba(15,23,42,.06); text-align: left; }
+    .jd-board-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 16px 15px; background: linear-gradient(120deg, #047857 0%, #0d9488 55%, #0891b2 100%); color: #fff; overflow: hidden; }
+    .jd-board-head::after { content: ''; position: absolute; right: -34px; top: -46px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.13); pointer-events: none; }
+    .jd-board-eyebrow { display: inline-block; background: rgba(255,255,255,.22); border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 900; letter-spacing: -.2px; }
+    .jd-board-head b { display: block; font-size: 23px; font-weight: 900; line-height: 1.2; letter-spacing: -.6px; margin-top: 6px; text-shadow: 0 2px 8px rgba(4,60,50,.35); word-break: keep-all; }
+    .jd-dchip { position: relative; z-index: 1; flex: 0 0 auto; background: #fff; color: #047857; border-radius: 18px; padding: 8px 12px; font-size: 20px; font-weight: 900; line-height: 1; text-align: center; white-space: nowrap; box-shadow: 0 6px 14px rgba(4,60,50,.25); }
+    .jd-dchip small { display: block; font-size: 10.5px; font-weight: 900; color: #64748b; margin-bottom: 3px; }
+    .jd-board-body { padding: 12px 14px 14px; }
+    .jd-my { display: flex; align-items: center; gap: 10px; background: #f0fdfa; border: 1.5px solid #99f6e4; border-left: 6px solid #0d9488; border-radius: 14px; padding: 11px 12px; margin-bottom: 8px; color: #0f172a; text-decoration: none; }
+    .jd-my b { display: block; font-size: 16px; font-weight: 900; }
+    .jd-my span { display: block; font-size: 13px; font-weight: 800; color: #0f766e; margin-top: 2px; word-break: keep-all; }
+    .jd-my i { margin-left: auto; font-style: normal; font-size: 22px; font-weight: 900; color: #0d9488; }
     .jd-textbtn { background: none; border: 0; padding: 2px 4px; font-size: 12px; font-weight: 900; color: #64748b; text-decoration: underline; }
     .jd-pick-row { display: grid; grid-template-columns: 76px repeat(4, 1fr); gap: 5px; align-items: center; margin-top: 6px; }
-    .jd-pick-row em { font-style: normal; font-size: 12.5px; font-weight: 900; color: #1f2a44; }
-    .jd-pick { border: 1.5px solid #d6c9a8; background: #fff; color: #1f2a44; border-radius: 10px; padding: 8px 0; font-size: 13px; font-weight: 900; }
-    .jd-pick.on { background: #1f2a44; border-color: #1f2a44; color: #e9c77b; }
-    .jd-pick-help { font-size: 12px; font-weight: 800; color: #8a7a55; margin-bottom: 2px; }
+    .jd-pick-row em { font-style: normal; font-size: 13px; font-weight: 900; color: #0f172a; }
+    .jd-pick { border: 1.5px solid #cbd5e1; background: #fff; color: #334155; border-radius: 999px; padding: 8px 0; font-size: 13.5px; font-weight: 900; }
+    .jd-pick.on { background: #0d9488; border-color: #0d9488; color: #fff; box-shadow: 0 4px 10px rgba(13,148,136,.35); }
+    .jd-pick-help { font-size: 13px; font-weight: 900; color: #0f766e; margin-bottom: 4px; }
     .jd-page { max-width: 460px; margin: 0 auto; padding: 10px 14px 28px; }
     .jd-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .jd-back { background: #fff; border: 2px solid #c7d2fe; color: #4f46e5; border-radius: 999px; padding: 7px 14px; font-size: 14px; font-weight: 900; text-decoration: none; }
+    .jd-back { background: #fff; border: 2px solid #99f6e4; color: #0f766e; border-radius: 999px; padding: 7px 14px; font-size: 14px; font-weight: 900; text-decoration: none; }
     .jd-dday { background: #dc2626; color: #fff; border-radius: 999px; padding: 6px 13px; font-size: 14px; font-weight: 900; }
-    .jd-h1 { font-size: 20px; font-weight: 900; color: #1e1b4b; margin-top: 10px; line-height: 1.25; }
+    .jd-h1 { font-size: 21px; font-weight: 900; color: #0f172a; margin-top: 10px; line-height: 1.25; letter-spacing: -.4px; }
     .jd-sub { font-size: 12.5px; font-weight: 700; color: #64748b; margin-top: 2px; word-break: keep-all; }
     .jd-tabs { display: flex; gap: 6px; overflow-x: auto; margin-top: 8px; }
-    .jd-tab { flex: 0 0 auto; border: 1.5px solid #c7d2fe; background: #fff; color: #4f46e5; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 900; text-decoration: none; }
-    .jd-tab.on { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .jd-tab { flex: 0 0 auto; border: 1.5px solid #99f6e4; background: #fff; color: #0f766e; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 900; text-decoration: none; }
+    .jd-tab.on { background: #0d9488; border-color: #0d9488; color: #fff; }
     .jd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
     .jd-stat { background: #fff; border-radius: 12px; padding: 6px 4px; text-align: center; font-size: 11px; font-weight: 800; color: #94a3b8; }
     .jd-stat b { font-size: 16px; font-weight: 900; color: #1e1b4b; margin-right: 3px; }
-    .jd-card { background: #fff; border-radius: 20px; border: 3px solid #1f2a44; margin-bottom: 14px; overflow: hidden; box-shadow: 0 10px 22px -10px rgba(31,42,68,.55); }
-    .jd-day-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: linear-gradient(135deg, #1f2a44, #2c3b5e); color: #fff; }
-    .jd-day-date { flex: 0 0 auto; font-size: 38px; font-weight: 900; line-height: 1; color: #f5d98b; letter-spacing: -1px; text-align: center; }
+    .jd-card { background: #fff; border-radius: 20px; border: 3px solid #0f172a; margin-bottom: 14px; overflow: hidden; box-shadow: 0 12px 24px -12px rgba(15,23,42,.6); }
+    .jd-day-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; }
+    .jd-day-date { flex: 0 0 auto; font-size: 38px; font-weight: 900; line-height: 1; color: #5eead4; letter-spacing: -1px; text-align: center; }
     .jd-day-date small { display: block; font-size: 12px; font-weight: 900; color: #fff; letter-spacing: 0; margin-top: 4px; }
     .jd-day-what { flex: 1 1 auto; min-width: 0; }
-    .jd-day-when { font-size: 12.5px; font-weight: 900; color: #f5d98b; }
+    .jd-day-when { font-size: 12.5px; font-weight: 900; color: #5eead4; }
     .jd-day-when .jd-textbtn { color: #cbd5e1; }
     .jd-day-title { font-size: 21px; font-weight: 900; line-height: 1.25; word-break: keep-all; margin-top: 2px; }
     .jd-day-count { flex: 0 0 auto; font-size: 15px; font-weight: 900; text-align: center; background: rgba(255,255,255,.14); border-radius: 12px; padding: 6px 10px; white-space: nowrap; }
@@ -383,7 +387,7 @@
     .jd-card.is-lock .jd-day-head { background: linear-gradient(135deg, #475569, #64748b); }
     .jd-card.exam { border-color: #dc2626; }
     .jd-card.exam .jd-day-head { background: #dc2626; }
-    .jd-cal-title { font-size: 20px; font-weight: 900; color: #1e1b4b; margin: 2px 2px 0; }
+    .jd-cal-title { font-size: 20px; font-weight: 900; color: #0f172a; margin: 2px 2px 0; }
     .jd-cal-sub { font-size: 11.5px; font-weight: 700; color: #94a3b8; margin: 1px 2px 6px; word-break: keep-all; }
     .jd-note { font-size: 12px; font-weight: 800; border-radius: 10px; padding: 6px 10px; margin: 4px 0; word-break: keep-all; }
     .jd-note.late { background: #fff1f2; color: #be123c; }
@@ -397,7 +401,7 @@
     .jd-mlabel { font-size: 15px; font-weight: 900; color: #1e1b4b; line-height: 1.3; word-break: keep-all; }
     .jd-mission.on .jd-mlabel { color: #94a3b8; text-decoration: line-through; }
     .jd-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-    .jd-chip { background: #eef2ff; border: 1.5px solid #c7d2fe; color: #4338ca; border-radius: 9px; padding: 5px 9px; font-size: 12.5px; font-weight: 900; text-decoration: none; }
+    .jd-chip { background: #f0fdfa; border: 1.5px solid #99f6e4; color: #0f766e; border-radius: 9px; padding: 5px 9px; font-size: 12.5px; font-weight: 900; text-decoration: none; }
     .jd-score { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 900; border-radius: 999px; padding: 2px 9px; background: #ecfdf5; color: #047857; }
     .jd-score.low { background: #fff7ed; color: #c2410c; }
     .jd-cal { background: #fff; border-radius: 18px; padding: 8px 6px; }
@@ -415,8 +419,8 @@
     .jd-cell.exam { background: #dc2626; color: #fff; }
     .jd-cell.exam .t { background: #fff; color: #dc2626; }
     .jd-cell.future .t { opacity: .78; }
-    .jd-cell.today { border-color: #1e1b4b; box-shadow: 0 0 0 2px rgba(30,27,75,.2); }
-    .jd-cell.sel { border-color: #4f46e5; }
+    .jd-cell.today { border-color: #0f172a; box-shadow: 0 0 0 2px rgba(15,23,42,.2); }
+    .jd-cell.sel { border-color: #0d9488; }
     .jd-cell .dot { position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; }
     .jd-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10.5px; font-weight: 800; color: #64748b; margin: 6px 4px 10px; }
     .jd-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 3px; vertical-align: -1px; }
@@ -460,7 +464,7 @@
         }).join('');
         if (!my.length || boardEditing) body += pickerHtml(my);
         if (my.length) body += '<div style="text-align:right"><button type="button" class="jd-textbtn" data-edit="1">' + (boardEditing ? '닫기' : '과목 변경') + '</button></div>';
-        host.innerHTML = '<section class="jd-board"><div class="jd-board-head"><b>합격을 위한 공부 진도표</b><span class="jd-dchip">시험 ' + ddayText() + '</span></div><div class="jd-board-body">' + body + '</div></section>';
+        host.innerHTML = '<section class="jd-board"><div class="jd-board-head"><div style="position:relative;z-index:1"><span class="jd-board-eyebrow">' + EXAM_LABEL + ' 자격증 시험</span><b>합격을 위한 공부 진도표</b></div><span class="jd-dchip"><small>시험까지</small>' + ddayText() + '</span></div><div class="jd-board-body">' + body + '</div></section>';
         if (!host.dataset.bound) {
             host.dataset.bound = '1';
             host.addEventListener('click', e => {
@@ -539,7 +543,7 @@
         if (!curKey || !PLANS[curKey] || !my.includes(curKey)) curKey = my[0] || null;
         const top = '<div class="jd-top"><a class="jd-back" href="../index.html#rooms">‹ 뒤로 가기</a><span class="jd-dday">시험 ' + ddayText() + '</span></div>';
         if (!curKey) {
-            root.innerHTML = '<div class="jd-page">' + top + '<div class="jd-h1">합격을 위한 공부 진도표</div><div class="jd-card" style="margin-top:12px">' + pickerHtml(my) + '</div></div>';
+            root.innerHTML = '<div class="jd-page">' + top + '<div class="jd-sub" style="margin-top:10px">' + EXAM_LABEL + ' 자격증 시험</div><div class="jd-h1" style="margin-top:0">합격을 위한 공부 진도표</div><div class="jd-card" style="margin-top:12px">' + pickerHtml(my) + '</div></div>';
             return;
         }
         try { sessionStorage.setItem('sion_plan_last', curKey); } catch (e) { /* 무시 */ }

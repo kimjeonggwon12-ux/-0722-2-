@@ -31,8 +31,8 @@
         a.id = 'sion-plan-return';
         a.href = '../진도표/index.html';
         a.textContent = '📅 진도표로 돌아가기';
-        a.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9998;background:#1f2a44;color:#e9c77b;' +
-            'border-radius:999px;padding:10px 18px;font-size:14px;font-weight:900;text-decoration:none;box-shadow:0 8px 20px rgba(31,42,68,.4);white-space:nowrap;';
+        a.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9998;background:#0f172a;color:#5eead4;' +
+            'border-radius:999px;padding:10px 18px;font-size:14px;font-weight:900;text-decoration:none;box-shadow:0 8px 20px rgba(15,23,42,.4);white-space:nowrap;';
         document.body.appendChild(a);
     }
 
