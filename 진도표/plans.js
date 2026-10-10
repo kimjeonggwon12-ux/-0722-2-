@@ -254,7 +254,7 @@
             h.fast([1, 2, 3, 4], 'amber', '전체 점검'); h.fast([5, 6, 7], 'amber', '전체 점검');
             h.day('모의', 'amber', '모의고사로 점검', [h.mock(85)]);
         }),
-        tongdalPlan(2, { tip: '모의고사 10문항 중 8문항이 8~15장. 8장부터 시작합니다.' }, h => {
+        tongdalPlan(2, { tip: '모의고사 문항의 80%가 8~15장에서 나옵니다. 8장부터 시작합니다.' }, h => {
             [[8, 2], [9, 2], [10, 1], [11, 3], [12, 2], [13, 2], [14, 2]].forEach(([c, n]) => h.chapter(c, n, 'indigo'));
             h.chapter(15, 1, 'indigo', [h.mock(60)]);
             [[1, 2], [3, 4], [5, 6]].forEach(chs => h.fast(chs, 'teal', '빠르게'));
