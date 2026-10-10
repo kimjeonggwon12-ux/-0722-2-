@@ -345,6 +345,15 @@
     .jd-board-head b { display: block; font-size: 23px; font-weight: 900; line-height: 1.2; letter-spacing: -.6px; margin-top: 6px; text-shadow: 0 2px 8px rgba(4,60,50,.35); word-break: keep-all; }
     .jd-dchip { position: relative; z-index: 1; flex: 0 0 auto; background: #fff; color: #047857; border-radius: 18px; padding: 8px 12px; font-size: 20px; font-weight: 900; line-height: 1; text-align: center; white-space: nowrap; box-shadow: 0 6px 14px rgba(4,60,50,.25); }
     .jd-dchip small { display: block; font-size: 10.5px; font-weight: 900; color: #64748b; margin-bottom: 3px; }
+    .jd-board-head::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.38) 50%, transparent 100%); transform: translateX(-120%) skewX(-12deg); animation: jdShine 3.4s ease-in-out infinite; pointer-events: none; }
+    .jd-star { display: inline-block; filter: drop-shadow(0 0 6px rgba(253,224,71,.95)); animation: jdTwinkle 1.7s ease-in-out infinite; }
+    .jd-new { display: inline-block; margin-left: 6px; background: #fde047; color: #713f12; border-radius: 999px; padding: 2px 8px; font-size: 10.5px; font-weight: 900; letter-spacing: .4px; vertical-align: 1px; animation: jdBlink 1.4s ease-in-out infinite; }
+    .jd-board .jd-dchip { animation: jdFloat 2.6s ease-in-out infinite; }
+    @keyframes jdShine { 0%, 55% { transform: translateX(-120%) skewX(-12deg); } 100% { transform: translateX(330%) skewX(-12deg); } }
+    @keyframes jdTwinkle { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.28) rotate(18deg); } }
+    @keyframes jdBlink { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+    @keyframes jdFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @media (prefers-reduced-motion: reduce) { .jd-board-head::before, .jd-star, .jd-new, .jd-board .jd-dchip { animation: none; } }
     .jd-board-body { padding: 12px 14px 14px; }
     .jd-my { display: flex; align-items: center; gap: 10px; background: #f0fdfa; border: 1.5px solid #99f6e4; border-left: 6px solid #0d9488; border-radius: 14px; padding: 11px 12px; margin-bottom: 8px; color: #0f172a; text-decoration: none; }
     .jd-my b { display: block; font-size: 16px; font-weight: 900; }
@@ -464,7 +473,7 @@
         }).join('');
         if (!my.length || boardEditing) body += pickerHtml(my);
         if (my.length) body += '<div style="text-align:right"><button type="button" class="jd-textbtn" data-edit="1">' + (boardEditing ? '닫기' : '과목 변경') + '</button></div>';
-        host.innerHTML = '<section class="jd-board"><div class="jd-board-head"><div style="position:relative;z-index:1"><span class="jd-board-eyebrow">' + EXAM_LABEL + ' 자격증 시험</span><b>합격을 위한 공부 진도표</b></div><span class="jd-dchip"><small>시험까지</small>' + ddayText() + '</span></div><div class="jd-board-body">' + body + '</div></section>';
+        host.innerHTML = '<section class="jd-board"><div class="jd-board-head"><div style="position:relative;z-index:1"><span class="jd-board-eyebrow">' + EXAM_LABEL + ' 자격증 시험</span><span class="jd-new">NEW</span><b><span class="jd-star">⭐</span> 합격을 위한 공부 진도표</b></div><span class="jd-dchip"><small>시험까지</small>' + ddayText() + '</span></div><div class="jd-board-body">' + body + '</div></section>';
         if (!host.dataset.bound) {
             host.dataset.bound = '1';
             host.addEventListener('click', e => {
@@ -543,7 +552,7 @@
         if (!curKey || !PLANS[curKey] || !my.includes(curKey)) curKey = my[0] || null;
         const top = '<div class="jd-top"><a class="jd-back" href="../index.html#rooms">‹ 뒤로 가기</a><span class="jd-dday">시험 ' + ddayText() + '</span></div>';
         if (!curKey) {
-            root.innerHTML = '<div class="jd-page">' + top + '<div class="jd-sub" style="margin-top:10px">' + EXAM_LABEL + ' 자격증 시험</div><div class="jd-h1" style="margin-top:0">합격을 위한 공부 진도표</div><div class="jd-card" style="margin-top:12px">' + pickerHtml(my) + '</div></div>';
+            root.innerHTML = '<div class="jd-page">' + top + '<div class="jd-sub" style="margin-top:10px">' + EXAM_LABEL + ' 자격증 시험</div><div class="jd-h1" style="margin-top:0"><span class="jd-star">⭐</span> 합격을 위한 공부 진도표</div><div class="jd-card" style="margin-top:12px">' + pickerHtml(my) + '</div></div>';
             return;
         }
         try { sessionStorage.setItem('sion_plan_last', curKey); } catch (e) { /* 무시 */ }
